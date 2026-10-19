@@ -1,6 +1,6 @@
 {
-  "versionCode": 15,
-  "versionName": "109.18",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.18/forge-android-v109.18.apk",
+  "versionCode": 43,
+  "versionName": "109.46",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.46/forge-android-v109.46.apk",
   "releaseNotes": "Le changement d’icône est appliqué quand on quitte Forge. L’icône aléatoire change par défaut chaque jour."
 }

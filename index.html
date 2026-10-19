@@ -6029,9 +6029,14 @@ function _programRefs(template){ if(Array.isArray(template?.programRefs)) return
 function _dateKeyMonday(key){ const d=key?new Date(`${key}T12:00:00`):new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d; }
 function _programWeekForDate(prog,dateKey){
   const total=Math.max(1,Number(prog.numWeeks)||1);
-  if(!prog.startDate) return Math.max(1,Math.min(Number(prog.currentWeek)||1,total));
+  // Sans date de départ, la semaine restait figée sur currentWeek : le poids ne
+  // bougeait donc jamais d'une semaine à l'autre. On pose maintenant la date
+  // dès qu'on en a besoin, pas seulement depuis l'écran de planification.
+  if(!prog.startDate){ _ensureProgramStartDate(prog); savePrograms(); }
   const diff=_dateKeyMonday(dateKey)-_dateKeyMonday(prog.startDate);
-  return Math.max(1,Math.min(1+Math.floor(diff/604800000),total));
+  // Math.round et non Math.floor : au changement d'heure une semaine fait
+  // 167 ou 169 h selon la saison, ce qui faisait sauter une semaine en mars.
+  return Math.max(1,Math.min(1+Math.round(diff/604800000),total));
 }
 function _programWeekNow(prog){ const d=_dateKeyMonday(); return _programWeekForDate(prog,`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); }
 function _ensureProgramStartDate(prog){
@@ -7885,9 +7890,12 @@ document.getElementById('programFormSaveBtn').onclick = ()=>{
     p.name = name; p.numWeeks = numWeeks; p.exercises = JSON.parse(JSON.stringify(programExosDraft));
     if(p.currentWeek===undefined) p.currentWeek = 1;
     if(p.currentWeek > numWeeks) p.currentWeek = numWeeks;
+    _ensureProgramStartDate(p);
   } else {
     newlyCreatedId='prog'+Date.now().toString(36);
-    programs.push({ id:newlyCreatedId, name, numWeeks, currentWeek:1, exercises: JSON.parse(JSON.stringify(programExosDraft)) });
+    const created={ id:newlyCreatedId, name, numWeeks, currentWeek:1, exercises: JSON.parse(JSON.stringify(programExosDraft)) };
+    _ensureProgramStartDate(created);
+    programs.push(created);
   }
   savePrograms();
   _navClose(closeProgramFormOverlay);
@@ -8127,7 +8135,7 @@ function renderProgressionSeanceChoice(prog, ex){
       </button>`;
     }).join('');
   body.querySelectorAll('[data-seanceidx]').forEach(btn=>{
-    btn.onclick = ()=>{ insertProgressionIntoSeance(ex, data.seances[+btn.dataset.seanceidx]); };
+    btn.onclick = ()=>{ insertProgressionIntoSeance(ex, data.seances[+btn.dataset.seanceidx], week); };
   });
 }
 
@@ -8147,7 +8155,7 @@ function _ensureExerciseHasFields(exerciseName, neededFields){
   }
 }
 
-function insertProgressionIntoSeance(ex, s){
+function insertProgressionIntoSeance(ex, s, week){
   const seance = currentSeanceObj();
   if(!seance) return;
   const weight = Math.round(s.weight*2)/2;
@@ -8158,6 +8166,9 @@ function insertProgressionIntoSeance(ex, s){
   persistProfiles();
   _navClose(closeProgInsertOverlay);
   renderSeanceDetail();
+  // Ces séries sont une copie figée : on le dit clairement, sinon on croit à
+  // une progression qui « ne bouge plus » d'une semaine à l'autre.
+  forgeToast(`Semaine ${week||1} ajoutée : ${s.sets}×${s.reps} @${_progFmtKg(weight)} kg. Attention, ce sont des séries figées — pour que la charge monte chaque semaine, rattache la progression à la séance depuis l’onglet Progression.`);
 }
 
 
@@ -8866,6 +8877,23 @@ const getFilteredPRs = () => {
   return visible ? prs : prs.filter(p => !p.id.startsWith('demopr') && !p.id.startsWith('demoprv2') && !p.id.startsWith('dprv3-'));
 };
 
+
+/* ================================================================
+   TOAST — petit message éphémère en bas d'écran (aide / avertissement)
+   ================================================================ */
+function forgeToast(message, duration=7000){
+  const previous=document.getElementById('forgeToast');
+  if(previous) previous.remove();
+  const el=document.createElement('div');
+  el.id='forgeToast';
+  el.setAttribute('role','status');
+  el.textContent=message;
+  el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 88px);z-index:420;max-width:min(92vw,440px);padding:12px 16px;border-radius:14px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);border-left:3px solid var(--ember);font-size:13px;line-height:1.45;box-shadow:0 14px 34px rgba(0,0,0,.5);';
+  document.body.appendChild(el);
+  const hide=()=>{ el.style.transition='opacity .35s ease'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); };
+  const timer=setTimeout(hide,duration);
+  el.onclick=()=>{ clearTimeout(timer); hide(); };
+}
 
 /* ================================================================
    MODALE DE CONFIRMATION GLOBALE

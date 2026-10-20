@@ -3267,7 +3267,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.62 · admin sur le social + retour</div>
+    <div class="settings-version">FORGE · v109.63 · admin instantané</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9233,17 +9233,20 @@ function showForgeAdminPanel(){
     setStatus(rows.length+' profil'+(rows.length>1?'s':'')+' Forge affiché'+(rows.length>1?'s':'')+'.');
   };
   search.addEventListener('input',renderDirectory);
+  // rendu IMMÉDIAT avec le cache déjà chargé par le Social — pas d'attente
+  profiles=Object.entries(_ppCache||{}).map(([uid,p])=>({id:uid, data:{username:(p&&p.username)||''}})).filter(r=>r.data.username);
+  profiles.sort((a,b)=>String(a.data.username||'').localeCompare(String(b.data.username||''),'fr'));
+  if(profiles.length){ renderDirectory(); setStatus(profiles.length+' profil'+(profiles.length>1?'s':'')+' Forge affiché'+(profiles.length>1?'s':'')+'.'); }
+  // puis rafraîchissement silencieux (cache 60 s, ré-écrit seulement si périmé)
   (async()=>{
     try{
-      // on passe par la même source que le Social (qui marche sur toutes
-      // les plateformes) au lieu de la collection directe admin
-      const cache=await loadPublicProfiles(true);
+      const cache=await loadPublicProfiles(false);
       profiles=Object.entries(cache||{}).map(([uid,p])=>({id:uid, data:{username:(p&&p.username)||''}})).filter(r=>r.data.username);
       profiles.sort((a,b)=>String(a.data.username||'').localeCompare(String(b.data.username||''),'fr'));
       renderDirectory();
       if(!profiles.length) setStatus('Aucun profil Forge enregistré pour l\'instant.');
     }
-    catch(e){ setStatus('Chargement impossible : '+(e.message||e)); forgeToast('Administration : chargement échoué'); }
+    catch(e){ if(!profiles.length) setStatus('Chargement impossible : '+(e.message||e)); }
   })();
 }
 
@@ -10629,6 +10632,9 @@ function openSettingsOverlay(){
   el.scrollTop=0;
   _navPush(closeSettingsOverlay);
   initSocialSettingToggles();
+  // pré-charge le cache des profils publics : Administration Forge
+  // s'ouvrira instantanément (le cache via 60 s ne retélécharge plus)
+  if(currentUser){ try{ loadPublicProfiles(false).catch(()=>{}); }catch(e){} }
 }
 function closeSettingsOverlay(){
   const el=document.getElementById('view-settings');

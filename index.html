@@ -3232,14 +3232,6 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
           </div>
           <div style="color:var(--ash);font-size:18px;">›</div>
         </div>
-        <div class="settings-row" id="importDataBtn" style="cursor:pointer;">
-          <div class="settings-row-left">
-            <div class="settings-row-label">Importer des données</div>
-            <div class="settings-row-sub">Restaurer depuis un fichier backup JSON</div>
-          </div>
-          <div style="color:var(--ash);font-size:18px;">›</div>
-        </div>
-        <input type="file" id="importDataInput" accept="application/json,.json" style="display:none;">
         <div class="settings-row">
           <div class="settings-row-left">
             <div class="settings-row-label">Afficher les données démo</div>
@@ -3275,7 +3267,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.60 · discussions plus de soi-même</div>
+    <div class="settings-version">FORGE · v109.61 · nettoyage + réglages allégés</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9003,9 +8995,6 @@ function renderAccountUI(user){
         </div>
       </div>
       ${pseudo ? '' : '<div class="settings-row" id="chooseForgeUsernameBtn" style="cursor:pointer;"><div class="settings-row-left"><div class="settings-row-label">Choisir mon pseudo</div></div></div>'}
-      <div class="settings-row" id="cloudSaveBtn" style="cursor:pointer;">
-        <div class="settings-row-left"><div class="settings-row-label">☁️ Sauvegarder maintenant</div></div>
-      </div>
       <div class="settings-row" id="cloudRestoreBtn" style="cursor:pointer;">
         <div class="settings-row-left"><div class="settings-row-label">⬇️ Restaurer depuis le cloud</div></div>
       </div>
@@ -9014,11 +9003,13 @@ function renderAccountUI(user){
         <div class="settings-row-left"><div class="settings-row-label" style="color:var(--danger);">Se déconnecter</div></div>
       </div>
     </div>`;
-    document.getElementById('cloudSaveBtn').onclick = ()=> cloudSave(true);
-    const chooseUsername=document.getElementById('chooseForgeUsernameBtn');if(chooseUsername)chooseUsername.onclick=()=>ensureForgeUsername();
-    document.getElementById('cloudRestoreBtn').onclick = ()=> cloudRestore(true);
-    const adminButton=document.getElementById('forgeAdminBtn');if(adminButton)adminButton.onclick=showForgeAdminPanel;
-    document.getElementById('googleSignOutBtn').onclick = doGoogleSignOut;
+    // attachement ligne par ligne : un souci sur une ligne n'empêche
+    // plus les boutons suivants de fonctionner
+    const bindRow=(id,fn)=>{const el=document.getElementById(id);if(el){try{el.onclick=fn;}catch(e){console.warn('[FORGE] bind '+id,e);}}};
+    bindRow('chooseForgeUsernameBtn',()=>ensureForgeUsername());
+    bindRow('cloudRestoreBtn',()=>cloudRestore(true));
+    bindRow('forgeAdminBtn',showForgeAdminPanel);
+    bindRow('googleSignOutBtn',()=>doGoogleSignOut());
   }
   // Le chat Social dépend de l'état de connexion : on le rafraîchit
   try{ renderSocialChat(); }catch(e){}
@@ -9176,7 +9167,8 @@ async function initAccountSettings(){
 }
 
 function showForgeAdminPanel(){
-  if(!isForgeAdminAccount()){alert('Accès réservé au compte administrateur.');return;}
+  if(!isForgeAdminAccount()){ forgeToast('Administration réservée au compte admin'); return; }
+  if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
   const overlay=document.createElement('div');overlay.className='forge-dialog-overlay';
   const sheet=document.createElement('section');sheet.className='forge-dialog-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');
   const kicker=document.createElement('div');kicker.className='forge-dialog-kicker';kicker.textContent='FORGE · ADMIN';
@@ -9243,7 +9235,7 @@ function showForgeAdminPanel(){
   search.addEventListener('input',renderDirectory);
   (async()=>{
     try{profiles=await fbGetCollection('publicProfiles');profiles.sort((a,b)=>String(a.data.username||'').localeCompare(String(b.data.username||''),'fr'));renderDirectory();}
-    catch(e){setStatus('Chargement impossible : '+(e.message||e));}
+    catch(e){ setStatus('Chargement impossible : '+(e.message||e)+(String(e.message||e).indexOf('permissions')>-1?' — reconnecte-toi puis rouvre Administration.':'')); forgeToast('Administration : chargement échoué'); }
   })();
 }
 
@@ -9258,35 +9250,8 @@ document.getElementById('exportDataBtn').onclick = ()=>{
         longTimer = null; URL.revokeObjectURL(url); a.remove(); }, 1000);
 };
 
-/* Import — restaure un backup JSON exporté depuis Forge (même sur une autre
-   installation de l'app, ex: migration Median → Capacitor). Remplace
-   entièrement exercices/séances/profils/records actuels par ceux du fichier. */
-document.getElementById('importDataBtn').onclick = ()=>{
-  document.getElementById('importDataInput').click();
-};
-document.getElementById('importDataInput').addEventListener('change', function(e){
-  const file = e.target.files && e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev)=>{
-    let data;
-    try{ data = JSON.parse(ev.target.result); }
-    catch(err){ alert('Fichier invalide : ce n\'est pas un JSON lisible.'); e.target.value=''; return; }
-    const hasAny = data && (Array.isArray(data.exercises) || Array.isArray(data.logs) || Array.isArray(data.profiles) || Array.isArray(data.prs));
-    if(!hasAny){ alert('Ce fichier ne ressemble pas à un backup Forge valide.'); e.target.value=''; return; }
-    showConfirm('Importer ce backup ? Toutes les données actuelles (exercices, séances, historique, records) seront remplacées.', ()=>{
-      if(Array.isArray(data.exercises)) sSet('forge-exercises', data.exercises);
-      if(Array.isArray(data.logs)) sSet('forge-logs', data.logs);
-      if(Array.isArray(data.profiles)) sSet('forge-profiles', data.profiles);
-      if(Array.isArray(data.prs)) sSet('forge-prs', data.prs);
-      e.target.value = '';
-      alert('Import réussi. L\'app va se recharger.');
-      location.reload();
-    });
-  };
-  reader.onerror = ()=>{ alert('Impossible de lire le fichier.'); e.target.value=''; };
-  reader.readAsText(file);
-});
+/* Import JSON retiré (v109.60) : la restauration passe par le cloud
+   (compte Google) — « ⬇️ Restaurer depuis le cloud » dans Réglages. */
 
 // Demo Visibility Toggle
 const demoToggle = document.getElementById('demoVisibleToggle');

@@ -1705,6 +1705,12 @@ body:not([data-theme="light"])[data-glass="1"] .drum-item.selected{
 .views-wrap{flex:1 1 0;overflow:hidden;position:relative;min-height:0;}
 .views-track{display:flex;height:100%;transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform;visibility:hidden;}
 .view{flex:0 0 100vw;width:100vw;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 18px 24px;box-sizing:border-box;}
+/* Réglages n'est plus un onglet : panneau plein écran ouvert par ⚙️ dans Social.
+   Hors piste des onglets (display:none) pour ne pas casser la géométrie translateX. */
+#view-settings{display:none;}
+#view-settings.overlay-open{display:block;position:fixed;inset:0;z-index:420;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 18px calc(24px + env(safe-area-inset-bottom));}
+#view-settings.overlay-open #settingsCloseBtn{display:inline-block;}
+#view-settings #settingsCloseBtn{display:none;}
 #view-timer{padding:0;overflow:hidden;}
 
 /* bottom nav */
@@ -3014,13 +3020,58 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
     <div id="historyCard"></div>
   </section>
 
-  <!-- SETTINGS VIEW (index 3) -->
-  <section class="view" id="view-settings">
-    <h2 style="font-size:18px;margin:4px 0 20px;letter-spacing:0.04em;">Réglages</h2>
+  <!-- SOCIAL VIEW (index 4) : compte, partage et réceptions façon chat -->
+  <section class="view" id="view-social">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 20px;gap:10px;">
+      <h2 style="font-size:18px;letter-spacing:0.04em;">Social</h2>
+      <button class="btn ghost" id="socialGearBtn" aria-label="Réglages" style="padding:8px 14px;font-size:16px;">⚙️</button>
+    </div>
+
+    <div id="accountSection"><div class="settings-card"><div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Compte</div><div class="settings-row-sub">Chargement…</div></div></div></div></div>
 
     <div class="settings-section">
-      <div class="settings-section-title">Compte</div>
-      <div id="accountSection"><div class="settings-card"><div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Compte</div><div class="settings-row-sub">Chargement…</div></div></div></div></div>
+      <div class="settings-section-title">Partage</div>
+      <div class="settings-card">
+        <button class="btn primary block" id="socialSendBtn" style="padding:12px;">📤 Envoyer à un ami</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <span>💬 Réceptions</span>
+        <button class="btn ghost" id="socialRefreshBtn" style="padding:4px 12px;font-size:12px;">↻ Actualiser</button>
+      </div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">🔔 Notifier les nouveaux messages</div>
+            <div class="settings-row-sub" id="msgNotifSubLabel">Une notification quand on t'envoie un partage</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" id="msgNotifToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div id="socialChat" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title" id="socialTrashTitle" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+        <span>🗑 Corbeille (<span id="socialTrashCount">0</span>)</span>
+        <span id="socialTrashChevron" style="color:var(--ash);font-size:12px;">afficher</span>
+      </div>
+      <div id="socialTrashBox" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- SETTINGS VIEW : ouverte via ⚙️ depuis l'onglet Social -->
+  <section class="view" id="view-settings">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 20px;gap:10px;">
+      <h2 style="font-size:18px;letter-spacing:0.04em;">Réglages</h2>
+      <button class="btn ghost" id="settingsCloseBtn" aria-label="Fermer les réglages" style="display:none;padding:8px 14px;">✕ Fermer</button>
     </div>
 
     <div class="settings-section">
@@ -3192,7 +3243,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.52 · suggestions @ en direct</div>
+    <div class="settings-version">FORGE · v109.53 · onglet Social</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3533,9 +3584,9 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>
     Progrès
   </button>
-  <button class="tabbtn" data-view="settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    Réglages
+  <button class="tabbtn" data-view="social">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Social
   </button>
 </div>
 
@@ -3785,7 +3836,7 @@ function sSet(key, val){
 // L'écran Timer est le premier écran rendu dans le HTML et le bouton Timer
 // est actif au chargement. Garder l'état JS aligné évite une navigation
 // parasite quand l'ordre sauvegardé est appliqué au démarrage.
-let VIEW_ORDER = ['timer','tracker','stats','progression','settings'];
+let VIEW_ORDER = ['timer','tracker','stats','progression','social'];
 let currentViewIdx = 0;
 
 function goToView(idx, animate=true){
@@ -3800,6 +3851,7 @@ function goToView(idx, animate=true){
   document.querySelectorAll('.tabbtn').forEach((b,i)=> b.classList.toggle('active', i===idx));
   if(VIEW_ORDER[idx]==='stats') renderStats();
   if(VIEW_ORDER[idx]==='progression') renderProgramList();
+  if(VIEW_ORDER[idx]==='social') renderSocialChat();
   // Tracker : depuis une autre vue + séance ouverte → restaurer la séance
   // Depuis tracker lui-même (prevIdx===1) → retour à l'accueil
   if(VIEW_ORDER[idx]==='tracker'){
@@ -3861,7 +3913,9 @@ _wireTabButtons();
 // pas afficher brièvement un autre écran pendant la restauration.
 const _startupTabOrder = (()=>{
   try{
-    const saved=JSON.parse(localStorage.getItem('forge-tab-order')||'null');
+    const savedRaw=JSON.parse(localStorage.getItem('forge-tab-order')||'null');
+    // Migration : l'onglet "settings" (Réglages) est devenu "social"
+    const saved=Array.isArray(savedRaw)?savedRaw.map(k=>k==='settings'?'social':k):null;
     return Array.isArray(saved) && saved.length===VIEW_ORDER.length
       && new Set(saved).size===VIEW_ORDER.length
       && saved.every(key=>VIEW_ORDER.includes(key)) ? saved : VIEW_ORDER.slice();
@@ -8918,6 +8972,8 @@ function renderAccountUI(user){
     const adminButton=document.getElementById('forgeAdminBtn');if(adminButton)adminButton.onclick=showForgeAdminPanel;
     document.getElementById('googleSignOutBtn').onclick = doGoogleSignOut;
   }
+  // Le chat Social dépend de l'état de connexion : on le rafraîchit
+  try{ renderSocialChat(); }catch(e){}
 }
 
 async function doGoogleSignIn(){
@@ -9225,6 +9281,7 @@ function showConfirm(message, onConfirm){
    ================================================================ */
 const FORGE_SHARE_PREFIX = 'FORGE1:';
 let _shareState = null, _shareHistory = [];
+let _shareReplyTo = null; // @pseudo prérempli quand on répond à un message
 
 function _shareEncode(obj){
   try{
@@ -9410,7 +9467,7 @@ function openShareOverlay(step){
 }
 function _closeShareOverlay(){
   document.getElementById('shareOverlay').classList.remove('open');
-  _shareState=null; _shareHistory=[];
+  _shareState=null; _shareHistory=[]; _shareReplyTo=null;
 }
 function _sharePush(step,context){
   _shareHistory.push({step:_shareState.step,context:_shareState.context});
@@ -9673,6 +9730,7 @@ function _shareRender(){
     const sendNowBtn=document.getElementById('shareSendNowBtn');
     const sendToInput=document.getElementById('shareSendToInput');
     if(sendToInput) _shareBindPseudoSearch(sendToInput, document.getElementById('shareSuggestBox'), document.getElementById('shareSendError'));
+    if(sendToInput && _shareReplyTo) sendToInput.value='@'+_shareReplyTo;
     if(sendNowBtn) sendNowBtn.onclick=async()=>{
       const err=document.getElementById('shareSendError');
       const input=document.getElementById('shareSendToInput');
@@ -9680,6 +9738,7 @@ function _shareRender(){
       try{
         const sent=await _shareSendToPseudo(bundle, input.value, (document.getElementById('shareSendMessage')||{}).value);
         forgeToast(sent?`Envoyé à @${sent} ✓`:'Envoyé ✓');
+        _shareReplyTo=null;
         _navClose(_closeShareOverlay);
       }catch(e){
         err.textContent=(e&&e.message)||'Envoi impossible.';
@@ -9782,6 +9841,271 @@ document.getElementById('shareBackBtn').onclick=()=>_shareBack();
 document.getElementById('shareCloseBtn').onclick=()=>_navClose(_closeShareOverlay);
 document.getElementById('shareExportBtn').onclick=()=>openShareOverlay('menu');
 document.getElementById('shareInboxBtn').onclick=()=>openShareOverlay('inbox');
+
+/* ================================================================
+   ONGLET SOCIAL — le compte, l'envoi et les réceptions façon
+   messagerie, directement dans l'onglet (l'ancien onglet Réglages
+   devient un panneau ouvert par ⚙️ en haut à droite).
+   ================================================================ */
+const _SOCIAL_READ_KEY='forge-inbox-read';       // messages lus (point ● éteint)
+const _SOCIAL_NOTIF_KEY='forge-inbox-notified';  // messages déjà notifiés (APK)
+const _SOCIAL_TRASH_KEY='forge-inbox-trash';     // corbeille locale (restaurable)
+let _socialInbox=[], _socialLoadedAt=0, _socialOpenIdx=-1;
+
+function _socialIdSet(key){ try{ return JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ return []; } }
+function _socialSaveIdSet(key,arr){ try{ localStorage.setItem(key, JSON.stringify(arr.slice(-300))); }catch(e){} }
+function _socialIsRead(id){ return _socialIdSet(_SOCIAL_READ_KEY).includes(id); }
+function _socialMarkRead(id){ const r=_socialIdSet(_SOCIAL_READ_KEY); if(!r.includes(id)){ r.push(id); _socialSaveIdSet(_SOCIAL_READ_KEY,r); } }
+function _socialGetTrash(){ try{ return JSON.parse(localStorage.getItem(_SOCIAL_TRASH_KEY)||'[]'); }catch(e){ return []; } }
+function _socialSetTrash(t){ try{ localStorage.setItem(_SOCIAL_TRASH_KEY, JSON.stringify(t.slice(-40))); }catch(e){} _socialRenderTrash(); }
+
+function openSettingsOverlay(){
+  const el=document.getElementById('view-settings');
+  if(!el||el.classList.contains('overlay-open')) return;
+  // On sort la vue du track (transformé) pour que position:fixed couvre bien l'écran
+  if(el.parentElement!==document.body) document.body.appendChild(el);
+  el.classList.add('overlay-open');
+  el.scrollTop=0;
+  _navPush(closeSettingsOverlay);
+}
+function closeSettingsOverlay(){
+  const el=document.getElementById('view-settings');
+  if(el) el.classList.remove('overlay-open');
+}
+
+async function renderSocialChat(force){
+  const box=document.getElementById('socialChat');
+  if(!box) return;
+  const key=currentPublicProfile&&currentPublicProfile.key;
+  if(!currentUser||!key){
+    _socialInbox=[]; _socialLoadedAt=0;
+    box.innerHTML='<div class="empty" style="padding:14px 0;text-align:center;">💬<br>Connecte-toi et choisis ton pseudo<br>pour recevoir des partages.<br><span style="font-size:12px;color:var(--ash);">La carte compte est juste au-dessus ☝️</span></div>';
+    _socialRenderTrash();
+    return;
+  }
+  if(!force && _socialLoadedAt && Date.now()-_socialLoadedAt<15000) return;
+  box.innerHTML='<div class="empty" style="padding:10px 0;text-align:center;">Chargement…</div>';
+  try{
+    const items=await fbListInboxItems('inbox/'+key+'/items');
+    _socialInbox=items; _socialLoadedAt=Date.now();
+    _socialRenderInbox();
+    _socialNotifyNew(items);
+  }catch(e){
+    box.innerHTML=`<div class="settings-card"><div style="font-size:13px;color:var(--danger);">Impossible de charger : ${_progEsc((e&&e.message)||'erreur')}</div><button class="btn ghost block" id="socialRetryBtn" style="margin-top:8px;">Réessayer</button></div>`;
+    const rb=document.getElementById('socialRetryBtn'); if(rb) rb.onclick=()=>renderSocialChat(true);
+  }
+}
+
+/* Non lus d'abord, puis du plus récent au plus ancien */
+function _socialSortedItems(){
+  const readSet=_socialIdSet(_SOCIAL_READ_KEY);
+  return _socialInbox.slice().sort((a,b)=>{
+    const ar=readSet.includes(a.id), br=readSet.includes(b.id);
+    if(ar!==br) return ar?1:-1;
+    return String((b.data&&b.data.createdAt)||'').localeCompare(String((a.data&&a.data.createdAt)||''));
+  });
+}
+
+function _socialRenderInbox(){
+  const box=document.getElementById('socialChat'); if(!box) return;
+  const items=_socialSortedItems();
+  if(!items.length){
+    box.innerHTML='<div class="empty" style="padding:14px 0;text-align:center;">💬<br>Aucun partage reçu pour l\'instant.<br><span style="font-size:12px;color:var(--ash);">Les partages qu\'on t\'envoie arrivent ici, comme des messages.</span></div>';
+    return;
+  }
+  const unread=items.filter(it=>!_socialIsRead(it.id)).length;
+  const head=`<div style="font-size:12px;color:var(--ash);margin:0 0 10px 2px;">${items.length} message(s)${unread?` · <span style="color:var(--ember);font-weight:700;">${unread} non lu(s)</span>`:''}</div>`;
+  box.innerHTML=head+items.map((it,i)=>{
+    const d=it.data||{};
+    const desc=_shareDescribe(d.bundle)||{title:'?',lines:[]};
+    const color=_shareAvatarColor(d.fromUsername);
+    const initials=String(d.fromUsername||'?').slice(0,1).toUpperCase();
+    const date=d.createdAt?new Date(d.createdAt):null;
+    const dateTxt=date?date.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '+date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
+    const isSession=d.kind==='session';
+    const unread=!_socialIsRead(it.id);
+    const open=_socialOpenIdx===i;
+    return `<div data-smsg="${i}" style="margin-bottom:14px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:36px;height:36px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;">${_progEsc(initials)}</div>
+        <div style="flex:1;min-width:0;background:var(--surface2);border:1px solid ${unread?'var(--ember)':'var(--border)'};border-radius:4px 16px 16px 16px;padding:12px 14px;${unread?'box-shadow:0 0 0 1px var(--ember);':''}">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
+            <span style="font-weight:700;font-size:13px;">${unread?'<span style="color:var(--ember);">●</span> ':''}@${_progEsc(String(d.fromUsername||'?'))}</span>
+            ${dateTxt?`<span style="font-size:10px;color:var(--ash);flex-shrink:0;">${dateTxt}</span>`:''}
+          </div>
+          <div style="font-size:13px;color:var(--chalk);margin-top:4px;">t'a envoyé ${_shareKINDLabel(d.kind)}</div>
+          <div style="font-size:13px;color:var(--ash);margin-top:2px;">${_progEsc(desc.title)}${desc.lines.length?' · '+_progEsc(desc.lines.join(' · ')):''}</div>
+          ${d.message?`<div style="font-size:13px;color:var(--chalk);margin-top:8px;padding:10px 12px;background:var(--surface);border-radius:12px;border:1px solid var(--border);">« ${_progEsc(String(d.message))} »</div>`:''}
+          ${open?`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+            <button class="btn primary" data-sadd="${i}" style="flex:2;min-width:120px;padding:9px 10px;font-size:13px;">➕ ${isSession?'Ajouter à mes séances':'Ajouter'}</button>
+            <button class="btn ghost" data-sreply="${i}" style="flex:1;min-width:90px;padding:9px 10px;font-size:13px;">↩️ Répondre</button>
+            <button class="btn ghost" data-strash="${i}" style="flex:1;min-width:90px;padding:9px 10px;font-size:13px;">🗑 Corbeille</button>
+          </div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-smsg]').forEach(el=>{
+    el.onclick=()=>{
+      const i=+el.dataset.smsg;
+      _socialOpenIdx=(_socialOpenIdx===i)?-1:i;
+      if(items[i]&&items[i].id) _socialMarkRead(items[i].id);
+      _socialRenderInbox();
+    };
+  });
+  box.querySelectorAll('[data-sadd]').forEach(btn=>{
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      const it=_socialInbox.find(x=>x.id===items[+btn.dataset.sadd].id)||items[+btn.dataset.sadd];
+      if(!it||!it.data||!it.data.bundle) return;
+      _shareState={step:'import-review', context:{bundle:it.data.bundle, inboxItem:it}};
+      _shareHistory=[];
+      document.getElementById('shareOverlay').classList.add('open');
+      _navPush(_closeShareOverlay);
+      _shareRender();
+    };
+  });
+  box.querySelectorAll('[data-sreply]').forEach(btn=>{
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      const d=(items[+btn.dataset.sreply].data)||{};
+      _shareReplyTo=String(d.fromUsername||'')||null;
+      openShareOverlay('menu');
+      if(_shareReplyTo) forgeToast('Réponse à @'+_shareReplyTo+' — choisis ce que tu veux envoyer');
+    };
+  });
+  box.querySelectorAll('[data-strash]').forEach(btn=>{
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      const it=_socialInbox.find(x=>x.id===items[+btn.dataset.strash].id)||items[+btn.dataset.strash];
+      if(it) _socialTrashItem(it);
+    };
+  });
+}
+
+async function _socialTrashItem(it){
+  const key=currentPublicProfile&&currentPublicProfile.key;
+  const trash=_socialGetTrash();
+  trash.push({id:it.id, path:it.path, data:it.data, trashedAt:new Date().toISOString()});
+  _socialSetTrash(trash);
+  try{ if(key&&it.id) await fbDeleteDocumentAllowed('inbox/'+key+'/items/'+it.id); }catch(e){}
+  _socialInbox=_socialInbox.filter(x=>x.id!==it.id);
+  _socialOpenIdx=-1;
+  _socialRenderInbox();
+  forgeToast('Mis à la corbeille — restaurable depuis 🗑');
+}
+
+function _socialRenderTrash(){
+  const cnt=document.getElementById('socialTrashCount'); if(cnt) cnt.textContent=_socialGetTrash().length;
+  const box=document.getElementById('socialTrashBox'); if(!box) return;
+  const trash=_socialGetTrash().slice().reverse();
+  if(!trash.length){
+    box.innerHTML='<div class="settings-card"><div style="font-size:12px;color:var(--ash);text-align:center;padding:6px 0;">La corbeille est vide.</div></div>';
+    return;
+  }
+  box.innerHTML='<div class="settings-card">'+trash.map((t,i)=>{
+    const d=t.data||{};
+    const date=t.trashedAt?new Date(t.trashedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}):'';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="min-width:0;">
+        <div style="font-size:13px;">@${_progEsc(String(d.fromUsername||'?'))} · ${_progEsc((_shareDescribe(d.bundle)||{title:'?'}).title)}</div>
+        <div style="font-size:11px;color:var(--ash);">mis de côté ${_progEsc(date)}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn ghost" data-trestore="${i}" style="padding:6px 10px;font-size:12px;">Restaurer</button>
+        <button class="btn ghost" data-tdel="${i}" style="padding:6px 10px;font-size:12px;color:var(--danger);">✕</button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+  box.querySelectorAll('[data-trestore]').forEach(b=>{
+    b.onclick=async()=>{
+      const arr=_socialGetTrash().slice().reverse();
+      const t=arr[+b.dataset.trestore]; if(!t) return;
+      const key=currentPublicProfile&&currentPublicProfile.key;
+      if(key){
+        try{ await fbSetDocument('inbox/'+key+'/items/'+t.id, t.data); }
+        catch(e){ forgeToast('Restauration impossible'); return; }
+      }
+      _socialSetTrash(_socialGetTrash().filter(x=>x.id!==t.id));
+      renderSocialChat(true);
+      forgeToast('Message restauré ✓');
+    };
+  });
+  box.querySelectorAll('[data-tdel]').forEach(b=>{
+    b.onclick=()=>{
+      const arr=_socialGetTrash().slice().reverse();
+      const t=arr[+b.dataset.tdel]; if(!t) return;
+      _socialSetTrash(_socialGetTrash().filter(x=>x.id!==t.id));
+      forgeToast('Supprimé définitivement');
+    };
+  });
+}
+
+/* ── Notifications des messages (utiles sur l'APK) : quand un partage
+   arrive et que l'option est activée, une notification système s'affiche. ── */
+let msgNotifEnabled=false;
+function _socialNotifyNew(items){
+  if(!msgNotifEnabled||!isNativePlatform()) return;
+  const LN=getLN(); if(!LN) return;
+  const notified=_socialIdSet(_SOCIAL_NOTIF_KEY);
+  const fresh=(items||[]).filter(it=>it&&it.id&&!notified.includes(it.id));
+  if(!fresh.length) return;
+  fresh.forEach(it=>{
+    const d=it.data||{};
+    const desc=_shareDescribe(d.bundle)||{title:''};
+    let idNum=0; String(it.id).split('').forEach(ch=>{ idNum=(idNum*31+ch.charCodeAt(0))>>>0; });
+    try{
+      LN.schedule({notifications:[{
+        id: 430000 + (idNum % 9999),
+        title: 'FORGE 💬 @'+String(d.fromUsername||'?'),
+        body: (d.message?'« '+d.message+' » — ':'')+'t\'a envoyé '+_shareKINDLabel(d.kind)+(desc.title?' : '+desc.title:''),
+        channelId: FORGE_NOTIF_CHANNEL
+      }]}).catch(()=>{});
+    }catch(e){}
+    notified.push(it.id);
+  });
+  _socialSaveIdSet(_SOCIAL_NOTIF_KEY, notified);
+}
+async function initMsgNotifSetting(){
+  msgNotifEnabled=await sGet('forge-notif-msg', false);
+  const tog=document.getElementById('msgNotifToggle');
+  if(!tog) return;
+  tog.checked=msgNotifEnabled;
+  tog.addEventListener('change', async ()=>{
+    msgNotifEnabled=tog.checked;
+    sSet('forge-notif-msg', msgNotifEnabled);
+    if(msgNotifEnabled&&isNativePlatform()){
+      const LN=getLN();
+      if(LN&&LN.checkPermissions){
+        try{ const p=await LN.checkPermissions(); if(p&&p.display!=='granted'&&LN.requestPermissions) await LN.requestPermissions(); }catch(e){}
+      }
+    }
+    forgeToast(msgNotifEnabled?'Notifications des messages activées':'Notifications des messages désactivées');
+  });
+}
+
+document.getElementById('socialGearBtn').onclick=openSettingsOverlay;
+document.getElementById('settingsCloseBtn').onclick=()=>_navClose(closeSettingsOverlay);
+document.getElementById('socialSendBtn').onclick=()=>openShareOverlay('menu');
+document.getElementById('socialRefreshBtn').onclick=()=>renderSocialChat(true);
+document.getElementById('socialTrashTitle').onclick=()=>{
+  const box=document.getElementById('socialTrashBox');
+  const chev=document.getElementById('socialTrashChevron');
+  const show=box.style.display==='none';
+  box.style.display=show?'block':'none';
+  if(chev) chev.textContent=show?'masquer':'afficher';
+  if(show) _socialRenderTrash();
+};
+// Nouveaux messages sur l'APK : vérification légère pendant que l'app est ouverte
+setInterval(()=>{
+  if(msgNotifEnabled&&isNativePlatform()&&document.visibilityState!=='hidden'&&currentUser) renderSocialChat(true);
+}, 60000);
+// Au démarrage : option notifs, compteur corbeille, chat si Social est l'onglet initial
+_forgeDataReadyPromise.then(()=>{
+  initMsgNotifSetting();
+  _socialRenderTrash();
+  if(VIEW_ORDER[currentViewIdx]==='social') renderSocialChat();
+});
 
 /* ================================================================
    INIT

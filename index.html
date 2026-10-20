@@ -3254,7 +3254,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.87 · glissement onglets corrigé (mi-chemin animé)</div>
+    <div class="settings-version">FORGE · v109.88 · rebond élastique aux bords des onglets</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -4196,7 +4196,10 @@ _wireTabDrag();
     const track=document.getElementById('viewsTrack');
     const base=-currentViewIdx*100;
     const pct=(dx/window.innerWidth)*100;
-    const clamp=Math.max(-100,Math.min(100,pct));
+    let clamp=Math.max(-100,Math.min(100,pct));
+    // v109.88 : bord gauche/droit → élastique : l'écran suit d'au plus
+    // ~1/8 de slide puis rebondit (avant : demi-slide figé).
+    if((currentViewIdx===0&&dx>0)||(currentViewIdx>=VIEW_ORDER.length-1&&dx<0)) clamp*=0.125;
     track.style.transition='none';
     track.style.transform=`translateX(calc(${base}% + ${clamp}%))`;
   },{passive:false});
@@ -4226,17 +4229,21 @@ _wireTabDrag();
     const dt=Math.max(1,mt-st);
     const vx=(mcx-sx)/dt;
     const flick=Math.abs(vx)>0.55 && Math.abs(dx)>60;
+    const canNext=currentViewIdx<VIEW_ORDER.length-1;
+    const canPrev=currentViewIdx>0;
+    // Rebond animé au bord (pas d'onglet voisin) — goToView ignorait
+    // l'index hors limites SANS remettre le track, d'où le demi-slide figé.
+    const bounce=()=>{ track.style.transition=''; track.style.transform=`translateX(${-currentViewIdx*100}%)`; };
     if(dx<-thresh || (flick&&dx<0)){
       // v109.86 : réactiver la transition AVANT le commit — pendant le
       // drag elle est à 'none', sinon la vue se place sans animation.
       track.style.transition='';
-      goToView(currentViewIdx+1);
+      if(canNext) goToView(currentViewIdx+1); else bounce();
     } else if(dx>thresh || (flick&&dx>0)){
       track.style.transition='';
-      goToView(currentViewIdx-1);
+      if(canPrev) goToView(currentViewIdx-1); else bounce();
     } else {
-      track.style.transition='';
-      track.style.transform=`translateX(${-currentViewIdx*100}%)`;
+      bounce();
     }
   },{passive:true});
 })();
@@ -8684,7 +8691,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 62, name: '109.87' };
+const FORGE_INDEX_VERSION = { code: 63, name: '109.88' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;

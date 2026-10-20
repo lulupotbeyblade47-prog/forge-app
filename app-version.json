@@ -1,6 +1,6 @@
 {
-  "versionCode": 62,
-  "versionName": "109.87",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.87/forge-android-v109.87.apk",
-  "releaseNotes": "Correction du glissement des onglets : lâcher après la moitié termine maintenant avec l'animation de complétion."
+  "versionCode": 63,
+  "versionName": "109.88",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.88/forge-android-v109.88.apk",
+  "releaseNotes": "Aux bords gauche/droit : l'écran suit d'un petit huitième de slide puis rebondit en douceur au lieu d'un demi-slide figé."
 }

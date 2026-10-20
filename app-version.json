@@ -1,6 +1,6 @@
 {
-  "versionCode": 54,
-  "versionName": "109.79",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.79/forge-android-v109.79.apk",
-  "releaseNotes": "Icône de l'app réparée : elle s'ouvre maintenant AU-DESSUS des Réglages (avant : rien ne se passait, puis le retour affichait les icônes), et ton choix d'icône ne se réinitialise plus tout seul à chaque démarrage."
+  "versionCode": 56,
+  "versionName": "109.81",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.81/forge-android-v109.81.apk",
+  "releaseNotes": "Réglages : la section Partage est retirée (partager reste possible depuis Social) et la ligne « 📥 Importer les données » revient dans Données — restaure un backup JSON (exercices, historiques, profils, records, programmes)."
 }

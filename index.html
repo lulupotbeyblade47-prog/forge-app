@@ -3242,30 +3242,19 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
             <div class="settings-row-sub">Télécharger un backup JSON</div>
           </div>
           <div style="color:var(--ash);font-size:18px;">›</div>
-        </div>      </div>
-    </div>
-
-    <div class="settings-section" id="shareSection">
-      <div class="settings-section-title">Partage</div>
-      <div class="settings-card">
-        <div class="settings-row" id="shareExportBtn" style="cursor:pointer;">
+        </div>
+        <div class="settings-row" id="importDataBtn" style="cursor:pointer;border-top:1px solid var(--border);">
           <div class="settings-row-left">
-            <div class="settings-row-label">📤 Envoyer à un ami…</div>
-            <div class="settings-row-sub">Direct dans son app, par pseudo (@…)</div>
+            <div class="settings-row-label">📥 Importer les données</div>
+            <div class="settings-row-sub">Restaurer un backup JSON</div>
           </div>
           <div style="color:var(--ash);font-size:18px;">›</div>
         </div>
-        <div class="settings-row" id="shareInboxBtn" style="cursor:pointer;border-top:1px solid var(--border);">
-          <div class="settings-row-left">
-            <div class="settings-row-label">💬 Réceptions</div>
-            <div class="settings-row-sub">Les partages qu'on t'a envoyés</div>
-          </div>
-          <div style="color:var(--ash);font-size:18px;">›</div>
-        </div>
+        <input type="file" id="importDataFile" accept=".json,application/json" style="display:none;">
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.79 · icône de l'app réparée (choix qui tient)</div>
+    <div class="settings-version">FORGE · v109.81 · import de données de retour, partage hors Réglages</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3508,11 +3497,13 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
 
 <!-- ICÔNE DE L'APP — page plein écran dédiée -->
 <div id="iconAppOverlay" style="position:fixed;inset:0;z-index:440;background:var(--bg);display:none;flex-direction:column;">
-  <div style="padding:18px 18px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-    <button id="iconAppOverlayClose" style="background:none;border:none;color:var(--ash);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
-    <span style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ember);flex:1;">Icône de l'app</span>
+  <div style="padding:26px 18px 0;flex-shrink:0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 20px;gap:10px;">
+      <button class="btn ghost" id="iconAppOverlayClose" aria-label="Retour" style="padding:6px 14px;">‹ Retour</button>
+      <h2 style="font-size:18px;letter-spacing:0.04em;">Icône de l'app</h2>
+    </div>
   </div>
-  <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px calc(env(safe-area-inset-bottom) + 18px);">
+  <div id="iconAppOverlayBody" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px calc(env(safe-area-inset-bottom) + 18px);">
     <div class="settings-card" style="margin-bottom:20px;">
       <div class="settings-row">
         <div class="settings-row-left">
@@ -4456,6 +4447,8 @@ document.getElementById('iconRandomIntervalSlider').addEventListener('input', fu
 
 document.getElementById('iconAppSettingsBtn').onclick = ()=>{
   document.getElementById('iconAppOverlay').style.display = 'flex';
+  const icoBody = document.getElementById('iconAppOverlayBody');
+  if(icoBody) icoBody.scrollTop = 0;
   renderIconRandomToggle();
   renderIconFigureGrid();
   renderIconBgToggle();
@@ -8631,7 +8624,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 54, name: '109.79' };
+const FORGE_INDEX_VERSION = { code: 56, name: '109.81' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -9462,15 +9455,55 @@ function showForgeAdminPanel(){
    SETTINGS — Export & Reset demo
    ================================================================ */
 document.getElementById('exportDataBtn').onclick = ()=>{
-  const data = { exercises, logs, profiles, prs, exportedAt: new Date().toISOString() };
+  const data = { exercises, logs, profiles, prs, programs, timerHistory, exportedAt: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'forge-backup-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ // timer 200ms
         longTimer = null; URL.revokeObjectURL(url); a.remove(); }, 1000);
 };
 
-/* Import JSON retiré (v109.60) : la restauration passe par le cloud
-   (compte Google) — « ⬇️ Restaurer depuis le cloud » dans Réglages. */
+/* v109.81 : Import JSON de retour (demandé) — restaure un backup .json
+   exporté depuis n'importe quel appareil, via la ligne DONNÉES de
+   Réglages. Confirmation obligatoire : le fichier REMPLACE les données
+   locales. Les partages restent dans Social (partagé via ⬆️). */
+function _importLocalBackup(data){
+  if(Array.isArray(data.exercises)){ exercises = data.exercises; sSet('forge-exercises', exercises); }
+  if(Array.isArray(data.logs)){ logs = data.logs; sSet('forge-logs', logs); }
+  if(Array.isArray(data.profiles)){ profiles = data.profiles.map(migrateProfile); sSet('forge-profiles', profiles); }
+  if(Array.isArray(data.prs)){ prs = data.prs; sSet('forge-prs', prs); }
+  if(Array.isArray(data.programs)){ programs = data.programs; sSet('forge-programs', programs); }
+  if(Array.isArray(data.timerHistory)){ timerHistory = data.timerHistory; sSet('forge-timer-history', timerHistory); }
+  // garde-fous : jamais sans profil, et un profil actif valide
+  if(!profiles.length){ profiles=[{id:'default', name:'Général', week: emptyWeek()}]; sSet('forge-profiles', profiles); }
+  if(!profiles.find(p=>p.id===activeProfileId)){ activeProfileId=profiles[0].id; sSet('forge-active-profile', activeProfileId); }
+}
+document.getElementById('importDataBtn').onclick = ()=>{
+  const inp=document.getElementById('importDataFile');
+  if(!inp) return;
+  inp.value='';
+  inp.click();
+};
+document.getElementById('importDataFile').addEventListener('change', (e)=>{
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onerror=()=>forgeToast('Lecture impossible');
+  reader.onload=()=>{
+    let data=null;
+    try{ data=JSON.parse(reader.result); }
+    catch(err){ forgeToast('Fichier illisible (JSON attendu)'); return; }
+    const looksForge = data && (Array.isArray(data.exercises)||Array.isArray(data.logs)||Array.isArray(data.profiles)||Array.isArray(data.prs));
+    if(!looksForge){ forgeToast('Ce fichier n\'est pas un backup FORGE'); return; }
+    showConfirm('Remplacer toutes tes données actuelles par ce backup ?', ()=>{
+      try{
+        _importLocalBackup(data);
+        forgeToast('Backup importé ✓ — rechargement…', 2500);
+        setTimeout(()=>location.reload(), 900);
+      }catch(err){ forgeToast('Import impossible : '+((err&&err.message)||'?')); }
+    });
+  };
+  reader.readAsText(file);
+});
 
 // Demo Visibility Toggle — la démo n'est plus générée (v109.66) ;
 // purge de tout résidu démarrée plus haut, la bascule est retirée.
@@ -10181,8 +10214,12 @@ function _shareRender(){
 
 document.getElementById('shareBackBtn').onclick=()=>_shareBack();
 document.getElementById('shareCloseBtn').onclick=()=>_navClose(_closeShareOverlay);
-document.getElementById('shareExportBtn').onclick=()=>openShareOverlay('menu');
-document.getElementById('shareInboxBtn').onclick=()=>{ goToView(VIEW_ORDER.indexOf('social')); renderSocialHome(true); };
+// Les lignes « Envoyer à un ami » / « Réceptions » ne vivent plus dans les
+// Réglages (v109.81) : ces entrées restent accessibles via Social (⬆️).
+const _shareSettingsExportBtn=document.getElementById('shareExportBtn');
+if(_shareSettingsExportBtn) _shareSettingsExportBtn.onclick=()=>openShareOverlay('menu');
+const _shareSettingsInboxBtn=document.getElementById('shareInboxBtn');
+if(_shareSettingsInboxBtn) _shareSettingsInboxBtn.onclick=()=>{ goToView(VIEW_ORDER.indexOf('social')); renderSocialHome(true); };
 
 /* ================================================================
    ONGLET SOCIAL — profils publics, recherche, discussions façon

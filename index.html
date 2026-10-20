@@ -3020,32 +3020,57 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
     <div id="historyCard"></div>
   </section>
 
-  <!-- SOCIAL VIEW (index 4) : compte, partage et réceptions façon chat -->
+  <!-- SOCIAL VIEW (index 4) : profils, recherche et discussions façon messagerie -->
   <section class="view" id="view-social">
     <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 20px;gap:10px;">
       <h2 style="font-size:18px;letter-spacing:0.04em;">Social</h2>
       <button class="btn ghost" id="socialGearBtn" aria-label="Réglages" style="padding:8px 14px;font-size:16px;">⚙️</button>
     </div>
 
-    <div id="accountSection"><div class="settings-card"><div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Compte</div><div class="settings-row-sub">Chargement…</div></div></div></div></div>
+    <div id="socialMain">
+      <div id="socialMyCard"><div class="settings-card"><div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Mon profil</div><div class="settings-row-sub">Chargement…</div></div></div></div></div>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Partage</div>
-      <div class="settings-card">
-        <button class="btn primary block" id="socialSendBtn" style="padding:12px;">📤 Envoyer à un ami</button>
+      <div class="settings-section">
+        <div class="settings-section-title">🔍 Chercher quelqu'un</div>
+        <div class="settings-card">
+          <input id="socialSearchInput" placeholder="Tape un pseudo…" autocomplete="off" maxlength="21" style="width:100%;box-sizing:border-box;padding:11px 12px;border-radius:12px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);font-size:14px;">
+          <div id="socialSearchResults" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span>💬 Discussions</span>
+          <button class="btn ghost" id="socialRefreshBtn" style="padding:4px 12px;font-size:12px;">↻ Actualiser</button>
+        </div>
+        <div id="socialThreads"></div>
       </div>
     </div>
 
+    <div id="socialThreadView" style="display:none;"></div>
+    <div id="socialProfileView" style="display:none;"></div>
+    <input type="file" id="socialPhotoInput" accept="image/*" style="display:none;">
+  </section>
+
+  <!-- SETTINGS VIEW : ouverte via ⚙️ depuis l'onglet Social -->
+  <section class="view" id="view-settings">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 20px;gap:10px;">
+      <h2 style="font-size:18px;letter-spacing:0.04em;">Réglages</h2>
+      <button class="btn ghost" id="settingsCloseBtn" aria-label="Fermer les réglages" style="display:none;padding:8px 14px;">✕ Fermer</button>
+    </div>
+
     <div class="settings-section">
-      <div class="settings-section-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-        <span>💬 Réceptions</span>
-        <button class="btn ghost" id="socialRefreshBtn" style="padding:4px 12px;font-size:12px;">↻ Actualiser</button>
-      </div>
+      <div class="settings-section-title">Compte</div>
+      <div id="accountSection"><div class="settings-card"><div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Compte</div><div class="settings-row-sub">Chargement…</div></div></div></div></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Profil &amp; confidentialité</div>
       <div class="settings-card">
         <div class="settings-row">
           <div class="settings-row-left">
             <div class="settings-row-label">🔔 Notifier les nouveaux messages</div>
-            <div class="settings-row-sub" id="msgNotifSubLabel">Une notification quand on t'envoie un partage</div>
+            <div class="settings-row-sub">Une notification quand on t'envoie un message ou un partage</div>
           </div>
           <div class="toggle-wrap">
             <label class="toggle">
@@ -3054,24 +3079,31 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
             </label>
           </div>
         </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">🏋️ Afficher mes records perso</div>
+            <div class="settings-row-sub">Tes max perf apparaissent sur ton profil public</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" id="showPRsToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">👀 Compte invisible</div>
+            <div class="settings-row-sub">Ton profil n'apparaît plus dans la recherche de Social</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" id="invisibleToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
       </div>
-      <div id="socialChat" style="margin-top:10px;"></div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title" id="socialTrashTitle" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
-        <span>🗑 Corbeille (<span id="socialTrashCount">0</span>)</span>
-        <span id="socialTrashChevron" style="color:var(--ash);font-size:12px;">afficher</span>
-      </div>
-      <div id="socialTrashBox" style="display:none;"></div>
-    </div>
-  </section>
-
-  <!-- SETTINGS VIEW : ouverte via ⚙️ depuis l'onglet Social -->
-  <section class="view" id="view-settings">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 20px;gap:10px;">
-      <h2 style="font-size:18px;letter-spacing:0.04em;">Réglages</h2>
-      <button class="btn ghost" id="settingsCloseBtn" aria-label="Fermer les réglages" style="display:none;padding:8px 14px;">✕ Fermer</button>
     </div>
 
     <div class="settings-section">
@@ -3243,7 +3275,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.53 · onglet Social</div>
+    <div class="settings-version">FORGE · v109.54 · discussions & profils</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -7449,7 +7481,7 @@ let prs = [];
 
 async function loadPRs(){ prs = await sGet('forge-prs', []); }
 
-function savePRs(){ sSet('forge-prs', prs); }
+function savePRs(){ sSet('forge-prs', prs); if(typeof scheduleProfileSync==='function') scheduleProfileSync(); }
 
 function bestPRs(){
 
@@ -8611,6 +8643,17 @@ async function fbSetDocument(reference, data){
   if(!ok) throw new Error('Pas de connexion internet.');
   await window.firebase.firestore().doc(reference).set(data);
 }
+/* Écriture partielle (merge) : utile pour les likes — la règle Firestore
+   vérifie que seuls likes/likedBy changent, un set complet serait refusé. */
+async function fbMergeDocument(reference, data){
+  if(isNativePlatform()){
+    await window.Capacitor.Plugins.FirebaseFirestore.setDocument({ reference, data, merge:true });
+    return;
+  }
+  const ok = await ensureFirebaseWebSdk();
+  if(!ok) throw new Error('Pas de connexion internet.');
+  await window.firebase.firestore().doc(reference).set(data, { merge:true });
+}
 async function fbGetDocument(reference){
   if(isNativePlatform()){
     const res = await window.Capacitor.Plugins.FirebaseFirestore.getDocument({ reference });
@@ -9054,7 +9097,7 @@ async function initAccountSettings(){
     currentUser = await fbGetCurrentUser();
     currentPublicProfile = currentUser ? await fbGetDocument('publicProfiles/'+currentUser.uid).catch(()=>null) : null;
     renderAccountUI(currentUser);
-    if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncCloudOnStartup();}
+    if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncMyPublicProfile().catch(()=>{});await syncCloudOnStartup();}
     else await maybeOfferGoogleConnect();
     return;
   }
@@ -9076,6 +9119,7 @@ async function initAccountSettings(){
       renderAccountUI(currentUser);
       await maybeOfferFreshStart();
       await ensureForgeUsername();
+      await syncMyPublicProfile().catch(()=>{});
       await syncCloudOnStartup();
       return;
     }
@@ -9086,7 +9130,7 @@ async function initAccountSettings(){
   currentUser = _mapFbWebUser(window.firebase.auth().currentUser);
   currentPublicProfile = currentUser ? await fbGetDocument('publicProfiles/'+currentUser.uid).catch(()=>null) : null;
   renderAccountUI(currentUser);
-  if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncCloudOnStartup();}
+  if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncMyPublicProfile().catch(()=>{});await syncCloudOnStartup();}
   else if(!redirectPending) await maybeOfferGoogleConnect();
   if(redirectPending && !currentUser){
     const detail = redirectError && (redirectError.code || redirectError.message)
@@ -9282,6 +9326,7 @@ function showConfirm(message, onConfirm){
 const FORGE_SHARE_PREFIX = 'FORGE1:';
 let _shareState = null, _shareHistory = [];
 let _shareReplyTo = null; // @pseudo prérempli quand on répond à un message
+let _shareThreadTarget = null; // envoi depuis une discussion : destination imposée
 
 function _shareEncode(obj){
   try{
@@ -9467,7 +9512,7 @@ function openShareOverlay(step){
 }
 function _closeShareOverlay(){
   document.getElementById('shareOverlay').classList.remove('open');
-  _shareState=null; _shareHistory=[]; _shareReplyTo=null;
+  _shareState=null; _shareHistory=[]; _shareReplyTo=null; _shareThreadTarget=null;
 }
 function _sharePush(step,context){
   _shareHistory.push({step:_shareState.step,context:_shareState.context});
@@ -9565,12 +9610,9 @@ async function _shareSendToPseudo(bundle, rawPseudo, message){
   const claimed=await fbGetDocument('usernames/'+key);
   if(!claimed) throw new Error('Aucun compte Forge avec ce pseudo.');
   if(claimed.uid===currentUser.uid) throw new Error('C\'est ton pseudo à toi 😄');
-  const payload=JSON.parse(JSON.stringify(bundle));
-  const docId='shr'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  const data={to:key, fromUid:currentUser.uid, fromUsername:currentPublicProfile.username, kind:bundle.kind, bundle:payload, createdAt:new Date().toISOString()};
   const msg=String(message||'').trim();
-  if(msg && msg.length<=140) data.message=msg;
-  await fbSetDocument('inbox/'+key+'/items/'+docId, data);
+  const pk=await ensureThread(claimed.uid, claimed.username||key);
+  await sendThreadMessage(pk, claimed.uid, claimed.username||key, {text:msg||'', bundle});
   return key;
 }
 function _shareRender(){
@@ -9608,7 +9650,7 @@ function _shareRender(){
     body.querySelectorAll('[data-shareact]').forEach(btn=>btn.onclick=()=>{
       const act=btn.dataset.shareact;
       if(act==='export') _sharePush('export-kind');
-      else if(act==='inbox') _sharePush('inbox',{});
+      else if(act==='inbox'){ _navClose(_closeShareOverlay); goToView(VIEW_ORDER.indexOf('social')); renderSocialHome(true); }
       else if(act==='username'){ ensureForgeUsername().then(ok=>{ if(ok&&currentPublicProfile){ _sharePush('menu'); } }); }
       else if(act==='signin'){ _navClose(_closeShareOverlay); doGoogleSignIn().then(()=>{ if(currentUser) openShareOverlay('menu'); }); }
     });
@@ -9729,6 +9771,11 @@ function _shareRender(){
     if(signinBtn) signinBtn.onclick=()=>{ _navClose(_closeShareOverlay); doGoogleSignIn().then(()=>{ if(currentUser) openShareOverlayForBundle(bundle); }); };
     const sendNowBtn=document.getElementById('shareSendNowBtn');
     const sendToInput=document.getElementById('shareSendToInput');
+    if(sendToInput && _shareThreadTarget){
+      sendToInput.value='@'+_shareThreadTarget.otherUsername;
+      sendToInput.readOnly=true;
+      sendToInput.style.opacity='0.7';
+    }
     if(sendToInput) _shareBindPseudoSearch(sendToInput, document.getElementById('shareSuggestBox'), document.getElementById('shareSendError'));
     if(sendToInput && _shareReplyTo) sendToInput.value='@'+_shareReplyTo;
     if(sendNowBtn) sendNowBtn.onclick=async()=>{
@@ -9736,6 +9783,15 @@ function _shareRender(){
       const input=document.getElementById('shareSendToInput');
       sendNowBtn.disabled=true; err.textContent='';
       try{
+        // Envoi depuis une discussion existante : destination imposée
+        if(_shareThreadTarget){
+          await sendThreadMessage(_shareThreadTarget.pk, _shareThreadTarget.otherUid, _shareThreadTarget.otherUsername, {text:(document.getElementById('shareSendMessage')||{}).value||'', bundle});
+          forgeToast('Envoyé dans la discussion ✓');
+          _shareReplyTo=null;
+          _navClose(_closeShareOverlay);
+          if(typeof openThread==='function') openThread(_shareThreadTarget.pk, _shareThreadTarget.otherUid, _shareThreadTarget.otherUsername, true).catch(()=>{});
+          return;
+        }
         const sent=await _shareSendToPseudo(bundle, input.value, (document.getElementById('shareSendMessage')||{}).value);
         forgeToast(sent?`Envoyé à @${sent} ✓`:'Envoyé ✓');
         _shareReplyTo=null;
@@ -9840,231 +9896,547 @@ function _shareRender(){
 document.getElementById('shareBackBtn').onclick=()=>_shareBack();
 document.getElementById('shareCloseBtn').onclick=()=>_navClose(_closeShareOverlay);
 document.getElementById('shareExportBtn').onclick=()=>openShareOverlay('menu');
-document.getElementById('shareInboxBtn').onclick=()=>openShareOverlay('inbox');
+document.getElementById('shareInboxBtn').onclick=()=>{ goToView(VIEW_ORDER.indexOf('social')); renderSocialHome(true); };
 
 /* ================================================================
-   ONGLET SOCIAL — le compte, l'envoi et les réceptions façon
-   messagerie, directement dans l'onglet (l'ancien onglet Réglages
-   devient un panneau ouvert par ⚙️ en haut à droite).
+   ONGLET SOCIAL — profils publics, recherche, discussions façon
+   messagerie. L'ancien onglet Réglages devient un panneau ouvert
+   par ⚙️ en haut à droite (compte + confidentialité y vivent).
+   Modèle Firestore :
+   - publicProfiles/{uid} : pseudo, photo, likes, showPRs, invisible
+   - threads/{paireTriée}/messages/{id} : la conversation commune
+   - userThreads/{uid}/threads/{paire} : miroir "mes discussions"
    ================================================================ */
-const _SOCIAL_READ_KEY='forge-inbox-read';       // messages lus (point ● éteint)
-const _SOCIAL_NOTIF_KEY='forge-inbox-notified';  // messages déjà notifiés (APK)
-const _SOCIAL_TRASH_KEY='forge-inbox-trash';     // corbeille locale (restaurable)
-let _socialInbox=[], _socialLoadedAt=0, _socialOpenIdx=-1;
+const _THREAD_READ_KEY='forge-thread-read';      // {pairKey: timestamp lu}
+const _THREAD_NOTIF_KEY='forge-thread-notified'; // {pairKey: timestamp déjà notifié}
+let _ppCache={}, _ppCacheAt=0, _myThreads=[], _homeLoadedAt=0;
+let _currentThread=null, _profileViewUid=null, _inboxMigrated=false;
 
-function _socialIdSet(key){ try{ return JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ return []; } }
-function _socialSaveIdSet(key,arr){ try{ localStorage.setItem(key, JSON.stringify(arr.slice(-300))); }catch(e){} }
-function _socialIsRead(id){ return _socialIdSet(_SOCIAL_READ_KEY).includes(id); }
-function _socialMarkRead(id){ const r=_socialIdSet(_SOCIAL_READ_KEY); if(!r.includes(id)){ r.push(id); _socialSaveIdSet(_SOCIAL_READ_KEY,r); } }
-function _socialGetTrash(){ try{ return JSON.parse(localStorage.getItem(_SOCIAL_TRASH_KEY)||'[]'); }catch(e){ return []; } }
-function _socialSetTrash(t){ try{ localStorage.setItem(_SOCIAL_TRASH_KEY, JSON.stringify(t.slice(-40))); }catch(e){} _socialRenderTrash(); }
+function _threadMap(key){ try{ return JSON.parse(localStorage.getItem(key)||'{}'); }catch(e){ return {}; } }
+function _threadMapSet(key,m){ try{ localStorage.setItem(key, JSON.stringify(m)); }catch(e){} }
+function _threadReadAt(pk){ return _threadMap(_THREAD_READ_KEY)[pk]||0; }
+function _threadMarkRead(pk){ const m=_threadMap(_THREAD_READ_KEY); m[pk]=Date.now(); _threadMapSet(_THREAD_READ_KEY,m); }
 
-function openSettingsOverlay(){
-  const el=document.getElementById('view-settings');
-  if(!el||el.classList.contains('overlay-open')) return;
-  // On sort la vue du track (transformé) pour que position:fixed couvre bien l'écran
-  if(el.parentElement!==document.body) document.body.appendChild(el);
-  el.classList.add('overlay-open');
-  el.scrollTop=0;
-  _navPush(closeSettingsOverlay);
+function pairOf(a,b){ return String(a)<String(b) ? a+'__'+b : b+'__'+a; }
+
+/* ── Profils publics ── */
+async function loadPublicProfiles(force){
+  if(!force && _ppCacheAt && Date.now()-_ppCacheAt<60000) return _ppCache;
+  try{
+    const rows=await fbListInboxItems('publicProfiles');
+    const map={};
+    rows.forEach(r=>{ if(r&&r.data&&r.data.uid) map[r.data.uid]=r.data; });
+    _ppCache=map; _ppCacheAt=Date.now();
+  }catch(e){ console.warn('[FORGE] Chargement des profils impossible', e); }
+  return _ppCache;
 }
-function closeSettingsOverlay(){
-  const el=document.getElementById('view-settings');
-  if(el) el.classList.remove('overlay-open');
+function buildPrsSummary(){
+  const best={};
+  prs.forEach(pr=>{
+    if(!pr||!pr.exercise) return;
+    const cur=best[pr.exercise];
+    if(!cur || Number(pr.value)>Number(cur.value)) best[pr.exercise]={exercise:pr.exercise, value:pr.value, unit:pr.unit||'', date:pr.date||''};
+  });
+  return Object.values(best).slice(0,20);
+}
+function _profileDocForWrite(base){
+  const googlePhoto=String(currentUser.photoUrl||currentUser.photoURL||'');
+  const photo=(base&&base.photoIsCustom&&base.photoURL)?base.photoURL:googlePhoto;
+  return {
+    uid:currentUser.uid,
+    username:currentPublicProfile.username,
+    key:currentPublicProfile.key,
+    photoURL:photo||'',
+    photoIsCustom:!!(base&&base.photoIsCustom),
+    showPRs:!!(base&&base.showPRs),
+    invisible:!!(base&&base.invisible),
+    likes:(base&&base.likes)||0,
+    likedBy:(base&&base.likedBy)||[],
+    prsSummary:(base&&base.showPRs)?(base.prsSummary||buildPrsSummary()):[],
+    updatedAt:new Date().toISOString()
+  };
+}
+async function syncMyPublicProfile(){
+  if(!currentUser||!currentPublicProfile||!currentPublicProfile.username) return null;
+  const ref='publicProfiles/'+currentUser.uid;
+  let base=null;
+  try{ base=await fbGetDocument(ref); }catch(e){}
+  const doc=_profileDocForWrite(base);
+  await fbSetDocument(ref, doc);
+  _ppCache[currentUser.uid]=doc;
+  return doc;
+}
+/* après un changement de PRs : rafraîchir le résumé public (si affiché) */
+let _profileSyncTimer=null;
+function scheduleProfileSync(){
+  if(!currentUser||!currentPublicProfile) return;
+  clearTimeout(_profileSyncTimer);
+  _profileSyncTimer=setTimeout(()=>{ syncMyPublicProfile().catch(()=>{}); }, 5000);
 }
 
-async function renderSocialChat(force){
-  const box=document.getElementById('socialChat');
-  if(!box) return;
+function _safePhoto(url){
+  const u=String(url||'');
+  return (/^https:\/\//.test(u)||/^data:image\//.test(u)) ? u : '';
+}
+function _avatarHtml(uid, size, nameFallback){
+  const p=_ppCache[uid];
+  const url=_safePhoto(p&&p.photoURL);
+  const label=(p&&p.username)||nameFallback||'?';
+  const initials=String(label).replace(/^@/,'').slice(0,1).toUpperCase();
+  const color=_shareAvatarColor(label);
+  if(url){
+    return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color} center/cover no-repeat;border:1px solid var(--border);flex-shrink:0;" data-avimg="1"></div>`;
+  }
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${Math.round(size*0.42)}px;flex-shrink:0;">${_progEsc(initials)}</div>`;
+}
+function _avatarBgFix(el, uid){
+  // les background-image ne passent pas dans le template ci-dessus (guillemets) : on les pose ici
+  const p=_ppCache[uid];
+  const url=_safePhoto(p&&p.photoURL);
+  if(url) el.style.backgroundImage=`url("${url.replace(/"/g,'')}")`;
+}
+
+/* ── Discussions ── */
+async function ensureThread(otherUid){
+  const pk=pairOf(currentUser.uid, otherUid);
+  let th=null;
+  try{ th=await fbGetDocument('threads/'+pk); }catch(e){}
+  if(!th){
+    th={participants:[currentUser.uid, otherUid], createdAt:new Date().toISOString()};
+    await fbSetDocument('threads/'+pk, th);
+  }
+  return pk;
+}
+async function sendThreadMessage(pk, otherUid, otherUsername, opts){
+  const opts2=opts||{};
+  const msgId='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  const data={from:currentUser.uid, fromU:currentPublicProfile.username, createdAt:new Date().toISOString()};
+  const txt=String(opts2.text||'').trim().slice(0,500);
+  if(txt) data.text=txt;
+  if(opts2.bundle){ data.bundle=opts2.bundle; data.kind=opts2.bundle.kind||'profile'; }
+  if(!data.text && !data.bundle) throw new Error('Message vide.');
+  await fbSetDocument('threads/'+pk+'/messages/'+msgId, data);
+  let preview=txt;
+  if(!preview && data.bundle){
+    const desc=_shareDescribe(data.bundle)||{title:''};
+    preview='📤 '+_shareKINDLabel(data.kind)+(desc.title?' — '+desc.title:'');
+  }
+  const mirror={pair:pk, other:otherUid, otherUsername:String(otherUsername||'?'), lastAt:data.createdAt, lastText:preview||'…', lastFrom:currentUser.uid};
+  await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, mirror);
+  await fbSetDocument('userThreads/'+otherUid+'/threads/'+pk, mirror);
+  _threadMarkRead(pk);
+  return data;
+}
+async function listMyThreads(){
+  const rows=await fbListInboxItems('userThreads/'+currentUser.uid+'/threads');
+  rows.sort((a,b)=>String((b.data&&b.data.lastAt)||'').localeCompare(String((a.data&&a.data.lastAt)||'')));
+  return rows;
+}
+/* Anciens partages (boîte inbox) → discussions */
+async function migrateOldInbox(){
+  if(_inboxMigrated) return;
   const key=currentPublicProfile&&currentPublicProfile.key;
-  if(!currentUser||!key){
-    _socialInbox=[]; _socialLoadedAt=0;
-    box.innerHTML='<div class="empty" style="padding:14px 0;text-align:center;">💬<br>Connecte-toi et choisis ton pseudo<br>pour recevoir des partages.<br><span style="font-size:12px;color:var(--ash);">La carte compte est juste au-dessus ☝️</span></div>';
-    _socialRenderTrash();
+  if(!currentUser||!key) return;
+  _inboxMigrated=true;
+  let items=[];
+  try{ items=await fbListInboxItems('inbox/'+key+'/items'); }catch(e){ return false; }
+  if(!items.length) return false;
+  for(const it of items){
+    const d=it.data||{};
+    if(!d.fromUid||!d.bundle||d.fromUid===currentUser.uid) { try{ await fbDeleteDocumentAllowed('inbox/'+key+'/items/'+it.id); }catch(e){} continue; }
+    try{
+      const pk=pairOf(currentUser.uid, d.fromUid);
+      const exists=await fbGetDocument('threads/'+pk);
+      if(!exists) await fbSetDocument('threads/'+pk, {participants:[currentUser.uid, d.fromUid], createdAt:d.createdAt||new Date().toISOString()});
+      const mid='old-'+(it.id||'x');
+      await fbSetDocument('threads/'+pk+'/messages/'+mid, {
+        from:d.fromUid, fromU:String(d.fromUsername||'?'),
+        createdAt:d.createdAt||new Date().toISOString(),
+        bundle:d.bundle, kind:d.kind||(d.bundle.kind||'profile'),
+        text:String(d.message||'')
+      });
+      const mirror={pair:pk, other:d.fromUid, otherUsername:String(d.fromUsername||'?'), lastAt:d.createdAt||new Date().toISOString(), lastText:'📤 '+_shareKINDLabel(d.kind||(d.bundle.kind||'profile')), lastFrom:d.fromUid};
+      await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, mirror);
+      await fbSetDocument('userThreads/'+d.fromUid+'/threads/'+pk, mirror);
+      await fbDeleteDocumentAllowed('inbox/'+key+'/items/'+it.id);
+    }catch(e){ console.warn('[FORGE] migration ancien partage', e); }
+  }
+  forgeToast('Tes anciens partages sont maintenant des discussions');
+  return true;
+}
+
+/* ── Rendu : accueil Social ── */
+async function renderSocialHome(force){
+  const myCard=document.getElementById('socialMyCard');
+  const list=document.getElementById('socialThreads');
+  if(!myCard||!list) return;
+  if(!currentUser||!currentPublicProfile||!currentPublicProfile.username){
+    _myThreads=[];
+    myCard.innerHTML='<div class="settings-card"><div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Mon profil</div><div class="settings-row-sub">Connecte-toi (⚙️ Réglages → Compte) et choisis ton pseudo pour apparaître dans Social.</div></div></div></div>';
+    list.innerHTML='';
+    renderSocialSearchResults();
     return;
   }
-  if(!force && _socialLoadedAt && Date.now()-_socialLoadedAt<15000) return;
-  box.innerHTML='<div class="empty" style="padding:10px 0;text-align:center;">Chargement…</div>';
+  if(!force && _homeLoadedAt && Date.now()-_homeLoadedAt<15000) return;
+  _homeLoadedAt=Date.now();
+  await loadPublicProfiles(force===true);
+  renderSocialMyCard();
+  renderSocialSearchResults();
   try{
-    const items=await fbListInboxItems('inbox/'+key+'/items');
-    _socialInbox=items; _socialLoadedAt=Date.now();
-    _socialRenderInbox();
-    _socialNotifyNew(items);
+    _myThreads=await listMyThreads();
+    _threadNotifyNew(_myThreads);
+    renderSocialThreadList();
+    // on ne relance l'accueil que si d'anciens partages ont réellement migré
+    migrateOldInbox().then(migrated=>{ if(migrated) renderSocialHome(true); }).catch(()=>{});
   }catch(e){
-    box.innerHTML=`<div class="settings-card"><div style="font-size:13px;color:var(--danger);">Impossible de charger : ${_progEsc((e&&e.message)||'erreur')}</div><button class="btn ghost block" id="socialRetryBtn" style="margin-top:8px;">Réessayer</button></div>`;
-    const rb=document.getElementById('socialRetryBtn'); if(rb) rb.onclick=()=>renderSocialChat(true);
+    list.innerHTML=`<div class="settings-card"><div style="font-size:13px;color:var(--danger);">Discussions indisponibles : ${_progEsc((e&&e.message)||'erreur')}</div></div>`;
   }
 }
-
-/* Non lus d'abord, puis du plus récent au plus ancien */
-function _socialSortedItems(){
-  const readSet=_socialIdSet(_SOCIAL_READ_KEY);
-  return _socialInbox.slice().sort((a,b)=>{
-    const ar=readSet.includes(a.id), br=readSet.includes(b.id);
-    if(ar!==br) return ar?1:-1;
-    return String((b.data&&b.data.createdAt)||'').localeCompare(String((a.data&&a.data.createdAt)||''));
+function renderSocialMyCard(){
+  const myCard=document.getElementById('socialMyCard');
+  if(!myCard) return;
+  const me=_ppCache[currentUser.uid]||{};
+  const likes=me.likes||0;
+  myCard.innerHTML=`<div class="settings-card" id="socialMyCardInner" style="cursor:pointer;">
+    <div class="settings-row">
+      <div id="socialMyAvatar" style="position:relative;flex-shrink:0;">${_avatarHtml(currentUser.uid,48,currentPublicProfile.username)}</div>
+      <div class="settings-row-left" style="min-width:0;">
+        <div class="settings-row-label">@${_progEsc(currentPublicProfile.username)} ❤️ ${likes}</div>
+        <div class="settings-row-sub">${me.showPRs?'🏋️ Records visibles sur ton profil':'Records perso cachés'} · ${me.invisible?' invisible dans la recherche':'visible dans la recherche'}</div>
+      </div>
+      <div style="color:var(--ash);font-size:18px;">›</div>
+    </div>
+  </div>`;
+  const av=document.getElementById('socialMyAvatar');
+  if(av) _avatarBgFix(av, currentUser.uid);
+  const inner=document.getElementById('socialMyCardInner');
+  if(inner) inner.onclick=()=>openProfileView(currentUser.uid);
+}
+function renderSocialThreadList(){
+  const list=document.getElementById('socialThreads');
+  if(!list) return;
+  if(!_myThreads.length){
+    list.innerHTML='<div class="empty" style="padding:14px 0;text-align:center;">💬<br>Aucune discussion pour l\'instant.<br><span style="font-size:12px;color:var(--ash);">Cherche un ami ci-dessus ou envoie-lui un profil — ça crée la discussion.</span></div>';
+    return;
+  }
+  list.innerHTML=_myThreads.map((t,i)=>{
+    const d=t.data||{};
+    const pk=d.pair||t.id;
+    const unread=d.lastFrom!==currentUser.uid && String(d.lastAt||'') > new Date(_threadReadAt(pk)).toISOString();
+    const date=d.lastAt?new Date(d.lastAt):null;
+    const dateTxt=date?(date.getDay()===new Date().getDay()?date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):date.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})):'';
+    const mine=d.lastFrom===currentUser.uid;
+    return `<div data-thread="${i}" style="display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer;">
+      <div class="thread-av" data-tav="${i}" style="flex-shrink:0;">${_avatarHtml(d.other,40,d.otherUsername)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
+          <span style="font-weight:700;font-size:14px;">@${_progEsc(String(d.otherUsername||'?'))}</span>
+          ${dateTxt?`<span style="font-size:10px;color:var(--ash);flex-shrink:0;">${dateTxt}</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--ash);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${mine?'Toi : ':''}${_progEsc(String(d.lastText||'…'))}</div>
+      </div>
+      ${unread?'<div style="width:10px;height:10px;border-radius:50%;background:var(--ember);flex-shrink:0;"></div>':''}
+    </div>`;
+  }).join('');
+  list.querySelectorAll('[data-thread]').forEach(el=>{
+    el.onclick=()=>{
+      const t=_myThreads[+el.dataset.thread];
+      if(t&&t.data) openThread(t.data.pair||t.id, t.data.other, t.data.otherUsername);
+    };
+  });
+  list.querySelectorAll('.thread-av').forEach(av=>_avatarBgFix(av, (_myThreads[+av.dataset.tav].data||{}).other));
+}
+function renderSocialSearchResults(){
+  const box=document.getElementById('socialSearchResults');
+  const input=document.getElementById('socialSearchInput');
+  if(!box||!input) return;
+  const q=String(input.value||'').trim().toLowerCase().replace(/^@/,'');
+  let entries=Object.entries(_ppCache).filter(([uid,p])=> p && p.username && uid!==currentUser.uid && !p.invisible);
+  if(q) entries=entries.filter(([uid,p])=> String(p.username).toLowerCase().includes(q));
+  entries.sort((a,b)=>(b[1].likes||0)-(a[1].likes||0));
+  if(!entries.length){
+    box.innerHTML=`<div style="font-size:12px;color:var(--ash);padding:6px 0;">${q?('Personne ne ressemble à « '+_progEsc(q)+' ».'):('Aucun profil pour l\'instant — tes amis apparaîtront ici dès qu\'ils auront l\'app et un pseudo.')}</div>`;
+    return;
+  }
+  box.innerHTML=entries.slice(0,10).map(([uid,p],i)=>`<div data-prow="${i}" data-puid="${uid}" style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);cursor:pointer;">
+    <div class="search-av" data-sav="${i}" style="flex-shrink:0;">${_avatarHtml(uid,36,p.username)}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:700;font-size:13px;">@${_progEsc(String(p.username))}</div>
+      <div style="font-size:11px;color:var(--ash);">❤️ ${p.likes||0}</div>
+    </div>
+    <button class="btn ghost" data-msguid="${uid}" style="padding:5px 10px;font-size:12px;">💬</button>
+  </div>`).join('');
+  box.querySelectorAll('.search-av').forEach(av=>_avatarBgFix(av, box.querySelector(`[data-sav="${av.dataset.sav}"]`).closest('[data-prow]').dataset.puid));
+  box.querySelectorAll('[data-prow]').forEach(el=>{
+    el.onclick=(e)=>{
+      if(e.target.closest('[data-msguid]')) return;
+      openProfileView(el.dataset.puid);
+    };
+  });
+  box.querySelectorAll('[data-msguid]').forEach(btn=>{
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      const uid=btn.dataset.msguid;
+      const p=_ppCache[uid]||{};
+      openThread(pairOf(currentUser.uid,uid), uid, p.username||'?');
+    };
   });
 }
 
-function _socialRenderInbox(){
-  const box=document.getElementById('socialChat'); if(!box) return;
-  const items=_socialSortedItems();
-  if(!items.length){
-    box.innerHTML='<div class="empty" style="padding:14px 0;text-align:center;">💬<br>Aucun partage reçu pour l\'instant.<br><span style="font-size:12px;color:var(--ash);">Les partages qu\'on t\'envoie arrivent ici, comme des messages.</span></div>';
-    return;
-  }
-  const unread=items.filter(it=>!_socialIsRead(it.id)).length;
-  const head=`<div style="font-size:12px;color:var(--ash);margin:0 0 10px 2px;">${items.length} message(s)${unread?` · <span style="color:var(--ember);font-weight:700;">${unread} non lu(s)</span>`:''}</div>`;
-  box.innerHTML=head+items.map((it,i)=>{
-    const d=it.data||{};
-    const desc=_shareDescribe(d.bundle)||{title:'?',lines:[]};
-    const color=_shareAvatarColor(d.fromUsername);
-    const initials=String(d.fromUsername||'?').slice(0,1).toUpperCase();
+/* ── Vue discussion (chat) ── */
+async function openThread(pk, otherUid, otherUsername, keepPanel){
+  if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
+  _currentThread={pk, otherUid, otherUsername:String(otherUsername||'?')};
+  _threadMarkRead(pk);
+  document.getElementById('socialMain').style.display='none';
+  document.getElementById('socialProfileView').style.display='none';
+  const panel=document.getElementById('socialThreadView');
+  panel.style.display='block';
+  await loadPublicProfiles();
+  const p=_ppCache[otherUid]||{};
+  panel.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 12px;">
+      <button class="btn ghost" id="threadBackBtn" style="padding:6px 12px;">‹</button>
+      <div id="threadAvatar" style="flex-shrink:0;">${_avatarHtml(otherUid,36,_currentThread.otherUsername)}</div>
+      <div style="flex:1;min-width:0;cursor:pointer;" id="threadHeadName">
+        <div style="font-weight:700;font-size:14px;">@${_progEsc(_currentThread.otherUsername)}</div>
+        <div style="font-size:11px;color:var(--ash);">❤️ ${p.likes||0} · discussion</div>
+      </div>
+      <button class="btn ghost" id="threadLikeBtn" style="padding:6px 12px;">❤️ ${p.likes||0}</button>
+    </div>
+    <div id="threadMessages" style="display:flex;flex-direction:column;gap:10px;padding:4px 0 90px;min-height:200px;"><div style="text-align:center;color:var(--ash);font-size:12px;">Chargement…</div></div>
+    <div style="position:sticky;bottom:0;background:var(--bg);padding:8px 0 calc(8px + env(safe-area-inset-bottom));display:flex;gap:8px;">
+      <button class="btn ghost" id="threadAttachBtn" style="padding:10px 12px;">📎</button>
+      <input id="threadMsgInput" placeholder="Message…" maxlength="500" autocomplete="off" style="flex:1;min-width:0;padding:11px 12px;border-radius:20px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);font-size:14px;">
+      <button class="btn primary" id="threadSendBtn" style="padding:10px 16px;border-radius:20px;">➤</button>
+    </div>`;
+  const av=document.getElementById('threadAvatar');
+  if(av) _avatarBgFix(av, otherUid);
+  document.getElementById('threadBackBtn').onclick=()=>_navClose(closeThreadView);
+  document.getElementById('threadHeadName').onclick=()=>openProfileView(otherUid);
+  document.getElementById('threadLikeBtn').onclick=()=>toggleLikeProfile(otherUid).then(()=>openThreadRefreshHeader());
+  document.getElementById('threadSendBtn').onclick=sendThreadInput;
+  document.getElementById('threadMsgInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendThreadInput(); } });
+  document.getElementById('threadAttachBtn').onclick=()=>{
+    _shareThreadTarget={pk, otherUid, otherUsername:_currentThread.otherUsername};
+    openShareOverlay('menu');
+  };
+  renderThreadMessages();
+}
+function openThreadRefreshHeader(){
+  if(!_currentThread) return;
+  const p=_ppCache[_currentThread.otherUid]||{};
+  const btn=document.getElementById('threadLikeBtn');
+  if(btn) btn.textContent='❤️ '+(p.likes||0);
+}
+function closeThreadView(){
+  _currentThread=null;
+  const panel=document.getElementById('socialThreadView');
+  if(panel){ panel.style.display='none'; panel.innerHTML=''; }
+  document.getElementById('socialMain').style.display='block';
+}
+async function sendThreadInput(){
+  if(!_currentThread) return;
+  const input=document.getElementById('threadMsgInput');
+  const btn=document.getElementById('threadSendBtn');
+  const txt=(input.value||'').trim();
+  if(!txt) return;
+  input.value=''; btn.disabled=true;
+  try{
+    await sendThreadMessage(_currentThread.pk, _currentThread.otherUid, _currentThread.otherUsername, {text:txt});
+    await renderThreadMessages();
+    renderSocialHome(true);
+  }catch(e){ forgeToast('Envoi impossible : '+((e&&e.message)||'?')); input.value=txt; }
+  btn.disabled=false;
+}
+async function renderThreadMessages(){
+  if(!_currentThread) return;
+  const box=document.getElementById('threadMessages');
+  if(!box) return;
+  let msgs=[];
+  try{ msgs=await fbListInboxItems('threads/'+_currentThread.pk+'/messages'); }
+  catch(e){ box.innerHTML='<div style="text-align:center;color:var(--danger);font-size:12px;">Impossible de charger : '+_progEsc((e&&e.message)||'?')+'</div>'; return; }
+  msgs.sort((a,b)=>String((a.data&&a.data.createdAt)||'').localeCompare(String((b.data&&b.data.createdAt)||'')));
+  if(!msgs.length){ box.innerHTML='<div style="text-align:center;color:var(--ash);font-size:12px;padding:20px 0;">Dis quelque chose 👋</div>'; return; }
+  box.innerHTML=msgs.map((m,i)=>{
+    const d=m.data||{};
+    const mine=d.from===currentUser.uid;
     const date=d.createdAt?new Date(d.createdAt):null;
     const dateTxt=date?date.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '+date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
-    const isSession=d.kind==='session';
-    const unread=!_socialIsRead(it.id);
-    const open=_socialOpenIdx===i;
-    return `<div data-smsg="${i}" style="margin-bottom:14px;">
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <div style="width:36px;height:36px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;">${_progEsc(initials)}</div>
-        <div style="flex:1;min-width:0;background:var(--surface2);border:1px solid ${unread?'var(--ember)':'var(--border)'};border-radius:4px 16px 16px 16px;padding:12px 14px;${unread?'box-shadow:0 0 0 1px var(--ember);':''}">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
-            <span style="font-weight:700;font-size:13px;">${unread?'<span style="color:var(--ember);">●</span> ':''}@${_progEsc(String(d.fromUsername||'?'))}</span>
-            ${dateTxt?`<span style="font-size:10px;color:var(--ash);flex-shrink:0;">${dateTxt}</span>`:''}
-          </div>
-          <div style="font-size:13px;color:var(--chalk);margin-top:4px;">t'a envoyé ${_shareKINDLabel(d.kind)}</div>
-          <div style="font-size:13px;color:var(--ash);margin-top:2px;">${_progEsc(desc.title)}${desc.lines.length?' · '+_progEsc(desc.lines.join(' · ')):''}</div>
-          ${d.message?`<div style="font-size:13px;color:var(--chalk);margin-top:8px;padding:10px 12px;background:var(--surface);border-radius:12px;border:1px solid var(--border);">« ${_progEsc(String(d.message))} »</div>`:''}
-          ${open?`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-            <button class="btn primary" data-sadd="${i}" style="flex:2;min-width:120px;padding:9px 10px;font-size:13px;">➕ ${isSession?'Ajouter à mes séances':'Ajouter'}</button>
-            <button class="btn ghost" data-sreply="${i}" style="flex:1;min-width:90px;padding:9px 10px;font-size:13px;">↩️ Répondre</button>
-            <button class="btn ghost" data-strash="${i}" style="flex:1;min-width:90px;padding:9px 10px;font-size:13px;">🗑 Corbeille</button>
-          </div>`:''}
-        </div>
+    let content='';
+    if(d.bundle){
+      const desc=_shareDescribe(d.bundle)||{title:'?',lines:[]};
+      content=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-top:4px;">
+        <div style="font-weight:700;font-size:13px;">📤 ${_progEsc(desc.title)}</div>
+        ${desc.lines.map(l=>`<div style="font-size:12px;color:var(--ash);">${_progEsc(l)}</div>`).join('')}
+        <button class="btn primary" data-tadd="${i}" style="margin-top:8px;padding:7px 12px;font-size:12px;">➕ Ajouter</button>
+      </div>`;
+    } else {
+      content=`<div style="font-size:14px;word-wrap:break-word;">${_progEsc(String(d.text||''))}</div>`;
+    }
+    if(mine){
+      return `<div style="align-self:flex-end;max-width:82%;background:var(--ember);color:#1a0d05;border-radius:16px 4px 16px 16px;padding:10px 14px;" data-tmsg="${i}">${content}<div style="font-size:9px;opacity:.7;margin-top:4px;text-align:right;">${dateTxt}</div></div>`;
+    }
+    return `<div style="align-self:flex-start;max-width:82%;display:flex;gap:8px;align-items:flex-end;" data-tmsg="${i}">
+      <div class="msg-av" data-mav="${i}" style="flex-shrink:0;">${_avatarHtml(d.from,28,d.fromU)}</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px 16px 16px 16px;padding:10px 14px;min-width:0;">
+        <div style="font-weight:700;font-size:11px;color:var(--ember);">@${_progEsc(String(d.fromU||'?'))}</div>
+        ${content}
+        <div style="font-size:9px;color:var(--ash);margin-top:4px;">${dateTxt}</div>
       </div>
     </div>`;
   }).join('');
-  box.querySelectorAll('[data-smsg]').forEach(el=>{
-    el.onclick=()=>{
-      const i=+el.dataset.smsg;
-      _socialOpenIdx=(_socialOpenIdx===i)?-1:i;
-      if(items[i]&&items[i].id) _socialMarkRead(items[i].id);
-      _socialRenderInbox();
-    };
-  });
-  box.querySelectorAll('[data-sadd]').forEach(btn=>{
-    btn.onclick=(e)=>{
-      e.stopPropagation();
-      const it=_socialInbox.find(x=>x.id===items[+btn.dataset.sadd].id)||items[+btn.dataset.sadd];
-      if(!it||!it.data||!it.data.bundle) return;
-      _shareState={step:'import-review', context:{bundle:it.data.bundle, inboxItem:it}};
+  box.querySelectorAll('.msg-av').forEach(av=>_avatarBgFix(av, (msgs[+av.dataset.mav].data||{}).from));
+  box.querySelectorAll('[data-tadd]').forEach(btn=>{
+    btn.onclick=()=>{
+      const m=msgs[+btn.dataset.tadd];
+      if(!m||!m.data||!m.data.bundle) return;
+      _shareState={step:'import-review', context:{bundle:m.data.bundle}};
       _shareHistory=[];
       document.getElementById('shareOverlay').classList.add('open');
       _navPush(_closeShareOverlay);
       _shareRender();
     };
   });
-  box.querySelectorAll('[data-sreply]').forEach(btn=>{
-    btn.onclick=(e)=>{
-      e.stopPropagation();
-      const d=(items[+btn.dataset.sreply].data)||{};
-      _shareReplyTo=String(d.fromUsername||'')||null;
-      openShareOverlay('menu');
-      if(_shareReplyTo) forgeToast('Réponse à @'+_shareReplyTo+' — choisis ce que tu veux envoyer');
-    };
-  });
-  box.querySelectorAll('[data-strash]').forEach(btn=>{
-    btn.onclick=(e)=>{
-      e.stopPropagation();
-      const it=_socialInbox.find(x=>x.id===items[+btn.dataset.strash].id)||items[+btn.dataset.strash];
-      if(it) _socialTrashItem(it);
-    };
-  });
+  _threadMarkRead(_currentThread.pk);
+  renderSocialThreadList();
 }
 
-async function _socialTrashItem(it){
-  const key=currentPublicProfile&&currentPublicProfile.key;
-  const trash=_socialGetTrash();
-  trash.push({id:it.id, path:it.path, data:it.data, trashedAt:new Date().toISOString()});
-  _socialSetTrash(trash);
-  try{ if(key&&it.id) await fbDeleteDocumentAllowed('inbox/'+key+'/items/'+it.id); }catch(e){}
-  _socialInbox=_socialInbox.filter(x=>x.id!==it.id);
-  _socialOpenIdx=-1;
-  _socialRenderInbox();
-  forgeToast('Mis à la corbeille — restaurable depuis 🗑');
-}
-
-function _socialRenderTrash(){
-  const cnt=document.getElementById('socialTrashCount'); if(cnt) cnt.textContent=_socialGetTrash().length;
-  const box=document.getElementById('socialTrashBox'); if(!box) return;
-  const trash=_socialGetTrash().slice().reverse();
-  if(!trash.length){
-    box.innerHTML='<div class="settings-card"><div style="font-size:12px;color:var(--ash);text-align:center;padding:6px 0;">La corbeille est vide.</div></div>';
-    return;
-  }
-  box.innerHTML='<div class="settings-card">'+trash.map((t,i)=>{
-    const d=t.data||{};
-    const date=t.trashedAt?new Date(t.trashedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}):'';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
-      <div style="min-width:0;">
-        <div style="font-size:13px;">@${_progEsc(String(d.fromUsername||'?'))} · ${_progEsc((_shareDescribe(d.bundle)||{title:'?'}).title)}</div>
-        <div style="font-size:11px;color:var(--ash);">mis de côté ${_progEsc(date)}</div>
+/* ── Vue profil public ── */
+async function openProfileView(uid){
+  if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
+  await loadPublicProfiles();
+  const p=_ppCache[uid]||{};
+  _profileViewUid=uid;
+  const me=uid===currentUser.uid;
+  const liked=((p.likedBy)||[]).includes(currentUser.uid);
+  document.getElementById('socialMain').style.display='none';
+  document.getElementById('socialThreadView').style.display='none';
+  const panel=document.getElementById('socialProfileView');
+  panel.style.display='block';
+  const prsList=(p.showPRs&&Array.isArray(p.prsSummary))?p.prsSummary:[];
+  panel.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 16px;">
+      <button class="btn ghost" id="profileBackBtn" style="padding:6px 12px;">‹</button>
+      <div style="font-weight:700;font-size:14px;">${me?'Mon profil':'Profil'}</div>
+    </div>
+    <div class="settings-card" style="text-align:center;padding:22px 14px;">
+      <div id="pvAvatar" style="display:flex;justify-content:center;margin-bottom:10px;">${_avatarHtml(uid,84,p.username)}</div>
+      ${me?'<button class="btn ghost" id="pvPhotoBtn" style="padding:6px 12px;font-size:12px;margin-bottom:6px;">📷 Changer ma photo</button>':''}
+      ${me&&p.photoIsCustom?'<button class="btn ghost" id="pvGooglePhotoBtn" style="padding:6px 12px;font-size:12px;margin-bottom:6px;">↩︎ Reprendre ma photo Google</button>':''}
+      <div style="font-weight:700;font-size:17px;">@${_progEsc(String(p.username||'?'))}</div>
+      <div style="font-size:13px;color:var(--ash);margin-top:4px;">❤️ ${p.likes||0} j'aime</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+        ${me?'':`<button class="btn ${liked?'ghost':'primary'}" id="pvLikeBtn" style="padding:9px 16px;">${liked?'❤️ Je n\'aime plus':'🤍 J\'aime'}</button>`}
+        ${me?'':`<button class="btn primary" id="pvMsgBtn" style="padding:9px 16px;">💬 Message</button>`}
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;">
-        <button class="btn ghost" data-trestore="${i}" style="padding:6px 10px;font-size:12px;">Restaurer</button>
-        <button class="btn ghost" data-tdel="${i}" style="padding:6px 10px;font-size:12px;color:var(--danger);">✕</button>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">🏆 Records perso</div>
+      <div class="settings-card">
+        ${me&&!p.showPRs?'<div style="font-size:12px;color:var(--ash);">Cachés — active « 🏋️ Afficher mes records perso » dans ⚙️ Réglages pour les montrer.</div>':''}
+        ${(!me&&!p.showPRs)?'<div style="font-size:12px;color:var(--ash);">@'+_progEsc(String(p.username||'?'))+' ne montre pas ses records.</div>':''}
+        ${(p.showPRs&&prsList.length)?prsList.map(pr=>{
+          const unitTxt=pr.unit==='s'?' s':(pr.unit==='kg'?' kg':(pr.unit&&pr.unit!=='reps'?' '+_progEsc(String(pr.unit)):''));
+          return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--border);font-size:13px;"><span>${_progEsc(pr.exercise)}</span><span style="font-weight:700;">${_progEsc(String(pr.value))}${unitTxt}</span></div>`;
+        }).join(''):''}
+        ${(p.showPRs&&!prsList.length)?'<div style="font-size:12px;color:var(--ash);">Aucun record enregistré.</div>':''}
       </div>
     </div>`;
-  }).join('')+'</div>';
-  box.querySelectorAll('[data-trestore]').forEach(b=>{
-    b.onclick=async()=>{
-      const arr=_socialGetTrash().slice().reverse();
-      const t=arr[+b.dataset.trestore]; if(!t) return;
-      const key=currentPublicProfile&&currentPublicProfile.key;
-      if(key){
-        try{ await fbSetDocument('inbox/'+key+'/items/'+t.id, t.data); }
-        catch(e){ forgeToast('Restauration impossible'); return; }
-      }
-      _socialSetTrash(_socialGetTrash().filter(x=>x.id!==t.id));
-      renderSocialChat(true);
-      forgeToast('Message restauré ✓');
-    };
-  });
-  box.querySelectorAll('[data-tdel]').forEach(b=>{
-    b.onclick=()=>{
-      const arr=_socialGetTrash().slice().reverse();
-      const t=arr[+b.dataset.tdel]; if(!t) return;
-      _socialSetTrash(_socialGetTrash().filter(x=>x.id!==t.id));
-      forgeToast('Supprimé définitivement');
-    };
-  });
+  const av=document.getElementById('pvAvatar');
+  if(av) _avatarBgFix(av, uid);
+  document.getElementById('profileBackBtn').onclick=()=>_navClose(closeProfileView);
+  const likeBtn=document.getElementById('pvLikeBtn');
+  if(likeBtn) likeBtn.onclick=async()=>{ await toggleLikeProfile(uid); openProfileView(uid); };
+  const msgBtn=document.getElementById('pvMsgBtn');
+  if(msgBtn) msgBtn.onclick=()=>openThread(pairOf(currentUser.uid,uid), uid, p.username||'?');
+  const photoBtn=document.getElementById('pvPhotoBtn');
+  if(photoBtn) photoBtn.onclick=()=>{ const inp=document.getElementById('socialPhotoInput'); if(inp){ inp.value=''; inp.click(); } };
+  const gBtn=document.getElementById('pvGooglePhotoBtn');
+  if(gBtn) gBtn.onclick=async()=>{
+    try{
+      const base=_ppCache[currentUser.uid]||{};
+      const next={...base, photoIsCustom:false};
+      await fbSetDocument('publicProfiles/'+currentUser.uid, _profileDocForWrite(next));
+      _ppCache[currentUser.uid]={...next, ..._profileDocForWrite(next)};
+      forgeToast('Photo Google remise ✓');
+      openProfileView(currentUser.uid); renderSocialMyCard();
+    }catch(e){ forgeToast('Impossible : '+((e&&e.message)||'?')); }
+  };
+}
+function closeProfileView(){
+  _profileViewUid=null;
+  const panel=document.getElementById('socialProfileView');
+  if(panel){ panel.style.display='none'; panel.innerHTML=''; }
+  document.getElementById('socialMain').style.display='block';
+  renderSocialMyCard();
 }
 
-/* ── Notifications des messages (utiles sur l'APK) : quand un partage
-   arrive et que l'option est activée, une notification système s'affiche. ── */
+/* ── Likes ── */
+async function toggleLikeProfile(uid){
+  if(!currentUser) return;
+  if(uid===currentUser.uid){ forgeToast('On ne like pas son propre profil 😄'); return; }
+  try{
+    await loadPublicProfiles();
+    const p=_ppCache[uid];
+    if(!p) throw new Error('Profil introuvable.');
+    const likedBy=(p.likedBy||[]).slice();
+    const had=likedBy.includes(currentUser.uid);
+    if(had) likedBy.splice(likedBy.indexOf(currentUser.uid),1); else likedBy.push(currentUser.uid);
+    await fbMergeDocument('publicProfiles/'+uid, {likes:likedBy.length, likedBy});
+    _ppCache[uid]={...p, likes:likedBy.length, likedBy};
+    forgeToast(had?'Like retiré':'❤️ Liké !');
+  }catch(e){ forgeToast('Like impossible : '+((e&&e.message)||'?')); }
+}
+
+/* ── Photo de profil personnalisée ── */
+async function handlePhotoFile(file){
+  if(!file||!currentUser) return;
+  try{
+    const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+    const img=await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=dataUrl; });
+    const side=220, canvas=document.createElement('canvas');
+    canvas.width=side; canvas.height=side;
+    const ctx=canvas.getContext('2d');
+    const s=Math.min(img.width||side, img.height||side, side*10);
+    ctx.drawImage(img,((img.width||s)-s)/2,((img.height||s)-s)/2,s,s,0,0,side,side);
+    const out=canvas.toDataURL('image/jpeg',0.85);
+    if(out.length>180000){ forgeToast('Photo trop lourde, essaie une plus petite'); return; }
+    const base=_ppCache[currentUser.uid]||{};
+    const next={...base, photoURL:out, photoIsCustom:true};
+    const doc=_profileDocForWrite(next);
+    await fbSetDocument('publicProfiles/'+currentUser.uid, doc);
+    _ppCache[currentUser.uid]=doc;
+    forgeToast('Photo de profil mise à jour ✓');
+    renderSocialMyCard();
+    if(_profileViewUid===currentUser.uid) openProfileView(currentUser.uid);
+  }catch(e){ forgeToast('Photo impossible : '+((e&&e.message)||'?')); }
+}
+
+/* ── Notifications (APK) des nouveaux messages ── */
 let msgNotifEnabled=false;
-function _socialNotifyNew(items){
+function _threadNotifyNew(threads){
   if(!msgNotifEnabled||!isNativePlatform()) return;
   const LN=getLN(); if(!LN) return;
-  const notified=_socialIdSet(_SOCIAL_NOTIF_KEY);
-  const fresh=(items||[]).filter(it=>it&&it.id&&!notified.includes(it.id));
-  if(!fresh.length) return;
-  fresh.forEach(it=>{
-    const d=it.data||{};
-    const desc=_shareDescribe(d.bundle)||{title:''};
-    let idNum=0; String(it.id).split('').forEach(ch=>{ idNum=(idNum*31+ch.charCodeAt(0))>>>0; });
+  const notified=_threadMap(_THREAD_NOTIF_KEY);
+  let changed=false;
+  (threads||[]).forEach(t=>{
+    const d=t.data||{};
+    const pk=d.pair||t.id;
+    if(d.lastFrom===currentUser.uid||!d.lastAt) return;
+    const lastMs=Date.parse(d.lastAt)||0;
+    if(lastMs<=(notified[pk]||0)) return;
+    notified[pk]=lastMs; changed=true;
     try{
       LN.schedule({notifications:[{
-        id: 430000 + (idNum % 9999),
-        title: 'FORGE 💬 @'+String(d.fromUsername||'?'),
-        body: (d.message?'« '+d.message+' » — ':'')+'t\'a envoyé '+_shareKINDLabel(d.kind)+(desc.title?' : '+desc.title:''),
-        channelId: FORGE_NOTIF_CHANNEL
+        id: 440000 + (String(pk).split('').reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7) % 9999),
+        title:'FORGE 💬 @'+String(d.otherUsername||'?'),
+        body:String(d.lastText||'Nouveau message'),
+        channelId:FORGE_NOTIF_CHANNEL
       }]}).catch(()=>{});
     }catch(e){}
-    notified.push(it.id);
   });
-  _socialSaveIdSet(_SOCIAL_NOTIF_KEY, notified);
+  if(changed) _threadMapSet(_THREAD_NOTIF_KEY, notified);
 }
 async function initMsgNotifSetting(){
   msgNotifEnabled=await sGet('forge-notif-msg', false);
@@ -10083,29 +10455,71 @@ async function initMsgNotifSetting(){
     forgeToast(msgNotifEnabled?'Notifications des messages activées':'Notifications des messages désactivées');
   });
 }
+/* Options de confidentialité (Réglages) */
+async function initSocialSettingToggles(){
+  await loadPublicProfiles();
+  const me=_ppCache[currentUser&&currentUser.uid]||{};
+  const prsTog=document.getElementById('showPRsToggle');
+  const invTog=document.getElementById('invisibleToggle');
+  if(prsTog){ prsTog.checked=!!me.showPRs; prsTog.onchange=async()=>{
+    if(!currentUser){ prsTog.checked=false; forgeToast('Connecte-toi d\'abord'); return; }
+    try{ const doc=await syncMyPublicProfileWith({showPRs:prsTog.checked}); forgeToast(prsTog.checked?'Records visibles sur ton profil ✓':'Records cachés ✓'); }catch(e){ prsTog.checked=!prsTog.checked; forgeToast('Impossible : '+((e&&e.message)||'?')); }
+  }; }
+  if(invTog){ invTog.checked=!!me.invisible; invTog.onchange=async()=>{
+    if(!currentUser){ invTog.checked=false; forgeToast('Connecte-toi d\'abord'); return; }
+    try{ await syncMyPublicProfileWith({invisible:invTog.checked}); forgeToast(invTog.checked?'Ton compte est invisible dans la recherche':'Ton compte est visible ✓'); }catch(e){ invTog.checked=!invTog.checked; forgeToast('Impossible : '+((e&&e.message)||'?')); }
+  }; }
+}
+async function syncMyPublicProfileWith(patch){
+  const ref='publicProfiles/'+currentUser.uid;
+  let base=null;
+  try{ base=await fbGetDocument(ref); }catch(e){}
+  const doc=_profileDocForWrite({...base, ...(patch||{})});
+  await fbSetDocument(ref, doc);
+  _ppCache[currentUser.uid]=doc;
+  if(_profileViewUid===currentUser.uid) openProfileView(currentUser.uid);
+  renderSocialMyCard();
+  return doc;
+}
 
+/* ── Câblage ── */
+function openSettingsOverlay(){
+  const el=document.getElementById('view-settings');
+  if(!el||el.classList.contains('overlay-open')) return;
+  // On sort la vue du track (transformé) pour que position:fixed couvre bien l'écran
+  if(el.parentElement!==document.body) document.body.appendChild(el);
+  el.classList.add('overlay-open');
+  el.scrollTop=0;
+  _navPush(closeSettingsOverlay);
+  initSocialSettingToggles();
+}
+function closeSettingsOverlay(){
+  const el=document.getElementById('view-settings');
+  if(el) el.classList.remove('overlay-open');
+}
 document.getElementById('socialGearBtn').onclick=openSettingsOverlay;
 document.getElementById('settingsCloseBtn').onclick=()=>_navClose(closeSettingsOverlay);
-document.getElementById('socialSendBtn').onclick=()=>openShareOverlay('menu');
-document.getElementById('socialRefreshBtn').onclick=()=>renderSocialChat(true);
-document.getElementById('socialTrashTitle').onclick=()=>{
-  const box=document.getElementById('socialTrashBox');
-  const chev=document.getElementById('socialTrashChevron');
-  const show=box.style.display==='none';
-  box.style.display=show?'block':'none';
-  if(chev) chev.textContent=show?'masquer':'afficher';
-  if(show) _socialRenderTrash();
-};
-// Nouveaux messages sur l'APK : vérification légère pendant que l'app est ouverte
+document.getElementById('socialRefreshBtn').onclick=()=>renderSocialHome(true);
+let _searchTimer=null;
+document.getElementById('socialSearchInput').addEventListener('input',()=>{
+  clearTimeout(_searchTimer);
+  _searchTimer=setTimeout(renderSocialSearchResults, 250);
+});
+document.getElementById('socialPhotoInput').addEventListener('change',(e)=>{ handlePhotoFile(e.target.files&&e.target.files[0]); });
+// Vérification légère des nouveaux messages pendant que l'app est ouverte (APK)
 setInterval(()=>{
-  if(msgNotifEnabled&&isNativePlatform()&&document.visibilityState!=='hidden'&&currentUser) renderSocialChat(true);
+  if(!msgNotifEnabled||!isNativePlatform()||document.visibilityState==='hidden'||!currentUser) return;
+  listMyThreads().then(ts=>{ _myThreads=ts; _threadNotifyNew(ts); renderSocialThreadList(); if(_currentThread) renderThreadMessages(); }).catch(()=>{});
 }, 60000);
-// Au démarrage : option notifs, compteur corbeille, chat si Social est l'onglet initial
+// Au démarrage : options, carte, discussions si Social est l'onglet initial
 _forgeDataReadyPromise.then(()=>{
   initMsgNotifSetting();
-  _socialRenderTrash();
-  if(VIEW_ORDER[currentViewIdx]==='social') renderSocialChat();
+  initSocialSettingToggles();
+  renderSocialSearchResults();
+  if(VIEW_ORDER[currentViewIdx]==='social') renderSocialHome();
 });
+/* Alias : certains endroits plus anciens appellent renderSocialChat */
+const renderSocialChat = renderSocialHome;
 
 /* ================================================================
    INIT

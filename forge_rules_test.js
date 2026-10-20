@@ -62,6 +62,47 @@ function userDb(uid, claims){
   // 9. message facultatif valide -> autorisé ; script/js dans message reste permis (champ texte)
   const browser = require('@firebase/rules-unit-testing').assertSucceeds;
   await browser(b.doc('inbox/'+userKey+'/items/shr5').set({to:userKey, fromUid:'uidB', fromUsername:'PlayerB', kind:'profile', message:'voila mon profil', bundle:{kind:'profile'}, createdAt:new Date().toISOString()}));
+
+  // ── 10. Profils publics : liste par connecté, like par un autre compte ──
+  await assertSucceeds(b.collection('publicProfiles').get());           // list autorisé aux connectés
+  await assertFails(g.collection('publicProfiles').get());              // pas aux invités
+  // B like le profil de A : uniquement likes/likedBy, cohérence imposée
+  await assertSucceeds(b.doc('publicProfiles/uidA').set({likes:1, likedBy:['uidB']}, {merge:true}));
+  // tentative de triche : B réécrit le pseudo via un "like" -> refusé
+  await assertFails(b.doc('publicProfiles/uidA').set({likes:2, likedBy:['uidB'], username:'Hack'}, {merge:true}));
+  // A se met à jour lui-même (photo/confidentialité) -> autorisé
+  await assertSucceeds(a.doc('publicProfiles/uidA').set({uid:'uidA',username:'PlayerA',key:userKey,photoURL:'',photoIsCustom:false,showPRs:true,invisible:false,likes:1,likedBy:['uidB'],prsSummary:[]}, {merge:true}));
+
+  // ── 11. Discussions : threads + messages + miroirs ──
+  const pk = 'uidA__uidB';
+  const C = env.authenticatedContext('uidC', { email: 'c@x.y', email_verified: true });
+  const c = C.firestore();
+  // création du thread par A (paire triée, participants valides)
+  await assertSucceeds(a.doc('threads/'+pk).set({participants:['uidA','uidB'], createdAt:new Date().toISOString()}));
+  // message de A puis réponse de B (avec partage)
+  await assertSucceeds(a.doc('threads/'+pk).collection('messages').doc('m1').set({from:'uidA', fromU:'PlayerA', createdAt:new Date().toISOString(), text:'salut'}));
+  await assertSucceeds(b.doc('threads/'+pk).collection('messages').doc('m2').set({from:'uidB', fromU:'PlayerB', createdAt:new Date().toISOString(), text:'yo', bundle:{kind:'profile'}}));
+  // les deux participants lisent
+  await assertSucceeds(a.doc('threads/'+pk).collection('messages').get());
+  await assertSucceeds(b.doc('threads/'+pk).collection('messages').get());
+  // un invité / un tiers ne peuvent pas lire ni écrire
+  await assertFails(g.doc('threads/'+pk).get());
+  await assertFails(c.doc('threads/'+pk).collection('messages').get());
+  await assertFails(c.doc('threads/'+pk).collection('messages').doc('m3').set({from:'uidC', fromU:'PlayerC', createdAt:new Date().toISOString(), text:'hack'}));
+  // usurpation d'expéditeur -> refusé
+  await assertFails(b.doc('threads/'+pk).collection('messages').doc('m4').set({from:'uidA', fromU:'PlayerA', createdAt:new Date().toISOString(), text:'fake'}));
+  // paire forgée (pas triée / sans moi) -> refusé
+  await assertFails(a.doc('threads/uidB__uidC').set({participants:['uidB','uidC'], createdAt:new Date().toISOString()}));
+  await assertFails(b.doc('threads/uidA__uidC').set({participants:['uidA','uidC'], createdAt:new Date().toISOString()}));
+  // miroirs : chaque participant écrit son miroir et celui de l'autre
+  await assertSucceeds(a.doc('userThreads/uidA/threads/'+pk).set({pair:pk, other:'uidB', otherUsername:'PlayerB', lastAt:new Date().toISOString(), lastText:'salut', lastFrom:'uidA'}));
+  await assertSucceeds(a.doc('userThreads/uidB/threads/'+pk).set({pair:pk, other:'uidA', otherUsername:'PlayerA', lastAt:new Date().toISOString(), lastText:'salut', lastFrom:'uidA'}));
+  // un tiers ne peut pas écrire le miroir de A
+  await assertFails(c.doc('userThreads/uidA/threads/'+pk).set({pair:pk, other:'uidC', otherUsername:'PlayerC', lastAt:new Date().toISOString(), lastText:'x', lastFrom:'uidC'}));
+  // un tiers ne peut pas lister les discussions de A ; A oui
+  await assertFails(c.collection('userThreads/uidA/threads').get());
+  await assertSucceeds(a.collection('userThreads/uidA/threads').get());
+
   console.log('TOUTES LES RÈGLES SONT CONFORMES ✓');
   await env.cleanup();
   process.exit(0);

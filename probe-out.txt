@@ -1,0 +1,11 @@
+=== 2026-10-20 14:47:17Probe start
+ls: /Volumes/PC/: Operation not permitted
+total 0
+=== try mkdir
+mkdir: /Volumes/PC/.opencode-downloads: Operation not permitted
+mkdir exit: 1
+ls: /Volumes/PC/: Operation not permitted
+total 0
+=== Xcode
+ls: /Volumes/Xcode/: Operation not permitted
+total 0

@@ -1,6 +1,6 @@
 {
-  "versionCode": 48,
-  "versionName": "109.73",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.73/forge-android-v109.73.apk",
-  "releaseNotes": "Correction du démarrage : le profil et les séances du Tracker réapparaissent (rendu trop tôt par la v109.72). Ordre d'onglets conservé."
+  "versionCode": 50,
+  "versionName": "109.75",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.75/forge-android-v109.75.apk",
+  "releaseNotes": "Navigation corrigée quand l'onglet Timer est masqué (les vues et l'onglet actif ne se décalent plus). Ordre personnalisé conservé quand le Timer est caché. Bouton Partager retiré des profils du sélecteur."
 }

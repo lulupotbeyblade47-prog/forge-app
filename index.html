@@ -3221,14 +3221,13 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
         </div>
         <div class="settings-row">
           <div class="settings-row-left">
-            <div class="settings-row-label">⏱️ Afficher l'onglet Timer</div>
-            <div class="settings-row-sub">Désactivé, l'onglet disparaît de la barre du bas</div>
+            <div class="settings-row-label">⏱️ Onglet Timer</div>
+            <div class="settings-row-sub" id="timerTabChoiceSub">Choisis où le Timer s'affiche</div>
           </div>
-          <div class="toggle-wrap">
-            <label class="toggle">
-              <input type="checkbox" id="timerTabToggle">
-              <span class="toggle-slider"></span>
-            </label>
+          <div id="timerTabChoices" style="display:flex;gap:6px;flex-shrink:0;">
+            <button type="button" data-tchoice="on" style="font-size:10.5px;font-weight:700;padding:7px 10px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--chalk);cursor:pointer;white-space:nowrap;">Activer</button>
+            <button type="button" data-tchoice="off-here" style="font-size:10.5px;font-weight:700;padding:7px 10px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--chalk);cursor:pointer;white-space:nowrap;">Ici seulement</button>
+            <button type="button" data-tchoice="off-all" style="font-size:10.5px;font-weight:700;padding:7px 10px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--chalk);cursor:pointer;white-space:nowrap;">Partout</button>
           </div>
         </div>
       </div>
@@ -3266,7 +3265,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.73 · correction démarrage (tracker vide)</div>
+    <div class="settings-version">FORGE · v109.75 · navigation corrigée sans Timer</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3813,7 +3812,7 @@ async function sGet(key, fallback){
     return raw !== null ? JSON.parse(raw) : fallback;
   }catch(e){ return fallback; }
 }
-const _cloudSyncKeys = new Set(['forge-exercises','forge-logs','forge-profiles','forge-prs','forge-programs','forge-theme','forge-glass','forge-sound','forge-haptic','forge-notif-timer','forge-timer-history','forge-active-profile','forge-icon-figure','forge-icon-theme-selection','forge-icon-random-enabled','forge-icon-random-pool','forge-icon-random-interval','forge-icon-random-last-roll']);
+const _cloudSyncKeys = new Set(['forge-exercises','forge-logs','forge-profiles','forge-prs','forge-programs','forge-theme','forge-glass','forge-sound','forge-haptic','forge-notif-timer','forge-timer-history','forge-active-profile','forge-icon-figure','forge-icon-theme-selection','forge-icon-random-enabled','forge-icon-random-pool','forge-icon-random-interval','forge-icon-random-last-roll','forge-tab-order','forge-timer-global']);
 let _cloudReady = false;
 let _cloudApplying = false;
 let _cloudSyncTimer = null;
@@ -3871,7 +3870,9 @@ function goToView(idx, animate=true){
   if(!animate) track.style.transition='none';
   track.style.transform = `translateX(${-idx*100}%)`;
   if(!animate) requestAnimationFrame(()=>{ track.style.transition=''; });
-  document.querySelectorAll('.tabbtn').forEach((b,i)=> b.classList.toggle('active', i===idx));
+  // Surligner par data-view (PAS par index) : si le Timer est masqué, son
+  // bouton display:none reste dans le DOM et décalerait tout index i.
+  document.querySelectorAll('.tabbtn').forEach(b=> b.classList.toggle('active', b.dataset.view===VIEW_ORDER[idx]));
   if(VIEW_ORDER[idx]==='stats') renderStats();
   if(VIEW_ORDER[idx]==='progression') renderProgramList();
   if(VIEW_ORDER[idx]==='social') renderSocialChat();
@@ -3920,7 +3921,7 @@ function _applyTabOrder(order, preferredKey=null, deferRender=false){
     currentViewIdx = newIdx >= 0 ? newIdx : 0;
     track.style.transition='none';
     track.style.transform = `translateX(${-currentViewIdx*100}%)`;
-    document.querySelectorAll('.tabbtn').forEach((b,i)=>b.classList.toggle('active',i===currentViewIdx));
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.view===VIEW_ORDER[currentViewIdx]));
     // Android peut peindre le HTML avant d’exécuter ce script placé en bas
     // du document. Révéler les vues seulement après avoir fixé l’ordre et
     // l’index initiaux évite le flash du Minuteur pendant le démarrage.
@@ -3953,16 +3954,46 @@ const _startupTabOrder = (()=>{
 })();
 _applyTabOrder(_startupTabOrder,_startupTabOrder[0],true);
 
-/* ── Onglet Timer désactivable (Réglages > Navigation) :
-   caché = retiré de la barre et de VIEW_ORDER ; l'ordre sauvegardé
-   est conservé pour tout remettre à la réactivation. ── */
-function _timerTabVisible(){
-  try{ return JSON.parse(localStorage.getItem('forge-timer-tab'))!==false; }catch(e){ return true; }
+/* ── Onglet Timer : 3 choix (Réglages > Navigation) —
+   « Activer » : visible ici (et rallumé globalement) ;
+   « Ici seulement » : masqué sur CET appareil uniquement ;
+   « Partout » : masqué partout, mémorisé dans la sauvegarde cloud
+   (settings.timerTabEnabled) pour s'appliquer aux autres appareils. ── */
+function _timerChoice(){
+  try{ const v=JSON.parse(localStorage.getItem('forge-timer-choice')); return v==='off-here'||v==='off-all' ? v : 'on'; }catch(e){ return 'on'; }
 }
+function _timerGlobalEnabled(){
+  try{ return JSON.parse(localStorage.getItem('forge-timer-global'))!==false; }catch(e){ return true; }
+}
+function _timerTabVisible(){
+  const c=_timerChoice();
+  if(c==='off-here'||c==='off-all') return false;
+  return _timerGlobalEnabled();
+}
+function _timerChoiceUIRefresh(){
+  const c=_timerChoice();
+  const sub=document.getElementById('timerTabChoiceSub');
+  if(sub) sub.textContent = c==='on' ? 'Affiché sur cet appareil' : (c==='off-here' ? 'Masqué sur cet appareil seulement' : 'Masqué sur tous les appareils');
+  document.querySelectorAll('#timerTabChoices [data-tchoice]').forEach(b=>{
+    const active=b.dataset.tchoice===(c==='on'?'on':c);
+    b.style.background = active ? 'var(--ember-dim)' : 'var(--surface2)';
+    b.style.color = active ? 'var(--ember)' : 'var(--chalk)';
+    b.style.borderColor = active ? 'var(--ember)' : 'var(--border)';
+  });
+}
+document.querySelectorAll('#timerTabChoices [data-tchoice]').forEach(b=>{ b.onclick=()=>{ const c=b.dataset.tchoice; sSet('forge-timer-choice', c); if(c==='off-all') sSet('forge-timer-global', false); if(c==='on') sSet('forge-timer-global', true); _timerChoiceUIRefresh(); _applyTimerTabVisibility(false); forgeToast({on:'Timer affiché ✓','off-here':'Timer masqué ici ✓','off-all':'Timer masqué sur tous les appareils ✓'}[c]||'ok'); }; });
+_timerChoiceUIRefresh();
+
 function _applyTimerTabVisibility(deferRender){
   const visible=_timerTabVisible();
   const btn=document.querySelector('.tabbar [data-view="timer"]');
   if(btn) btn.style.display = visible ? '' : 'none';
+  // CRUCIAL : masquer AUSSI la vue elle-même. Le rail (views-track) est en
+  // positionnement physique : une section .view visible mais non listée dans
+  // VIEW_ORDER occupe un slot de 100vw et décale TOUTES les vues d'un cran
+  // (l'onglet Social affichait Progrès, le surlignage ne correspondait plus…).
+  const vEl=document.getElementById('view-timer');
+  if(vEl) vEl.style.display = visible ? '' : 'none';
   let order=null;
   if(visible){
     const full=['timer','tracker','stats','progression','social'].slice();
@@ -3975,7 +4006,23 @@ function _applyTimerTabVisibility(deferRender){
     }catch(e){ order=full.slice(); }
     if(!order) order=full.slice(); // ordre perso corrompu : défaut complet
   }
-  if(!order) order=VIEW_ORDER.filter(k=>k!=='timer'); // caché : retire timer
+  if(!order){
+    // caché : retire timer de l'ordre — de préférence depuis l'ordre
+    // PERSONNALISÉ sauvegardé (sinon un ordre custom est perdu tant que le
+    // Timer est masqué, jusqu'au prochain démarrage)
+    const full4=['tracker','stats','progression','social'];
+    const migrate=k=>k==='settings'?'social':k;
+    let saved=null;
+    try{
+      const raw=JSON.parse(localStorage.getItem('forge-tab-order')||'null');
+      saved=Array.isArray(raw)?raw.map(migrate):null;
+    }catch(e){}
+    if(Array.isArray(saved)){
+      const kept=saved.filter(k=>k!=='timer');
+      if(kept.length===full4.length && new Set(kept).size===full4.length && kept.every(k=>full4.includes(k))) order=kept;
+    }
+    if(!order) order=VIEW_ORDER.filter(k=>k!=='timer');
+  }
   if(order.length && (order.length!==VIEW_ORDER.length || order.some((k,i)=>k!==VIEW_ORDER[i]))){
     // deferRender : au démarrage on NE force PAS de rendu (les données ne
     // sont pas encore chargées — c'était ça qui laissait le Tracker vide).
@@ -3983,12 +4030,6 @@ function _applyTimerTabVisibility(deferRender){
     _applyTabOrder(order, VIEW_ORDER[currentViewIdx], !!deferRender);
   }
 }
-document.getElementById('timerTabToggle').addEventListener('change', function(){
-  sSet('forge-timer-tab', this.checked);
-  _applyTimerTabVisibility(false);
-  forgeToast(this.checked ? 'Onglet Timer affiché ✓' : 'Onglet Timer masqué ✓');
-});
-document.getElementById('timerTabToggle').checked = _timerTabVisible();
 _applyTimerTabVisibility(true);
 
 /* ================================================================
@@ -4091,12 +4132,15 @@ function _wireTabDrag(){
         document.removeEventListener('touchmove', onMove);
         document.removeEventListener('touchend', onEnd);
 
-        const newOrder = [...tabbar.querySelectorAll('.tabbtn')].map(b=>b.dataset.view);
-        // Si l'onglet Timer est caché, il n'est pas dans la barre : on le
-        // remet en tête de l'ordre sauvegardé pour qu'il retrouve sa place
-        // (position par défaut) à la réactivation.
-        sSet('forge-tab-order', _timerTabVisible() ? newOrder : ['timer', ...newOrder.filter(k=>k!=='timer')]);
-        _applyTabOrder(newOrder);
+        const domOrder = [...tabbar.querySelectorAll('.tabbtn')].map(b=>b.dataset.view);
+        // Si l'onglet Timer est caché, son bouton (display:none) reste dans la
+        // barre : on le remet en tête de l'ordre sauvegardé pour qu'il retrouve
+        // sa place (position par défaut) à la réactivation.
+        sSet('forge-tab-order', _timerTabVisible() ? domOrder : ['timer', ...domOrder.filter(k=>k!=='timer')]);
+        // Anticipation : appliquer directement l'ordre SANS Timer si masqué —
+        // la vue Timer (display:none) n'occupe plus de slot : lui laisser une
+        // place dans VIEW_ORDER décalerait vues et surlignage d'un cran.
+        _applyTabOrder(_timerTabVisible() ? domOrder : domOrder.filter(k=>k!=='timer'));
 
         setTimeout(()=>{ // timer 200ms
         longTimer = null; _tabDragJustHappened = false; }, 80);
@@ -5892,13 +5936,11 @@ function renderProfileDropdown(){
   const items = visibleProfiles.map(p=>{
     let delHtml = '';
     if(profiles.length>1){ delHtml = `<span class="delprofile-btn" data-delid="${p.id}" style="color:var(--danger);font-size:20px;padding:4px 10px;line-height:1;flex-shrink:0;cursor:pointer;">×</span>`; }
-    return `<div class="item ${p.id===activeProfileId?'active':''}" data-id="${p.id}" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span>${p.name}</span><span style="flex-shrink:0;"><span class="shareprofile-btn" data-shareprofile="${p.id}" title="Partager ce profil" style="color:var(--ember);font-size:17px;padding:4px 8px;line-height:1;cursor:pointer;">📤</span>${delHtml}</span></div>`;
+    return `<div class="item ${p.id===activeProfileId?'active':''}" data-id="${p.id}" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span>${p.name}</span><span style="flex-shrink:0;">${delHtml}</span></div>`;
   }).join('');
   dd.innerHTML = items + `<div class="additem" id="ddAddItem">+ Ajouter un nouveau profil</div><div class="addform" id="ddAddForm"><input type="text" id="ddNewProfileName" placeholder="Nom du profil"><button class="btn primary" id="ddConfirmAdd">OK</button></div>`;
   dd.querySelectorAll('.item').forEach(it=>{
     it.onclick = (e)=>{
-      const shareBtn = e.target.closest('.shareprofile-btn');
-      if(shareBtn){ e.stopPropagation(); const p=profiles.find(x=>x.id===shareBtn.dataset.shareprofile); const bundle=p&&_shareBundleProfile(p); if(bundle){ _flipClosePanel(dd); openShareOverlayForBundle(bundle); } return; }
       const delBtn = e.target.closest('.delprofile-btn'); if(delBtn){ e.stopPropagation(); const id = delBtn.dataset.delid; showConfirm('Supprimer ce profil ?', ()=>{ profiles = profiles.filter(p=>p.id!==id); if(activeProfileId===id) activeProfileId=profiles[0].id; sSet('forge-profiles', profiles); sSet('forge-active-profile', activeProfileId); renderProfileDropdown(); renderSeanceList(); }); return; }
       pendingDeleteProfileId = null; activeProfileId = it.dataset.id; sSet('forge-active-profile', activeProfileId); document.getElementById('profileBtnLabel').textContent = activeProfile().name; _flipClosePanel(dd); renderSeanceList(); renderStats();
     };
@@ -8582,7 +8624,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 48, name: '109.73' };
+const FORGE_INDEX_VERSION = { code: 50, name: '109.75' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -8882,6 +8924,8 @@ function buildBackupPayload(){
   return {
     exercises, logs, profiles, prs, programs, timerHistory,
     settings: { themeMode, glassEnabled, soundOn, hapticOn, notifEnabled: (!notifSupported() ? _storedNotifSetting() : notifEnabled), activeProfileId,
+      timerTabEnabled: _timerGlobalEnabled(),
+      tabOrder: _storedTabOrderRaw(),
       iconFigureKey: _storedIconPref('forge-icon-figure','planche'),
       iconThemeSelection: _storedIconPref('forge-icon-theme-selection',['auto']),
       iconRandomEnabled: _storedIconPref('forge-icon-random-enabled',false),
@@ -8894,6 +8938,9 @@ function buildBackupPayload(){
 
 function _storedNotifSetting(){
   try{ return JSON.parse(localStorage.getItem('forge-notif-timer') || 'false'); }catch(e){ return false; }
+}
+function _storedTabOrderRaw(){
+  try{ const v=JSON.parse(localStorage.getItem('forge-tab-order')); return Array.isArray(v)?v:[]; }catch(e){ return []; }
 }
 function _cloudComparable(value){
   if(Array.isArray(value)) return value.map(_cloudComparable);
@@ -8915,7 +8962,7 @@ function cloudDataDiffers(data){
   }
   if(Array.isArray(data.timerHistory) && !_cloudValuesEqual(data.timerHistory, local.timerHistory)) return true;
   if(data.settings){
-    for(const key of ['themeMode','glassEnabled','soundOn','hapticOn','notifEnabled','activeProfileId','iconFigureKey','iconThemeSelection','iconRandomEnabled','iconRandomPool','iconRandomIntervalMin','iconRandomLastRollTs']){
+    for(const key of ['themeMode','glassEnabled','soundOn','hapticOn','notifEnabled','activeProfileId','timerTabEnabled','iconFigureKey','iconThemeSelection','iconRandomEnabled','iconRandomPool','iconRandomIntervalMin','iconRandomLastRollTs']){
       // Les notifications locales sont indisponibles dans le navigateur web;
       // leur état Android ne doit pas provoquer une restauration en boucle.
       if(key === 'notifEnabled' && !notifSupported()) continue;
@@ -8942,6 +8989,8 @@ async function applyCloudData(data, silent=false){
       if(data.settings.hapticOn !== undefined) sSet('forge-haptic', data.settings.hapticOn);
       if(data.settings.notifEnabled !== undefined) sSet('forge-notif-timer', data.settings.notifEnabled);
       if(data.settings.activeProfileId) sSet('forge-active-profile', data.settings.activeProfileId);
+      if(data.settings.timerTabEnabled !== undefined) sSet('forge-timer-global', data.settings.timerTabEnabled);
+      if(Array.isArray(data.settings.tabOrder) && data.settings.tabOrder.length){ sSet('forge-tab-order', data.settings.tabOrder.map(k=>k==='settings'?'social':k)); }
       if(data.settings.iconFigureKey !== undefined) sSet('forge-icon-figure', data.settings.iconFigureKey);
       if(data.settings.iconThemeSelection !== undefined) sSet('forge-icon-theme-selection', data.settings.iconThemeSelection);
       if(data.settings.iconRandomEnabled !== undefined) sSet('forge-icon-random-enabled', data.settings.iconRandomEnabled);
@@ -8949,6 +8998,9 @@ async function applyCloudData(data, silent=false){
       if(data.settings.iconRandomIntervalMin !== undefined) sSet('forge-icon-random-interval', data.settings.iconRandomIntervalMin);
       if(data.settings.iconRandomLastRollTs !== undefined) sSet('forge-icon-random-last-roll', data.settings.iconRandomLastRollTs);
     }
+    // l'ordre des onglets / l'état global du Timer peuvent venir du cloud :
+    // réordonner la barre SANS rendre (les données viennent juste d'être posées)
+    try{ _applyTimerTabVisibility(!!silent); }catch(e){}
   }finally{ _cloudApplying = false; }
   _cloudSyncPending = false;
   if(!silent) alert('Données restaurées depuis le cloud. L\'app va se recharger.');
@@ -9203,9 +9255,19 @@ async function maybeOfferGoogleConnect(){
 async function initAccountSettings(){
   if(isNativePlatform()){
     currentUser = await fbGetCurrentUser();
-    currentPublicProfile = currentUser ? await fbGetDocument('publicProfiles/'+currentUser.uid).catch(()=>null) : null;
+    // RENDU IMMÉDIAT : ne plus attendre le document de profil public ni la
+    // récupération cloud avant d'afficher le compte connecté (la récup
+    // Firestore pouvait prendre ~30 s après une mise à jour / hors ligne).
     renderAccountUI(currentUser);
-    if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncCloudOnStartup();await syncMyPublicProfile().catch(()=>{});}
+    if(currentUser){
+      fbGetDocument('publicProfiles/'+currentUser.uid).then(d=>{ if(d){ currentPublicProfile=d; renderAccountUI(currentUser); } }).catch(()=>{});
+      (async()=>{
+        await maybeOfferFreshStart();
+        await ensureForgeUsername();
+        await syncCloudOnStartup();
+        await syncMyPublicProfile().catch(()=>{});
+      })();
+    }
     else await maybeOfferGoogleConnect();
     return;
   }
@@ -11160,9 +11222,11 @@ window.goToView = function(idx, animate){
   const glass = document.body.hasAttribute('data-glass');
   if(!glass){ _origGoToView(idx, animate); return; }
 
-  const tabs   = document.querySelectorAll('.tabbtn');
-  const srcBtn = tabs[currentViewIdx];
-  const dstBtn = tabs[idx];
+  // Résoudre les boutons par data-view (pas par index) : le bouton Timer
+  // masqué reste dans le DOM et décalerait tabs[currentViewIdx]/tabs[idx].
+  const curKey = VIEW_ORDER[currentViewIdx], dstKey = VIEW_ORDER[idx];
+  const srcBtn = curKey ? document.querySelector(`.tabbar [data-view="${curKey}"]`) : null;
+  const dstBtn = dstKey ? document.querySelector(`.tabbar [data-view="${dstKey}"]`) : null;
   if(!srcBtn || !dstBtn || srcBtn === dstBtn){ _origGoToView(idx, animate); return; }
 
   // Inset du ::before : 5px 6px 5px 6px (top right bottom left)

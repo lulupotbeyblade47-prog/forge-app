@@ -3254,7 +3254,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.70 · raises en calisthénie</div>
+    <div class="settings-version">FORGE · v109.71 · retour Android + onglets</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3863,6 +3863,13 @@ function goToView(idx, animate=true){
   if(VIEW_ORDER[idx]==='stats') renderStats();
   if(VIEW_ORDER[idx]==='progression') renderProgramList();
   if(VIEW_ORDER[idx]==='social') renderSocialChat();
+  // Même logique que le Tracker pour tous les onglets : appuyer sur
+  // l'onglet courant alors qu'une sous-vue est ouverte (record, discussion,
+  // profil, programme…) la ferme et ramène à l'accueil de l'onglet.
+  if(idx===prevIdx && VIEW_ORDER[idx]!=='tracker' && _navStack.length){
+    const top=_navStack[_navStack.length-1];
+    if(top) _navClose(top);
+  }
   // Tracker : depuis une autre vue + séance ouverte → restaurer la séance
   // Depuis tracker lui-même (prevIdx===1) → retour à l'accueil
   if(VIEW_ORDER[idx]==='tracker'){
@@ -8522,7 +8529,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 45, name: '109.70' };
+const FORGE_INDEX_VERSION = { code: 46, name: '109.71' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -10337,6 +10344,7 @@ async function openThread(pk, otherUid, otherUsername, keepPanel){
   document.getElementById('socialMain').style.display='none';
   document.getElementById('socialProfileView').style.display='none';
   const panel=document.getElementById('socialThreadView');
+  const wasOpen = panel.style.display==='block';
   panel.style.display='block';
   await loadPublicProfiles();
   const p=_ppCache[otherUid]||{};
@@ -10358,6 +10366,9 @@ async function openThread(pk, otherUid, otherUsername, keepPanel){
     </div>`;
   const av=document.getElementById('threadAvatar');
   if(av) _avatarBgFix(av, otherUid);
+  // Inscrire la discussion dans la pile de navigation : le bouton retour
+  // matériel Android ferme la discussion au lieu de quitter l'app.
+  if(!wasOpen) _navPush(closeThreadView);
   document.getElementById('threadBackBtn').onclick=()=>_navClose(closeThreadView);
   document.getElementById('threadHeadName').onclick=()=>openProfileView(otherUid);
   document.getElementById('threadLikeBtn').onclick=()=>toggleLikeProfile(otherUid).then(()=>openThreadRefreshHeader());
@@ -10494,6 +10505,7 @@ async function openProfileView(uid){
   document.getElementById('socialMain').style.display='none';
   document.getElementById('socialThreadView').style.display='none';
   const panel=document.getElementById('socialProfileView');
+  const wasOpen = panel.style.display==='block';
   panel.style.display='block';
   const pShow=(p.showPRs!==false);
   const prsList=(pShow&&Array.isArray(p.prsSummary))?p.prsSummary:[];
@@ -10536,6 +10548,10 @@ async function openProfileView(uid){
     </div>`;
   const av=document.getElementById('pvAvatar');
   if(av) _avatarBgFix(av, uid);
+  // Inscrire la vue dans la pile de navigation : le bouton retour
+  // matériel Android ferme alors le profil au lieu de quitter l'app
+  // (bug : Social n'était jamais poussé dans _navStack).
+  if(!wasOpen) _navPush(closeProfileView);
   document.getElementById('profileBackBtn').onclick=()=>_navClose(closeProfileView);
   const likeBtn=document.getElementById('pvLikeBtn');
   if(likeBtn) likeBtn.onclick=async()=>{ await toggleLikeProfile(uid); openProfileView(uid); };

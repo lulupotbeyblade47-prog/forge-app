@@ -1,6 +1,6 @@
 {
-  "versionCode": 45,
-  "versionName": "109.70",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.70/forge-android-v109.70.apk",
-  "releaseNotes": "Les exercices « Raise » sont rangés en Calisthénie dans les records du profil public."
+  "versionCode": 46,
+  "versionName": "109.71",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.71/forge-android-v109.71.apk",
+  "releaseNotes": "Bouton retour Android réparé (Social, profils, discussions) au lieu de quitter l'app. Appuyer sur l'onglet courant ramène en arrière comme sur le Tracker."
 }

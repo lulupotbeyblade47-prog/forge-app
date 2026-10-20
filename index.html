@@ -3275,7 +3275,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.54 · discussions & profils</div>
+    <div class="settings-version">FORGE · v109.55 · corrections profils</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9985,15 +9985,19 @@ function _avatarHtml(uid, size, nameFallback){
   const initials=String(label).replace(/^@/,'').slice(0,1).toUpperCase();
   const color=_shareAvatarColor(label);
   if(url){
-    return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color} center/cover no-repeat;border:1px solid var(--border);flex-shrink:0;" data-avimg="1"></div>`;
+    const safe=url.replace(/['"\\]/g,'');
+    return `<div data-avimg="1" style="width:${size}px;height:${size}px;border-radius:50%;border:1px solid var(--border);flex-shrink:0;background-color:${color};background-size:cover;background-position:center;background-image:url('${safe}');"></div>`;
   }
   return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${Math.round(size*0.42)}px;flex-shrink:0;">${_progEsc(initials)}</div>`;
 }
 function _avatarBgFix(el, uid){
-  // les background-image ne passent pas dans le template ci-dessus (guillemets) : on les pose ici
+  // filet de sécurité : pose l'image sur le rond (pas sur le conteneur)
+  if(!el) return;
+  const target = (el.matches && el.matches('[data-avimg="1"]')) ? el : el.querySelector('[data-avimg="1"]');
+  if(!target) return;
   const p=_ppCache[uid];
   const url=_safePhoto(p&&p.photoURL);
-  if(url) el.style.backgroundImage=`url("${url.replace(/"/g,'')}")`;
+  if(url) target.style.backgroundImage=`url("${url.replace(/["\\]/g,'')}")`;
 }
 
 /* ── Discussions ── */

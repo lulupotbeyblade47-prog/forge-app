@@ -3266,7 +3266,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.72 · confort + timer optionnel</div>
+    <div class="settings-version">FORGE · v109.73 · correction démarrage (tracker vide)</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3959,15 +3959,17 @@ _applyTabOrder(_startupTabOrder,_startupTabOrder[0],true);
 function _timerTabVisible(){
   try{ return JSON.parse(localStorage.getItem('forge-timer-tab'))!==false; }catch(e){ return true; }
 }
-function _applyTimerTabVisibility(){
+function _applyTimerTabVisibility(deferRender){
   const visible=_timerTabVisible();
   const btn=document.querySelector('.tabbar [data-view="timer"]');
   if(btn) btn.style.display = visible ? '' : 'none';
   let order=null;
   if(visible){
-    const full=['timer','tracker','stats','progression','social'];
+    const full=['timer','tracker','stats','progression','social'].slice();
+    const migrate=k=>k==='settings'?'social':k;
     try{
-      const saved=JSON.parse(localStorage.getItem('forge-tab-order')||'null');
+      const savedRaw=JSON.parse(localStorage.getItem('forge-tab-order')||'null');
+      const saved=Array.isArray(savedRaw)?savedRaw.map(migrate):null;
       if(Array.isArray(saved)&&saved.length===full.length&&saved.every(k=>full.includes(k))) order=saved;
       else if(!localStorage.getItem('forge-tab-order')) order=full.slice(); // pas d'ordre personnalisé : ordre par défaut COMPLET
     }catch(e){ order=full.slice(); }
@@ -3975,16 +3977,19 @@ function _applyTimerTabVisibility(){
   }
   if(!order) order=VIEW_ORDER.filter(k=>k!=='timer'); // caché : retire timer
   if(order.length && (order.length!==VIEW_ORDER.length || order.some((k,i)=>k!==VIEW_ORDER[i]))){
-    _applyTabOrder(order, VIEW_ORDER[currentViewIdx], false);
+    // deferRender : au démarrage on NE force PAS de rendu (les données ne
+    // sont pas encore chargées — c'était ça qui laissait le Tracker vide).
+    // Sur un vrai tap du toggle, l'app est chargée : rendu immédiat.
+    _applyTabOrder(order, VIEW_ORDER[currentViewIdx], !!deferRender);
   }
 }
 document.getElementById('timerTabToggle').addEventListener('change', function(){
   sSet('forge-timer-tab', this.checked);
-  _applyTimerTabVisibility();
+  _applyTimerTabVisibility(false);
   forgeToast(this.checked ? 'Onglet Timer affiché ✓' : 'Onglet Timer masqué ✓');
 });
 document.getElementById('timerTabToggle').checked = _timerTabVisible();
-_applyTimerTabVisibility();
+_applyTimerTabVisibility(true);
 
 /* ================================================================
    RÉORDONNANCEMENT DES ONGLETS — mode dédié, activé/désactivé par
@@ -8577,7 +8582,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 47, name: '109.72' };
+const FORGE_INDEX_VERSION = { code: 48, name: '109.73' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;

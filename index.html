@@ -3275,7 +3275,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.57 · records visibles par défaut</div>
+    <div class="settings-version">FORGE · v109.58 · discussions corrigées</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9623,6 +9623,86 @@ function _shareRender(){
   back.style.visibility=_shareHistory.length?'visible':'hidden';
   body.querySelectorAll('[data-sharepick]').forEach(()=>{});
 
+  /* ── Partage depuis une discussion : un clic = envoyé (façon Insta) ── */
+  function _threadSendBundle(bundle){
+    const t=_shareThreadTarget;
+    if(!t){ forgeToast('Discussion introuvable'); return; }
+    sendThreadMessage(t.pk, t.otherUid, t.otherUsername, {text:'', bundle})
+      .then(()=>{
+        forgeToast('Envoyé dans la discussion ✓');
+        _navClose(_closeShareOverlay);
+        if(typeof openThread==='function') openThread(t.pk, t.otherUid, t.otherUsername, true).catch(()=>{});
+      })
+      .catch(e=>{ forgeToast('Envoi impossible : '+((e&&e.message)||'?')); });
+  }
+  if(step==='thread-share'){
+    title.textContent='📎 Envoyer quoi ?';
+    const t=_shareThreadTarget;
+    if(!t){ body.innerHTML='<div class="empty" style="padding:10px 0;">Discussion introuvable.</div>'; return; }
+    const defs=[
+      {ic:'👤', ti:'Un profil complet', sub:'Toutes ses séances + progressions', go:'thread-profiles'},
+      {ic:'🗓️', ti:'Une séance', sub:'Une de tes séances', go:'thread-sessions'},
+      {ic:'🏋️', ti:'Mes exercices persos', sub:'Les noms et champs que tu as créés', go:'thread-exercises'},
+      {ic:'📈', ti:'Une progression', sub:'Un cycle max / % / +kg par semaine', go:'thread-programs'}
+    ];
+    body.innerHTML='<div style="font-size:12px;color:var(--ash);margin-bottom:12px;">Destinataire : <strong style="color:var(--chalk);">@'+_progEsc(String(t.otherUsername||'?'))+'</strong> — un clic et c\'est envoyé.</div>'+_shareRows(defs.map(r=>({title:r.ic+' '+r.ti, sub:r.sub})),()=>null);
+    const els=[...body.querySelectorAll('[data-sharepick]')];
+    els.forEach((el,i)=> el.onclick=()=>{
+      if(defs[i].go==='thread-exercises'){
+        const b=_shareBundleExercises();
+        if(!b){ forgeToast('Aucun exercice personnalisé créé'); return; }
+        _threadSendBundle(b);
+        return;
+      }
+      _sharePush(defs[i].go);
+    });
+    return;
+  }
+  if(step==='thread-profiles'){
+    title.textContent='👤 Quel profil ?';
+    const rows=profiles.map(p=>({title:p.name, sub:DAY_KEYS.reduce((n,d)=>n+((p.week&&p.week[d])||[]).length,0)+' séance(s)', obj:p}));
+    if(!rows.length){ body.innerHTML='<div class="empty" style="padding:10px 0;">Aucun profil dans tes données.</div>'; return; }
+    body.innerHTML=_shareRows(rows,()=>null);
+    const els=[...body.querySelectorAll('[data-sharepick]')];
+    els.forEach((el,i)=> el.onclick=()=>{
+      const b=_shareBundleProfile(rows[i].obj);
+      if(!b){ forgeToast('Impossible de préparer ce profil'); return; }
+      _threadSendBundle(b);
+    });
+    return;
+  }
+  if(step==='thread-sessions'){
+    title.textContent='🗓️ Quelle séance ?';
+    const abbr={lundi:'Lun.', mardi:'Mar.', mercredi:'Mer.', jeudi:'Jeu.', vendredi:'Ven.', samedi:'Sam.', dimanche:'Dim.'};
+    const rows=[];
+    profiles.forEach(p=> DAY_KEYS.forEach(d=> ((p.week&&p.week[d])||[]).forEach(s=> rows.push({title:s.name, sub:p.name+' · '+(abbr[d]||d), profile:p, day:d, seance:s}))));
+    if(!rows.length){ body.innerHTML='<div class="empty" style="padding:10px 0;">Aucune séance dans tes profils.</div>'; return; }
+    body.innerHTML=_shareRows(rows,()=>null);
+    const els=[...body.querySelectorAll('[data-sharepick]')];
+    els.forEach((el,i)=> el.onclick=()=>{
+      const r=rows[i];
+      const b=_shareBundleSession(r.profile, r.day, r.seance);
+      if(!b){ forgeToast('Impossible de préparer cette séance'); return; }
+      _threadSendBundle(b);
+    });
+    return;
+  }
+  if(step==='thread-programs'){
+    title.textContent='📈 Quelle progression ?';
+    const rows=programs.map(p=>({title:p.name, sub:(p.numWeeks||'?')+' semaines · '+((p.exercises||[]).length)+' exercice(s)', obj:p}));
+    if(!rows.length){ body.innerHTML='<div class="empty" style="padding:10px 0;">Aucune progression créée.</div>'; return; }
+    body.innerHTML=_shareRows(rows,()=>null);
+    const els=[...body.querySelectorAll('[data-sharepick]')];
+    els.forEach((el,i)=> el.onclick=()=>{
+      const copy=JSON.parse(JSON.stringify(rows[i].obj));
+      delete copy.currentWeek; delete copy.startDate;
+      const b=_shareBundleProgram(copy);
+      if(!b){ forgeToast('Impossible de préparer cette progression'); return; }
+      _threadSendBundle(b);
+    });
+    return;
+  }
+
   if(step==='menu'){
     title.textContent='📤 Partage';
     const signed=!!currentUser;
@@ -9912,6 +9992,7 @@ const _THREAD_READ_KEY='forge-thread-read';      // {pairKey: timestamp lu}
 const _THREAD_NOTIF_KEY='forge-thread-notified'; // {pairKey: timestamp déjà notifié}
 let _ppCache={}, _ppCacheAt=0, _myThreads=[], _homeLoadedAt=0;
 let _currentThread=null, _profileViewUid=null, _inboxMigrated=false;
+const _mirrorRepairDone=new Set();
 
 function _threadMap(key){ try{ return JSON.parse(localStorage.getItem(key)||'{}'); }catch(e){ return {}; } }
 function _threadMapSet(key,m){ try{ localStorage.setItem(key, JSON.stringify(m)); }catch(e){} }
@@ -10008,10 +10089,11 @@ async function ensureThread(otherUid, otherUsername){
   try{ th=await fbGetDocument('threads/'+pk); }catch(e){}
   if(th) return pk;
   await fbSetDocument('threads/'+pk, {participants:[currentUser.uid, otherUid], createdAt:new Date().toISOString()});
-  const mirror={pair:pk, other:otherUid, otherUsername:String(otherUsername||'?'), lastAt:new Date().toISOString(), lastText:'Nouvelle discussion', lastFrom:currentUser.uid};
-  // le thread vient d'être créé : les règles autorisent les deux miroirs
-  try{ await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, mirror); }catch(e){}
-  try{ await fbSetDocument('userThreads/'+otherUid+'/threads/'+pk, mirror); }catch(e){}
+  // le thread vient d'être créé : les règles autorisent les deux miroirs.
+  // IMPORTANT : chaque côté a son propre miroir (other = l'AUTRE compte)
+  const stamp={pair:pk, lastAt:new Date().toISOString(), lastText:'Nouvelle discussion', lastFrom:currentUser.uid};
+  try{ await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, {...stamp, other:otherUid, otherUsername:String(otherUsername||'?')}); }catch(e){}
+  try{ await fbSetDocument('userThreads/'+otherUid+'/threads/'+pk, {...stamp, other:currentUser.uid, otherUsername:String((currentPublicProfile&&currentPublicProfile.username)||'?')}); }catch(e){}
   return pk;
 }
 async function sendThreadMessage(pk, otherUid, otherUsername, opts){
@@ -10028,9 +10110,13 @@ async function sendThreadMessage(pk, otherUid, otherUsername, opts){
     const desc=_shareDescribe(data.bundle)||{title:''};
     preview='📤 '+_shareKINDLabel(data.kind)+(desc.title?' — '+desc.title:'');
   }
-  const mirror={pair:pk, other:otherUid, otherUsername:String(otherUsername||'?'), lastAt:data.createdAt, lastText:preview||'…', lastFrom:currentUser.uid};
-  await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, mirror);
-  await fbSetDocument('userThreads/'+otherUid+'/threads/'+pk, mirror);
+  const stamp={lastAt:data.createdAt, lastText:preview||'…', lastFrom:currentUser.uid};
+  // côté expéditeur : l'autre = le destinataire
+  await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, {...stamp, pair:pk, other:otherUid, otherUsername:String(otherUsername||'?')});
+  // côté destinataire : l'autre = l'expéditeur, nommé par son pseudo
+  try{
+    await fbSetDocument('userThreads/'+otherUid+'/threads/'+pk, {...stamp, pair:pk, other:currentUser.uid, otherUsername:String((currentPublicProfile&&currentPublicProfile.username)||'?')});
+  }catch(e){}
   _threadMarkRead(pk);
   return data;
 }
@@ -10152,6 +10238,22 @@ function renderSocialThreadList(){
     };
   });
   list.querySelectorAll('.thread-av').forEach(av=>_avatarBgFix(av, (_myThreads[+av.dataset.tav].data||{}).other));
+  // réparation : un miroir aberrant (ancien bug) désignait MOI comme "l'autre",
+  // ce qui affichait une discussion avec soi-même ; on le réécrit correctement.
+  // Garde anti-boucle : une paire ne tente la réparation qu'une fois par session.
+  _myThreads.forEach(t=>{
+    const d=t.data||{}, pk2=String(d.pair||t.id);
+    if(d.other===currentUser.uid && pk2.includes('__') && !_mirrorRepairDone.has(pk2)){
+      _mirrorRepairDone.add(pk2);
+      const otherUid=pk2.split('__').find(u=>u!==currentUser.uid);
+      if(otherUid){
+        loadPublicProfiles().then(()=>{
+          const p=_ppCache[otherUid]||{};
+          return fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk2, {pair:pk2, other:otherUid, otherUsername:String(p.username||'?'), lastAt:d.lastAt||new Date().toISOString(), lastText:d.lastText||'…', lastFrom:d.lastFrom||otherUid});
+        }).then(()=>renderSocialHome(true)).catch(()=>{});
+      }
+    }
+  });
 }
 function renderSocialSearchResults(){
   const box=document.getElementById('socialSearchResults');
@@ -10234,7 +10336,7 @@ async function openThread(pk, otherUid, otherUsername, keepPanel){
   document.getElementById('threadMsgInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendThreadInput(); } });
   document.getElementById('threadAttachBtn').onclick=()=>{
     _shareThreadTarget={pk, otherUid, otherUsername:_currentThread.otherUsername};
-    openShareOverlay('menu');
+    openShareOverlay('thread-share');
   };
   renderThreadMessages();
 }

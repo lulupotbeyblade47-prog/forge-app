@@ -1,6 +1,6 @@
 {
-  "versionCode": 50,
-  "versionName": "109.75",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.75/forge-android-v109.75.apk",
-  "releaseNotes": "Navigation corrigée quand l'onglet Timer est masqué (les vues et l'onglet actif ne se décalent plus). Ordre personnalisé conservé quand le Timer est caché. Bouton Partager retiré des profils du sélecteur."
+  "versionCode": 51,
+  "versionName": "109.76",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.76/forge-android-v109.76.apk",
+  "releaseNotes": "Le réglage Timer « Partout » n'est plus écrasé par les autres appareils : seuls les appareils qui ont explicitement réglé le Timer global peuvent le réécrire dans le cloud."
 }

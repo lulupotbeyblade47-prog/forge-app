@@ -3265,7 +3265,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.75 · navigation corrigée sans Timer</div>
+    <div class="settings-version">FORGE · v109.76 · Timer "Partout" protégé</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3958,12 +3958,18 @@ _applyTabOrder(_startupTabOrder,_startupTabOrder[0],true);
    « Activer » : visible ici (et rallumé globalement) ;
    « Ici seulement » : masqué sur CET appareil uniquement ;
    « Partout » : masqué partout, mémorisé dans la sauvegarde cloud
-   (settings.timerTabEnabled) pour s'appliquer aux autres appareils. ── */
+   (settings.timerTabEnabled) pour s'appliquer aux autres appareils.
+   Un appareil qui n'a jamais touché au réglage global ne le
+   réécrit jamais dans le cloud (drapeau forge-timer-global-user). ── */
 function _timerChoice(){
   try{ const v=JSON.parse(localStorage.getItem('forge-timer-choice')); return v==='off-here'||v==='off-all' ? v : 'on'; }catch(e){ return 'on'; }
 }
 function _timerGlobalEnabled(){
   try{ return JSON.parse(localStorage.getItem('forge-timer-global'))!==false; }catch(e){ return true; }
+}
+function _timerGlobalUserIntent(){
+  // sSet stocke du JSON : '1' → '"1"'. Parse systématiquement.
+  try{ return JSON.parse(localStorage.getItem('forge-timer-global-user'))==='1'; }catch(e){ return false; }
 }
 function _timerTabVisible(){
   const c=_timerChoice();
@@ -3981,7 +3987,14 @@ function _timerChoiceUIRefresh(){
     b.style.borderColor = active ? 'var(--ember)' : 'var(--border)';
   });
 }
-document.querySelectorAll('#timerTabChoices [data-tchoice]').forEach(b=>{ b.onclick=()=>{ const c=b.dataset.tchoice; sSet('forge-timer-choice', c); if(c==='off-all') sSet('forge-timer-global', false); if(c==='on') sSet('forge-timer-global', true); _timerChoiceUIRefresh(); _applyTimerTabVisibility(false); forgeToast({on:'Timer affiché ✓','off-here':'Timer masqué ici ✓','off-all':'Timer masqué sur tous les appareils ✓'}[c]||'ok'); }; });
+document.querySelectorAll('#timerTabChoices [data-tchoice]').forEach(b=>{ b.onclick=()=>{ const c=b.dataset.tchoice; sSet('forge-timer-choice', c);
+  // Le drapeau global n'est écrit par CET appareil que si l'utilisateur a
+  // explicitement choisi un réglage « Partout » (off-all) ou « Activer » :
+  // sinon un appareil qui n'a jamais touché au réglage pousserait son
+  // `true` par défaut et écraserait le « Partout » choisi ailleurs.
+  if(c==='off-all'){ sSet('forge-timer-global', false); sSet('forge-timer-global-user','1'); }
+  if(c==='on'){ sSet('forge-timer-global', true); sSet('forge-timer-global-user','1'); }
+  _timerChoiceUIRefresh(); _applyTimerTabVisibility(false); forgeToast({on:'Timer affiché ✓','off-here':'Timer masqué ici ✓','off-all':'Timer masqué sur tous les appareils ✓'}[c]||'ok'); }; });
 _timerChoiceUIRefresh();
 
 function _applyTimerTabVisibility(deferRender){
@@ -8624,7 +8637,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 50, name: '109.75' };
+const FORGE_INDEX_VERSION = { code: 51, name: '109.76' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -8924,7 +8937,11 @@ function buildBackupPayload(){
   return {
     exercises, logs, profiles, prs, programs, timerHistory,
     settings: { themeMode, glassEnabled, soundOn, hapticOn, notifEnabled: (!notifSupported() ? _storedNotifSetting() : notifEnabled), activeProfileId,
-      timerTabEnabled: _timerGlobalEnabled(),
+      // Le drapeau global du Timer ne part dans le cloud que si un réglage
+      // explicite a été fait sur cet appareil (voir le choix « Partout » /
+      // « Activer ») — sinon ce défaut `true` écraserait le choix d'un
+      // autre appareil à chaque synchronisation.
+      ...(_timerGlobalUserIntent() ? { timerTabEnabled: _timerGlobalEnabled() } : {}),
       tabOrder: _storedTabOrderRaw(),
       iconFigureKey: _storedIconPref('forge-icon-figure','planche'),
       iconThemeSelection: _storedIconPref('forge-icon-theme-selection',['auto']),
@@ -8989,7 +9006,7 @@ async function applyCloudData(data, silent=false){
       if(data.settings.hapticOn !== undefined) sSet('forge-haptic', data.settings.hapticOn);
       if(data.settings.notifEnabled !== undefined) sSet('forge-notif-timer', data.settings.notifEnabled);
       if(data.settings.activeProfileId) sSet('forge-active-profile', data.settings.activeProfileId);
-      if(data.settings.timerTabEnabled !== undefined) sSet('forge-timer-global', data.settings.timerTabEnabled);
+      if(data.settings.timerTabEnabled !== undefined){ sSet('forge-timer-global', data.settings.timerTabEnabled); sSet('forge-timer-global-user','1'); }
       if(Array.isArray(data.settings.tabOrder) && data.settings.tabOrder.length){ sSet('forge-tab-order', data.settings.tabOrder.map(k=>k==='settings'?'social':k)); }
       if(data.settings.iconFigureKey !== undefined) sSet('forge-icon-figure', data.settings.iconFigureKey);
       if(data.settings.iconThemeSelection !== undefined) sSet('forge-icon-theme-selection', data.settings.iconThemeSelection);

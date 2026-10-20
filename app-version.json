@@ -1,6 +1,6 @@
 {
-  "versionCode": 58,
-  "versionName": "109.83",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.83/forge-android-v109.83.apk",
-  "releaseNotes": "Navigation entre onglets plus fluide : les rendus lourds attendent la fin du glissement, et un saut sur plusieurs onglets échange la vue directement au lieu de traverser tous les écrans."
+  "versionCode": 62,
+  "versionName": "109.87",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.87/forge-android-v109.87.apk",
+  "releaseNotes": "Correction du glissement des onglets : lâcher après la moitié termine maintenant avec l'animation de complétion."
 }

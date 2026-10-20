@@ -3275,7 +3275,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.55 · corrections profils</div>
+    <div class="settings-version">FORGE · v109.56 · nouvelle discussion</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -10001,14 +10001,16 @@ function _avatarBgFix(el, uid){
 }
 
 /* ── Discussions ── */
-async function ensureThread(otherUid){
+async function ensureThread(otherUid, otherUsername){
   const pk=pairOf(currentUser.uid, otherUid);
   let th=null;
   try{ th=await fbGetDocument('threads/'+pk); }catch(e){}
-  if(!th){
-    th={participants:[currentUser.uid, otherUid], createdAt:new Date().toISOString()};
-    await fbSetDocument('threads/'+pk, th);
-  }
+  if(th) return pk;
+  await fbSetDocument('threads/'+pk, {participants:[currentUser.uid, otherUid], createdAt:new Date().toISOString()});
+  const mirror={pair:pk, other:otherUid, otherUsername:String(otherUsername||'?'), lastAt:new Date().toISOString(), lastText:'Nouvelle discussion', lastFrom:currentUser.uid};
+  // le thread vient d'être créé : les règles autorisent les deux miroirs
+  try{ await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, mirror); }catch(e){}
+  try{ await fbSetDocument('userThreads/'+otherUid+'/threads/'+pk, mirror); }catch(e){}
   return pk;
 }
 async function sendThreadMessage(pk, otherUid, otherUsername, opts){
@@ -10190,6 +10192,14 @@ function renderSocialSearchResults(){
 /* ── Vue discussion (chat) ── */
 async function openThread(pk, otherUid, otherUsername, keepPanel){
   if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
+  // on ignore la paire fournie et on (re)calcule : la discussion peut
+  // ne pas exister encore (ouverte depuis la recherche/le profil)
+  try{
+    pk=await ensureThread(otherUid, otherUsername);
+  }catch(e){
+    forgeToast('Conversation impossible : '+((e&&e.message)||'?'));
+    return;
+  }
   _currentThread={pk, otherUid, otherUsername:String(otherUsername||'?')};
   _threadMarkRead(pk);
   document.getElementById('socialMain').style.display='none';

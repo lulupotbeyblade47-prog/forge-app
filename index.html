@@ -8518,6 +8518,11 @@ function isNativePlatform(){
 let _forgeUpdateCheckRunning = false;
 let _forgeUpdatePromptedVersion = '';
 const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
+// Version effective de l'interface embarquée dans l'APK. L'APK garde le
+// versionCode de sa base de construction, mais l'index avance à chaque
+// version : on matelasse la valeur locale avec la plus grande des deux,
+// sinon l'app redemanderait la même mise à jour en boucle.
+const FORGE_INDEX_VERSION = { code: 44, name: '109.69' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -8532,8 +8537,12 @@ async function checkForgeAndroidUpdate(){
     const latest = await response.json();
     const installedCode = Number(installed.build) || 0;
     const latestCode = Number(latest.versionCode) || 0;
+    // version installée effective = max(build APK, interface embarquée)
+    await sSet('forge-index-code', FORGE_INDEX_VERSION.code);
+    const storedIndex = Number(await sGet('forge-index-code',0)) || 0;
+    const effectiveCode = Math.max(installedCode, storedIndex, FORGE_INDEX_VERSION.code);
     const latestCodeKey=String(latestCode);
-    if(latestCode <= installedCode || _forgeUpdatePromptedVersion === latestCodeKey || String(await sGet(FORGE_UPDATE_SKIPPED_KEY,'')) === latestCodeKey) return;
+    if(latestCode <= effectiveCode || _forgeUpdatePromptedVersion === latestCodeKey || String(await sGet(FORGE_UPDATE_SKIPPED_KEY,'')) === latestCodeKey) return;
     _forgeUpdatePromptedVersion = String(latestCode);
     const action = await showForgeDialog({variant:'update',kicker:'Forge Android',title:'Mise à jour disponible',message:'La version ' + (latest.versionName || latestCode) + ' est prête.',detail:(latest.releaseNotes ? latest.releaseNotes + '\n\n' : '') + 'Le programme d’installation Android s’ouvrira après ton choix.',primaryLabel:'Télécharger',secondaryLabel:'Plus tard',tertiaryLabel:'Ignorer cette version'});
     if(action==='tertiary'){sSet(FORGE_UPDATE_SKIPPED_KEY,latestCodeKey);return;}

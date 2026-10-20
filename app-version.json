@@ -1,6 +1,6 @@
 {
-  "versionCode": 43,
-  "versionName": "109.46",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.46/forge-android-v109.46.apk",
-  "releaseNotes": "Le changement d’icône est appliqué quand on quitte Forge. L’icône aléatoire change par défaut chaque jour."
+  "versionCode": 44,
+  "versionName": "109.69",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.69/forge-android-v109.69.apk",
+  "releaseNotes": "Records perso du profil public par disciplines : Muscu / Streetlifting / Calisthénie. Tes records de Stats sont publiés sur ton profil, protégés par le toggle 🏋️."
 }

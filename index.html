@@ -3254,7 +3254,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.68 · records publics (Stats = profil)</div>
+    <div class="settings-version">FORGE · v109.69 · records par disciplines</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -10440,6 +10440,41 @@ async function renderThreadMessages(){
 }
 
 /* ── Vue profil public ── */
+
+/* ── Classement des records par discipline (v109.69) :
+   Streetlifting =.tractions/dips/muscle-ups pondérés (kg),
+   Calisthénie = poids du corps (gainage, front lever, planche,
+   handstand, pistol, nordic…), Muscu = barre/machines,
+   Autres = exercices personnalisés non reconnus. ── */
+function _prCategory(pr){
+  const n=String((pr&&pr.exercise)||'').toLowerCase();
+  const unit=String((pr&&pr.unit)||'');
+  const has=s=>n.includes(s);
+  // streetlifting : les classiques pondérés au kg
+  if(unit==='kg' && (has('traction')||has('pull-up')||has('pull up')||has('chin')||has('dips')||has('dip ')||n==='dips'||has('muscle-up')||has('muscle up')||has('pompe'))) return 'street';
+  // calisthénie : poids du corps / statiques
+  if(has('front lever')||has('planche')||has('handstand')||has('atr')||has('pistol')||has('gainage')||has('l-sit')||has('human flag')||has('nordic')||has('crow')||has('muscle-up')||has('muscle up')||has('traction')||has('pull-up')||has('pull up')||has('chin')||n==='dips'||has('dips')||has('dip ')||has('flag')||has('pompe')||has('push-up')||has('push up')) return 'calis';
+  // muscu : barre / machines
+  if(has('développé')||has('developpe')||has('couché')||has('couche')||has('squat')||has('soulevé')||has('souleve')||has('deadlift')||has('rowing')||has('militaire')||has('curl')||has('extension')||has('press')||has('presse')||has('écarté')||has('ecarte')||has('fly')||has('mollet')||has('fente')||has('hip thrust')||has('shrug')||has('raise')||has('pec')||has('leg')||has('armé')||has('armè')||has('pull over')) return 'muscu';
+  return 'autres';
+}
+function _prsCategorize(prsList){
+  const groups=[
+    {key:'muscu', icon:'🏋️', label:'Muscu', items:[]},
+    {key:'street', icon:'⚡', label:'Streetlifting', items:[]},
+    {key:'calis', icon:'🧗', label:'Calisthénie', items:[]},
+    {key:'autres', icon:'📌', label:'Autres', items:[]}
+  ];
+  (prsList||[]).forEach(pr=>{ groups.find(g=>g.key===_prCategory(pr)).items.push(pr); });
+  return groups.filter(g=>g.items.length);
+}
+function _prUnitTxt(unit){
+  if(unit==='s') return ' s';
+  if(unit==='kg') return ' kg';
+  if(!unit||unit==='reps') return '';
+  return ' '+_progEsc(String(unit));
+}
+
 async function openProfileView(uid){
   if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
   await loadPublicProfiles();
@@ -10471,15 +10506,24 @@ async function openProfileView(uid){
     </div>
     <div class="settings-section">
       <div class="settings-section-title">🏆 Records perso</div>
-      <div class="settings-card">
-        ${me&&!pShow?'<div style="font-size:12px;color:var(--ash);">Cachés — active « 🏋️ Afficher mes records perso » dans ⚙️ Réglages pour les montrer.</div>':''}
-        ${(!me&&!pShow)?'<div style="font-size:12px;color:var(--ash);">@'+_progEsc(String(p.username||'?'))+' ne montre pas ses records.</div>':''}
-        ${(pShow&&prsList.length)?prsList.map(pr=>{
-          const unitTxt=pr.unit==='s'?' s':(pr.unit==='kg'?' kg':(pr.unit&&pr.unit!=='reps'?' '+_progEsc(String(pr.unit)):''));
-          return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--border);font-size:13px;"><span>${_progEsc(pr.exercise)}</span><span style="font-weight:700;">${_progEsc(String(pr.value))}${unitTxt}</span></div>`;
-        }).join(''):''}
-        ${(pShow&&!prsList.length)?'<div style="font-size:12px;color:var(--ash);">Aucun record enregistré.</div>':''}
-      </div>
+      ${me&&!pShow?'<div class="settings-card" style="font-size:12px;color:var(--ash);">Cachés — active « 🏋️ Afficher mes records perso » dans ⚙️ Réglages pour les montrer.</div>':''}
+      ${(!me&&!pShow)?'<div class="settings-card" style="font-size:12px;color:var(--ash);">@'+_progEsc(String(p.username||'?'))+' ne montre pas ses records.</div>':''}
+      ${(pShow&&!prsList.length)?'<div class="settings-card" style="font-size:12px;color:var(--ash);">Aucun record enregistré.</div>':''}
+      ${(pShow&&prsList.length)?_prsCategorize(prsList).map(g=>`
+      <div class="settings-card" style="padding:12px 14px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:15px;">${g.icon}</span>
+          <span style="font-family:'Oswald',sans-serif;font-weight:700;font-size:12.5px;text-transform:uppercase;letter-spacing:0.06em;">${g.label}</span>
+          <span style="margin-left:auto;font-size:10.5px;font-weight:700;color:var(--ember);background:var(--ember-dim);border:1px solid var(--ember);border-radius:8px;padding:1px 8px;">${g.items.length}</span>
+        </div>
+        ${g.items.map(pr=>{
+          const v=_progEsc(String(pr.value)), u=_prUnitTxt(pr.unit);
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:13.5px;">
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_progEsc(String(pr.exercise))}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14.5px;color:var(--ember);white-space:nowrap;">${v}<span style="font-size:11px;color:var(--ash);font-weight:400;">${u}</span></span>
+          </div>`;
+        }).join('')}
+      </div>`).join(''):''}
     </div>`;
   const av=document.getElementById('pvAvatar');
   if(av) _avatarBgFix(av, uid);

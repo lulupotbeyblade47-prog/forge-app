@@ -3265,7 +3265,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.76 · Timer "Partout" protégé</div>
+    <div class="settings-version">FORGE · v109.77 · réglages sync en direct entre appareils</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8637,7 +8637,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 51, name: '109.76' };
+const FORGE_INDEX_VERSION = { code: 52, name: '109.77' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -8989,6 +8989,29 @@ function cloudDataDiffers(data){
   return false;
 }
 
+function _applyCloudSettings(settings){
+  // Applique SEULEMENT le sous-objet settings du doc cloud (sans toucher aux
+  // données). Appelé par applyCloudData, et à chaque démarrage / rafraîchissement
+  // périodique même quand les données sont déjà à jour — sinon les réglages
+  // changés sur un autre appareil (Timer « Partout », ordre des onglets…)
+  // ne s'appliquaient jamais aux sessions déjà ouvertes.
+  if(!settings) return;
+  if(settings.themeMode) sSet('forge-theme', settings.themeMode);
+  if(settings.glassEnabled !== undefined) sSet('forge-glass', settings.glassEnabled ? 1 : 0);
+  if(settings.soundOn !== undefined) sSet('forge-sound', settings.soundOn);
+  if(settings.hapticOn !== undefined) sSet('forge-haptic', settings.hapticOn);
+  if(settings.notifEnabled !== undefined) sSet('forge-notif-timer', settings.notifEnabled);
+  if(settings.activeProfileId) sSet('forge-active-profile', settings.activeProfileId);
+  if(settings.timerTabEnabled !== undefined){ sSet('forge-timer-global', settings.timerTabEnabled); sSet('forge-timer-global-user','1'); }
+  if(Array.isArray(settings.tabOrder) && settings.tabOrder.length){ sSet('forge-tab-order', settings.tabOrder.map(k=>k==='settings'?'social':k)); }
+  if(settings.iconFigureKey !== undefined) sSet('forge-icon-figure', settings.iconFigureKey);
+  if(settings.iconThemeSelection !== undefined) sSet('forge-icon-theme-selection', settings.iconThemeSelection);
+  if(settings.iconRandomEnabled !== undefined) sSet('forge-icon-random-enabled', settings.iconRandomEnabled);
+  if(settings.iconRandomPool !== undefined) sSet('forge-icon-random-pool', settings.iconRandomPool);
+  if(settings.iconRandomIntervalMin !== undefined) sSet('forge-icon-random-interval', settings.iconRandomIntervalMin);
+  if(settings.iconRandomLastRollTs !== undefined) sSet('forge-icon-random-last-roll', settings.iconRandomLastRollTs);
+}
+
 async function applyCloudData(data, silent=false){
   if(!data) return;
   _cloudApplying = true;
@@ -8999,22 +9022,7 @@ async function applyCloudData(data, silent=false){
     if(Array.isArray(data.prs)){ prs = data.prs; sSet('forge-prs', prs); }
     if(Array.isArray(data.programs)){ programs = data.programs; sSet('forge-programs', programs); }
     if(Array.isArray(data.timerHistory)){ timerHistory = data.timerHistory; sSet('forge-timer-history', timerHistory); }
-    if(data.settings){
-      if(data.settings.themeMode) sSet('forge-theme', data.settings.themeMode);
-      if(data.settings.glassEnabled !== undefined) sSet('forge-glass', data.settings.glassEnabled ? 1 : 0);
-      if(data.settings.soundOn !== undefined) sSet('forge-sound', data.settings.soundOn);
-      if(data.settings.hapticOn !== undefined) sSet('forge-haptic', data.settings.hapticOn);
-      if(data.settings.notifEnabled !== undefined) sSet('forge-notif-timer', data.settings.notifEnabled);
-      if(data.settings.activeProfileId) sSet('forge-active-profile', data.settings.activeProfileId);
-      if(data.settings.timerTabEnabled !== undefined){ sSet('forge-timer-global', data.settings.timerTabEnabled); sSet('forge-timer-global-user','1'); }
-      if(Array.isArray(data.settings.tabOrder) && data.settings.tabOrder.length){ sSet('forge-tab-order', data.settings.tabOrder.map(k=>k==='settings'?'social':k)); }
-      if(data.settings.iconFigureKey !== undefined) sSet('forge-icon-figure', data.settings.iconFigureKey);
-      if(data.settings.iconThemeSelection !== undefined) sSet('forge-icon-theme-selection', data.settings.iconThemeSelection);
-      if(data.settings.iconRandomEnabled !== undefined) sSet('forge-icon-random-enabled', data.settings.iconRandomEnabled);
-      if(data.settings.iconRandomPool !== undefined) sSet('forge-icon-random-pool', data.settings.iconRandomPool);
-      if(data.settings.iconRandomIntervalMin !== undefined) sSet('forge-icon-random-interval', data.settings.iconRandomIntervalMin);
-      if(data.settings.iconRandomLastRollTs !== undefined) sSet('forge-icon-random-last-roll', data.settings.iconRandomLastRollTs);
-    }
+    _applyCloudSettings(data.settings);
     // l'ordre des onglets / l'état global du Timer peuvent venir du cloud :
     // réordonner la barre SANS rendre (les données viennent juste d'être posées)
     try{ _applyTimerTabVisibility(!!silent); }catch(e){}
@@ -9100,6 +9108,15 @@ async function syncCloudOnStartup(){
         if(alreadyRestored){
           _cloudReady = true;
           setCloudSyncStatus('Données cloud récupérées');
+          // Les DONNÉES sont déjà à jour dans cette session, mais les
+          // RÉGLAGES peuvent avoir changé sur un autre appareil (Timer
+          // « Partout », ordre des onglets…). Les appliquer quand même,
+          // sinon le réglage distant n'arrive JAMAIS (web ↔ téléphone).
+          try{
+            _cloudApplying = true;
+            try{ _applyCloudSettings(data.settings); }finally{ _cloudApplying = false; }
+          }catch(e){}
+          try{ _applyTimerTabVisibility(true); }catch(e){}
           return;
         }
         try{ sessionStorage.setItem('forge-cloud-restored-user', String(currentUser.uid || currentUser.email || '')); }catch(e){}
@@ -9120,6 +9137,25 @@ async function syncCloudOnStartup(){
     console.error('[FORGE] Récupération cloud échouée :', e);
   }
 }
+
+/* Rafraîchissement périodique des SEULS réglages (1 lecture de doc / min) :
+   permet le suivi en direct entre appareils — « Partout » coché sur le web
+   masque le Timer sur le téléphone (et inversement) sans attendre un
+   redémarrage. On saute la lecture tant qu'une poussée locale est en file
+   (l'état LOCAL est alors plus récent que le document). */
+setInterval(async ()=>{
+  if(!currentUser || !_cloudReady || _cloudApplying || _cloudSyncPending) return;
+  try{
+    const data = await fbGetDocument(userDocRef());
+    if(data && data.settings){
+      _cloudApplying = true;
+      try{
+        _applyCloudSettings(data.settings);
+        _applyTimerTabVisibility(true);
+      }finally{ _cloudApplying = false; }
+    }
+  }catch(e){ /* offline : rien */ }
+}, 60000);
 
 function renderAccountUI(user){
   const el = document.getElementById('accountSection');

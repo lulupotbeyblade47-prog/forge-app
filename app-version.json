@@ -1,6 +1,6 @@
 {
-  "versionCode": 51,
-  "versionName": "109.76",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.76/forge-android-v109.76.apk",
-  "releaseNotes": "Le réglage Timer « Partout » n'est plus écrasé par les autres appareils : seuls les appareils qui ont explicitement réglé le Timer global peuvent le réécrire dans le cloud."
+  "versionCode": 52,
+  "versionName": "109.77",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.77/forge-android-v109.77.apk",
+  "releaseNotes": "Les réglages se synchronisent maintenant en direct entre appareils (Timer « Partout », ordre des onglets, thème, icône…) : changer sur le Web arrive sur le téléphone en moins d'une minute, et inversement — plus besoin de redémarrer."
 }

@@ -3192,7 +3192,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.47 · partage par pseudo</div>
+    <div class="settings-version">FORGE · v109.48 · séances 1-2-3</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -7757,12 +7757,28 @@ document.getElementById('confirmPRBtn').onclick=()=>{ const exName=_prSelectedEx
    ================================================================ */
 let programs = [];
 function savePrograms(){ sSet('forge-programs', programs); }
+/* v109.47 : les passages s'appellent désormais « Séance 1/2/3 » partout.
+   Migration des anciens labels stockés ('Passage N' -> 'Séance N'). */
+function patchProgramLabelsToSeance(){
+  let changed=false;
+  (programs||[]).forEach(p=>(p.exercises||[]).forEach(ex=>(ex.sessions||[]).forEach(s=>{
+    const m=typeof s.label==='string' && s.label.match(/^Passage (\d+)$/);
+    if(m){ s.label='Séance '+m[1]; changed=true; }
+  })));
+  (profiles||[]).forEach(p=>DAY_KEYS.forEach(d=>(p.week[d]||[]).forEach(r=>{
+    (_programRefs(r)||[]).forEach(ref=>{
+      const m=typeof ref.sessionLabel==='string' && ref.sessionLabel.match(/^Passage (\d+)$/);
+      if(m){ ref.sessionLabel='Séance '+m[1]; changed=true; }
+    });
+  })));
+  if(changed){ savePrograms(); persistProfiles(); }
+}
 
 function _defaultProgSessions(){
   return [
-    {label:'Passage 1',sets:5,reps:5,percent:65},
-    {label:'Passage 2',sets:3,reps:3,percent:80},
-    {label:'Passage 3',sets:3,reps:2,percent:95}
+    {label:'Séance 1',sets:5,reps:5,percent:65},
+    {label:'Séance 2',sets:3,reps:3,percent:80},
+    {label:'Séance 3',sets:3,reps:2,percent:95}
   ];
 }
 function _progSessions(ex){
@@ -7772,7 +7788,7 @@ function _progEsc(value){return String(value??'').replace(/&/g,'&amp;').replace(
 function _normalizeProgramExercise(ex){
   if(!Array.isArray(ex.sessions)||!ex.sessions.length) ex.sessions=_defaultProgSessions();
   ex.sessions.forEach((s,i)=>{
-    const defaults=_defaultProgSessions()[i]||{label:`Passage ${i+1}`,sets:3,reps:3,percent:80};
+    const defaults=_defaultProgSessions()[i]||{label:`Séance ${i+1}`,sets:3,reps:3,percent:80};
     Object.keys(defaults).forEach(k=>{if(s[k]===undefined)s[k]=defaults[k];});
   });
   return ex;
@@ -7846,8 +7862,8 @@ function renderProgramExoList(){
         <div class="set-col"><span class="set-col-label">Sem. début</span><button class="drum-val-btn" style="font-size:16px;" data-progexf="startWeek" data-progexi="${i}" data-progexv="${ex.startWeek}">${ex.startWeek}</button></div>
       </div>
     <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="set-col-label">Passages programmés par semaine</span><button class="btn ghost" style="padding:6px 10px;font-size:11px;" data-progaddsession="${i}">+ Passage</button></div>
-        ${ex.sessions.map((s,si)=>{const key=`${i}-${si}`,label=String(s.label||`Passage ${si+1}`);return `<div style="display:flex;gap:7px;align-items:flex-start;margin:8px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="set-col-label">Séances programmées par semaine</span><button class="btn ghost" style="padding:6px 10px;font-size:11px;" data-progaddsession="${i}">+ Séance</button></div>
+        ${ex.sessions.map((s,si)=>{const key=`${i}-${si}`,label=String(s.label||`Séance ${si+1}`);return `<div style="display:flex;gap:7px;align-items:flex-start;margin:8px 0;">
           <details data-progsessiondetails="${key}" ${programOpenSessions.has(key)?'open':''} style="flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px;">
           <summary style="cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:4px;"><strong data-progsessionlabel="${key}" style="font-size:14px;color:var(--chalk);">${_progEsc(label)}</strong><span style="font-size:11px;color:var(--ash);">${s.sets}×${s.reps} @${s.percent}% de la charge hebdo</span><span style="font-size:10px;color:var(--ember);text-transform:uppercase;letter-spacing:.04em;">Modifier ↓</span></summary>
             <div style="padding-top:10px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><input type="text" value="${_progEsc(label)}" aria-label="Nom du passage" data-progsessionname="${i}" data-progsessioni="${si}" style="flex:1;min-width:0;font-weight:700;"></div>
@@ -7882,7 +7898,7 @@ function renderProgramExoList(){
   });
   el.querySelectorAll('[data-progsessionname]').forEach(input=>input.onchange=()=>{
     const ex=programExosDraft[+input.dataset.progsessionname], s=ex.sessions[+input.dataset.progsessioni];
-    s.label=input.value.trim()||`Passage ${+input.dataset.progsessioni+1}`;
+    s.label=input.value.trim()||`Séance ${+input.dataset.progsessioni+1}`;
     const key=`${input.dataset.progsessionname}-${input.dataset.progsessioni}`,summary=el.querySelector(`[data-progsessionlabel="${key}"]`);
     if(summary) summary.textContent=s.label;
   });
@@ -7900,7 +7916,7 @@ function renderProgramExoList(){
   });
   el.querySelectorAll('[data-progaddsession]').forEach(btn=>btn.onclick=()=>{
     const sessions=programExosDraft[+btn.dataset.progaddsession].sessions;
-    sessions.push({label:`Passage ${sessions.length+1}`,sets:3,reps:3,percent:80});
+    sessions.push({label:`Séance ${sessions.length+1}`,sets:3,reps:3,percent:80});
     renderProgramExoList();
   });
   el.querySelectorAll('[data-progrmsession]').forEach(btn=>btn.onclick=()=>{
@@ -8010,11 +8026,11 @@ function openProgramSchedule(progId, exerciseName=null){
   days.innerHTML=Array.from({length:count},(_,i)=>{
     const existing=targets.find(({routine})=>_programRefs(routine).some(ref=>ref.programId===progId&&ref.sessionIndex===i&&_scheduleExerciseNames.some(name=>!Array.isArray(ref.exerciseNames)||ref.exerciseNames.includes(name))));
     const current=existing?`${existing.day}::${existing.routine.id}`:'';
-    return `<label style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);"><span>Passage ${i+1}</span><select data-plan-target="${i}" style="min-width:180px;max-width:65%;padding:8px;border-radius:10px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);"><option value="">— Non planifié —</option>${options}</select></label>`;
+    return `<label style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);"><span>Séance ${i+1}</span><select data-plan-target="${i}" style="min-width:180px;max-width:65%;padding:8px;border-radius:10px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);"><option value="">— Non planifié —</option>${options}</select></label>`;
   }).join('');
   days.querySelectorAll('[data-plan-target]').forEach(sel=>{const i=+sel.dataset.planTarget;const existing=targets.find(({routine})=>_programRefs(routine).some(ref=>ref.programId===progId&&ref.sessionIndex===i&&_scheduleExerciseNames.some(name=>!Array.isArray(ref.exerciseNames)||ref.exerciseNames.includes(name))));if(existing)sel.value=`${existing.day}::${existing.routine.id}`;});
   if(!targets.length) days.insertAdjacentHTML('beforeend','<div style="font-size:12px;color:var(--ash);margin-top:10px;">Aucune séance Tracker existante. Crée d’abord ta séance dans Tracker, puis reviens ici pour y ajouter cette progression.</div>');
-  else days.insertAdjacentHTML('beforeend','<div style="font-size:12px;color:var(--ash);margin-top:10px;">Les passages laissés sur « Non planifié » ne seront pas ajoutés à Tracker. Tu pourras les planifier plus tard.</div>');
+  else days.insertAdjacentHTML('beforeend','<div style="font-size:12px;color:var(--ash);margin-top:10px;">Les séances laissées sur « Non planifié » ne seront pas ajoutés à Tracker. Tu pourras les planifier plus tard.</div>');
   document.getElementById('programScheduleOverlay').classList.add('open'); _navPush(closeProgramSchedule);
 }
 function closeProgramSchedule(){document.getElementById('programScheduleOverlay').classList.remove('open');_scheduleProgramId=null;_scheduleExerciseNames=null;_scheduleReturnExerciseName=null;}
@@ -8028,7 +8044,7 @@ document.getElementById('programScheduleSaveBtn').onclick=()=>{
   const planned=selections.filter(sel=>sel.value);
   const hadLinks=DAY_KEYS.some(day=>(profile.week[day]||[]).some(routine=>_programRefs(routine).some(ref=>ref.programId===prog.id&&(!Array.isArray(ref.exerciseNames)||ref.exerciseNames.some(name=>exerciseNames.includes(name))))));
   if(!planned.length&&hadLinks){
-    showConfirm('Aucun passage sélectionné : la progression sera retirée des séances Tracker (elle restera dans l’onglet Progression). Continuer ?',()=>_applyProgramSchedule(prog,profile,selections,exerciseNames));
+    showConfirm('Aucune séance sélectionnée : la progression sera retirée des séances Tracker (elle restera dans l’onglet Progression). Continuer ?',()=>_applyProgramSchedule(prog,profile,selections,exerciseNames));
     return;
   }
   _applyProgramSchedule(prog,profile,selections,exerciseNames);
@@ -8046,7 +8062,7 @@ function _applyProgramSchedule(prog,profile,selections,exerciseNames){
     const sessionIndex=+sel.dataset.planTarget,[day,routineId]=sel.value.split('::');
     const routine=(profile.week[day]||[]).find(s=>String(s.id)===routineId); if(!routine)return;
     routine.programRefs||=[];
-    routine.programRefs.push({programId:prog.id,sessionIndex,sessionLabel:`Passage ${sessionIndex+1}`,exerciseNames:exerciseNames.slice()});
+    routine.programRefs.push({programId:prog.id,sessionIndex,sessionLabel:`Séance ${sessionIndex+1}`,exerciseNames:exerciseNames.slice()});
   });
   const returnExerciseName=_scheduleReturnExerciseName;
   persistProfiles(); _navClose(closeProgramSchedule); renderSeanceList(); renderProgramDetail(prog.id,returnExerciseName);
@@ -8177,7 +8193,7 @@ function renderProgramDetail(progId, exerciseName=null){
       if(!planned.has(si)) return;
       DAY_KEYS.forEach(day=>(profile.week[day]||[]).forEach(routine=>{
         const ref=_programRefs(routine).find(r=>r.programId===progId && (Number(r.sessionIndex)||0)===si && (!Array.isArray(r.exerciseNames)||r.exerciseNames.includes(ex.exerciseName)));
-        if(ref) planSummary.push(`${_progEsc(ex.exerciseName)} · ${_progEsc(s.label||('Passage '+(si+1)))} — ${day[0].toUpperCase()+day.slice(1)} · ${_progEsc(routine.name)}`);
+        if(ref) planSummary.push(`${_progEsc(ex.exerciseName)} · ${_progEsc(s.label||('Séance '+(si+1)))} — ${day[0].toUpperCase()+day.slice(1)} · ${_progEsc(routine.name)}`);
       }));
     });
   });
@@ -8196,7 +8212,7 @@ function renderProgramDetail(progId, exerciseName=null){
     showConfirm(`Rattacher « ${f.name} » de la séance « ${f.routine.name} » (${f.day}) ? La copie figée sera remplacée par le lien vivant.`,()=>{
       const idx=f.routine.exercises.indexOf(f.block);
       if(idx>=0) f.routine.exercises.splice(idx,1);
-      f.routine.programRefs=(f.routine.programRefs||[]).concat([{programId:prog.id,sessionIndex:f.sessionIndex,sessionLabel:`Passage ${f.sessionIndex+1}`,exerciseNames:[f.name]}]);
+      f.routine.programRefs=(f.routine.programRefs||[]).concat([{programId:prog.id,sessionIndex:f.sessionIndex,sessionLabel:`Séance ${f.sessionIndex+1}`,exerciseNames:[f.name]}]);
       persistProfiles();
       _ensureProgramStartDate(prog); savePrograms();
       renderProgramDetail(progId,exerciseName);
@@ -8317,7 +8333,7 @@ function insertProgressionIntoSeance(prog, ex, sessionIndex){
     }
     ref.exerciseNames=Array.isArray(ref.exerciseNames)?ref.exerciseNames.concat([ex.exerciseName]):[ex.exerciseName];
   } else {
-    template.programRefs.push({programId:prog.id, sessionIndex, sessionLabel:`Passage ${sessionIndex+1}`, exerciseNames:[ex.exerciseName]});
+    template.programRefs.push({programId:prog.id, sessionIndex, sessionLabel:`Séance ${sessionIndex+1}`, exerciseNames:[ex.exerciseName]});
   }
   // 2) retirer l'éventuelle copie figée du même exercice : le poids calculé
   //    prend le relais (sinon il y aurait deux blocs pour le même nom)
@@ -9715,6 +9731,7 @@ document.getElementById('shareImportBtn').onclick=()=>openShareOverlay('import-p
   if(!demoSeeded){ seedDemoProfiles(); seedDemoLogsOnce(); sSet('forge-demo-seeded', true); }
   await loadPRs();
   programs = await sGet('forge-programs', []);
+  patchProgramLabelsToSeance();
   const demoPatchedV2 = await sGet('forge-demo-patch-v2', false);
   if(!demoPatchedV2){ patchDemoV2(); sSet('forge-demo-patch-v2', true); }
   const demoPatchedV3 = await sGet('forge-demo-patch-v3', false);

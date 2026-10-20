@@ -3254,7 +3254,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.82 · scroll sur la courbe, partage retiré de Progrès</div>
+    <div class="settings-version">FORGE · v109.83 · navigation entre onglets plus fluide</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3851,22 +3851,26 @@ function sSet(key, val){
 // parasite quand l'ordre sauvegardé est appliqué au démarrage.
 let VIEW_ORDER = ['timer','tracker','stats','progression','social'];
 let currentViewIdx = 0;
+const _deferTabRenders = []; // v109.83 : rendus lourds des onglets, différés après le glissement
 
 function goToView(idx, animate=true){
   if(ds) return;
   if(idx<0||idx>=VIEW_ORDER.length) return;
   const prevIdx = currentViewIdx;
+  const dist = Math.abs(idx - prevIdx);
+  // v109.83 : fluidité — (a) sauter plusieurs onglets d'un coup (Social ↔
+  // Tracker…) échange la vue SANS glisser à travers toutes les vues
+  // intermédiaires ; (b) les rendus lourds partent APRÈS la fin du
+  // glissement, ils bloquaient la première frame et ça granulait.
+  const effective = animate && dist <= 1;
   currentViewIdx = idx;
   const track = document.getElementById('viewsTrack');
-  if(!animate) track.style.transition='none';
+  if(!effective) track.style.transition='none';
   track.style.transform = `translateX(${-idx*100}%)`;
-  if(!animate) requestAnimationFrame(()=>{ track.style.transition=''; });
+  if(!effective) requestAnimationFrame(()=>{ track.style.transition=''; });
   // Surligner par data-view (PAS par index) : si le Timer est masqué, son
   // bouton display:none reste dans le DOM et décalerait tout index i.
   document.querySelectorAll('.tabbtn').forEach(b=> b.classList.toggle('active', b.dataset.view===VIEW_ORDER[idx]));
-  if(VIEW_ORDER[idx]==='stats') renderStats();
-  if(VIEW_ORDER[idx]==='progression') renderProgramList();
-  if(VIEW_ORDER[idx]==='social') renderSocialChat();
   // Même logique que le Tracker pour tous les onglets : appuyer sur
   // l'onglet courant alors qu'une sous-vue est ouverte (record, discussion,
   // profil, programme…) la ferme et ramène à l'accueil de l'onglet.
@@ -3883,12 +3887,16 @@ function goToView(idx, animate=true){
     } else if(VIEW_ORDER[prevIdx] === 'tracker' && currentSeanceRef){
       _flipCloseSeance(_closeSeanceView);
     } else if(!currentSeanceRef){
-      // Force un nouveau rendu à chaque visite de l'onglet (comme Stats déjà) :
-      // évite le bug où le profil est bien sélectionné mais rien ne s'affiche
-      // tant qu'on n'a pas re-cliqué dessus manuellement.
-      renderSeanceList();
+      _deferTabRenders.push(renderSeanceList);
     }
   }
+  if(VIEW_ORDER[idx]==='stats') _deferTabRenders.push(renderStats);
+  if(VIEW_ORDER[idx]==='progression') _deferTabRenders.push(renderProgramList);
+  if(VIEW_ORDER[idx]==='social') _deferTabRenders.push(renderSocialChat);
+  // Les rendus n'arrivent qu'ici, après le glissement (0,32 s) — ou
+  // immédiatement quand il n'y a pas d'animation.
+  if(effective){ setTimeout(()=>{ while(_deferTabRenders.length) _deferTabRenders.shift()(); }, 340); }
+  else { while(_deferTabRenders.length) _deferTabRenders.shift()(); }
 }
 
 /* Réordonne physiquement les vues (views-track) et les boutons (tabbar)
@@ -8644,7 +8652,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 57, name: '109.82' };
+const FORGE_INDEX_VERSION = { code: 58, name: '109.83' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;

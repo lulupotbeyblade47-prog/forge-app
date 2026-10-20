@@ -1,6 +1,6 @@
 {
-  "versionCode": 57,
-  "versionName": "109.82",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.82/forge-android-v109.82.apk",
-  "releaseNotes": "Stats : on peut maintenant slisser vers le haut/bas directement sur la courbe pour faire défiler la page. Progrès : le bouton 📤 Partage est retiré (tu peux toujours supprimer un programme avec × et ouvrir son détail au clic)."
+  "versionCode": 58,
+  "versionName": "109.83",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.83/forge-android-v109.83.apk",
+  "releaseNotes": "Navigation entre onglets plus fluide : les rendus lourds attendent la fin du glissement, et un saut sur plusieurs onglets échange la vue directement au lieu de traverser tous les écrans."
 }

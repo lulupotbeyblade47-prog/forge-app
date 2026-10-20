@@ -3055,8 +3055,8 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
   <!-- SETTINGS VIEW : ouverte via ⚙️ depuis l'onglet Social -->
   <section class="view" id="view-settings">
     <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 20px;gap:10px;">
+      <button class="btn ghost" id="settingsCloseBtn" aria-label="Retour" style="padding:6px 14px;">‹ Retour</button>
       <h2 style="font-size:18px;letter-spacing:0.04em;">Réglages</h2>
-      <button class="btn ghost" id="settingsCloseBtn" aria-label="Fermer les réglages" style="display:none;padding:8px 14px;">✕ Fermer</button>
     </div>
 
     <div class="settings-section">
@@ -3267,7 +3267,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.61 · nettoyage + réglages allégés</div>
+    <div class="settings-version">FORGE · v109.62 · admin sur le social + retour</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9234,8 +9234,16 @@ function showForgeAdminPanel(){
   };
   search.addEventListener('input',renderDirectory);
   (async()=>{
-    try{profiles=await fbGetCollection('publicProfiles');profiles.sort((a,b)=>String(a.data.username||'').localeCompare(String(b.data.username||''),'fr'));renderDirectory();}
-    catch(e){ setStatus('Chargement impossible : '+(e.message||e)+(String(e.message||e).indexOf('permissions')>-1?' — reconnecte-toi puis rouvre Administration.':'')); forgeToast('Administration : chargement échoué'); }
+    try{
+      // on passe par la même source que le Social (qui marche sur toutes
+      // les plateformes) au lieu de la collection directe admin
+      const cache=await loadPublicProfiles(true);
+      profiles=Object.entries(cache||{}).map(([uid,p])=>({id:uid, data:{username:(p&&p.username)||''}})).filter(r=>r.data.username);
+      profiles.sort((a,b)=>String(a.data.username||'').localeCompare(String(b.data.username||''),'fr'));
+      renderDirectory();
+      if(!profiles.length) setStatus('Aucun profil Forge enregistré pour l\'instant.');
+    }
+    catch(e){ setStatus('Chargement impossible : '+(e.message||e)); forgeToast('Administration : chargement échoué'); }
   })();
 }
 

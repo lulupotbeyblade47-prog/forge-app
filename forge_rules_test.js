@@ -58,6 +58,10 @@ function userDb(uid, claims){
   // 8. to != clé de la boîte -> refusé
   await assertFails(a.doc('inbox/'+userKey+'/items/shr4').set({to:claimKey('Ghost'), fromUid:'uidA', fromUsername:'PlayerA', kind:'session', bundle:{}, createdAt:new Date().toISOString()}));
 
+
+  // 9. message facultatif valide -> autorisé ; script/js dans message reste permis (champ texte)
+  const browser = require('@firebase/rules-unit-testing').assertSucceeds;
+  await browser(b.doc('inbox/'+userKey+'/items/shr5').set({to:userKey, fromUid:'uidB', fromUsername:'PlayerB', kind:'profile', message:'voila mon profil', bundle:{kind:'profile'}, createdAt:new Date().toISOString()}));
   console.log('TOUTES LES RÈGLES SONT CONFORMES ✓');
   await env.cleanup();
   process.exit(0);

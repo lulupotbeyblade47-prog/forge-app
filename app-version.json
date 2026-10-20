@@ -1,6 +1,6 @@
 {
-  "versionCode": 52,
-  "versionName": "109.77",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.77/forge-android-v109.77.apk",
-  "releaseNotes": "Les réglages se synchronisent maintenant en direct entre appareils (Timer « Partout », ordre des onglets, thème, icône…) : changer sur le Web arrive sur le téléphone en moins d'une minute, et inversement — plus besoin de redémarrer."
+  "versionCode": 53,
+  "versionName": "109.78",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.78/forge-android-v109.78.apk",
+  "releaseNotes": "Correction de navigation : le retour matériel ferme maintenant le bon écran dans TOUTES les fenêtres (Administration Forge, partages, choix du pseudo, confirmations…) au lieu de fermer la vue en dessous."
 }

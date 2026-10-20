@@ -3265,7 +3265,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.77 · réglages sync en direct entre appareils</div>
+    <div class="settings-version">FORGE · v109.78 · retours matériel dans les dialogues</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8637,7 +8637,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 52, name: '109.77' };
+const FORGE_INDEX_VERSION = { code: 53, name: '109.78' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -8682,10 +8682,14 @@ function showForgeDialog({variant='',kicker='Forge',title='',message='',detail='
     if(detail){const d=document.createElement('p');d.className='forge-dialog-detail';d.textContent=detail;sheet.append(d);}
     let input=null,error=null;
     if(inputLabel){const label=document.createElement('label');label.className='forge-dialog-label';label.textContent=inputLabel;input=document.createElement('input');input.className='forge-dialog-input';input.value=inputValue;input.placeholder=placeholder;input.autocomplete='nickname';input.maxLength=20;label.htmlFor='forgeDialogInput';input.id='forgeDialogInput';error=document.createElement('div');error.className='forge-dialog-error';sheet.append(label,input,error);}
-    const actions=document.createElement('div');actions.className='forge-dialog-actions'+(tertiaryLabel?' forge-dialog-actions-tertiary':'');const cancel=document.createElement('button');cancel.className='btn ghost';cancel.textContent=secondaryLabel;const confirm=document.createElement('button');confirm.className='btn primary';confirm.textContent=primaryLabel;actions.append(cancel,confirm);if(tertiaryLabel){const tertiary=document.createElement('button');tertiary.className='btn ghost';tertiary.textContent=tertiaryLabel;tertiary.onclick=()=>close('tertiary');actions.append(tertiary);}sheet.append(actions);overlay.append(sheet);document.body.append(overlay);
+    const actions=document.createElement('div');actions.className='forge-dialog-actions'+(tertiaryLabel?' forge-dialog-actions-tertiary':'');const cancel=document.createElement('button');cancel.className='btn ghost';cancel.textContent=secondaryLabel;const confirm=document.createElement('button');confirm.className='btn primary';confirm.textContent=primaryLabel;actions.append(cancel,confirm);if(tertiaryLabel){const tertiary=document.createElement('button');tertiary.className='btn ghost';tertiary.textContent=tertiaryLabel;tertiary.onclick=()=>{close('tertiary');_navClose(closeNav);};actions.append(tertiary);}sheet.append(actions);overlay.append(sheet);document.body.append(overlay);
     let done=false;const close=value=>{if(done)return;done=true;document.removeEventListener('keydown',onKey);overlay.remove();resolve(value);};
-    const onKey=e=>{if(e.key==='Escape')close(null);if(e.key==='Enter'&&input){e.preventDefault();confirm.click();}};document.addEventListener('keydown',onKey);overlay.addEventListener('click',e=>{if(e.target===overlay)close(null);});cancel.onclick=()=>close(null);
-    confirm.onclick=async()=>{if(validate){confirm.disabled=true;error.textContent='';try{const result=await validate(input.value);if(result===true)close(input.value.trim());else{error.textContent=typeof result==='string'?result:'Vérifie ce champ.';confirm.disabled=false;input.focus();}}catch(e){error.textContent=e.message||'Impossible de vérifier pour le moment.';confirm.disabled=false;input.focus();}}else close(true);};if(input)setTimeout(()=>input.focus(),80);
+    // Navigation Android : le dialogue s'enregistre dans la pile — le retour
+    // matériel le ferme (annulation) au lieu de fermer la vue DERRIÈRE lui.
+    const closeNav=()=>close(null);
+    _navPush(closeNav);
+    const onKey=e=>{if(e.key==='Escape'){_navClose(closeNav);}if(e.key==='Enter'&&input){e.preventDefault();confirm.click();}};document.addEventListener('keydown',onKey);overlay.addEventListener('click',e=>{if(e.target===overlay)_navClose(closeNav);});cancel.onclick=()=>_navClose(closeNav);
+    confirm.onclick=async()=>{if(validate){confirm.disabled=true;error.textContent='';try{const result=await validate(input.value);if(result===true){close(input.value.trim());_navClose(closeNav);}else{error.textContent=typeof result==='string'?result:'Vérifie ce champ.';confirm.disabled=false;input.focus();}}catch(e){error.textContent=e.message||'Impossible de vérifier pour le moment.';confirm.disabled=false;input.focus();}}else{close(true);_navClose(closeNav);}};if(input)setTimeout(()=>input.focus(),80);
   });
 }
 function initForgeAndroidUpdateCheck(){
@@ -9378,8 +9382,13 @@ function showForgeAdminPanel(){
   const list=document.createElement('div');list.className='forge-admin-list';
   const detail=document.createElement('div');
   const closeButton=document.createElement('button');closeButton.className='btn ghost block';closeButton.textContent='Fermer';
-  const close=()=>overlay.remove();closeButton.onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+  // Navigation Android : le panneau admin DOIT être dans la pile — sinon le
+  // retour matériel fermait les Réglages DERRIÈRE le panneau (voire déclenchait
+  // « appuie encore pour quitter ») au lieu de fermer le panneau lui-même.
+  const closeNav=()=>overlay.remove();
+  closeButton.onclick=()=>_navClose(closeNav);overlay.addEventListener('click',e=>{if(e.target===overlay)_navClose(closeNav);});
   sheet.append(kicker,title,intro,search,status,list,detail,closeButton);overlay.append(sheet);document.body.append(overlay);
+  _navPush(closeNav);
   let profiles=[];
   const setStatus=message=>{status.textContent=message;};
   const downloadBackup=(uid,data)=>{

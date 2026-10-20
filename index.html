@@ -3275,7 +3275,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.56 · nouvelle discussion</div>
+    <div class="settings-version">FORGE · v109.57 · records visibles par défaut</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9504,7 +9504,7 @@ function _shareToast(title,summary){
   forgeToast(`Importé : ${bits.join(', ') || 'rien'}.${summary.renamed?` Renommé « ${summary.renamed} » (un profil portait déjà ce nom).`:''}`, 8000);
 }
 function openShareOverlay(step){
-  _shareState={step:step||'menu'};
+  _shareState={step:step||'menu', context:{}};
   _shareHistory=[];
   document.getElementById('shareOverlay').classList.add('open');
   _navPush(_closeShareOverlay);
@@ -9645,7 +9645,7 @@ function _shareRender(){
     }
     body.innerHTML=top+
       `<button class="btn ghost block" data-shareact="export" style="border-color:var(--ember);color:var(--ember);margin-bottom:10px;">📤 Envoyer à un ami…</button>`+
-      (signed&&pseudo?`<button class="btn ghost block" data-shareact="inbox">💬 Réceptions${_shareState.context.unread?' ('+_shareState.context.unread+' nouveaux)':''}</button>`:'')+
+      (signed&&pseudo?`<button class="btn ghost block" data-shareact="inbox">💬 Réceptions${(_shareState.context||{}).unread?' ('+_shareState.context.unread+' nouveaux)':''}</button>`:'')+
       (!signed&&!pseudo?`<div style="font-size:11px;color:var(--ash);margin-top:10px;text-align:center;">Les partages envoyés par pseudo créent un message dans l'app de ton ami.</div>`:'');
     body.querySelectorAll('[data-shareact]').forEach(btn=>btn.onclick=()=>{
       const act=btn.dataset.shareact;
@@ -9785,11 +9785,12 @@ function _shareRender(){
       try{
         // Envoi depuis une discussion existante : destination imposée
         if(_shareThreadTarget){
-          await sendThreadMessage(_shareThreadTarget.pk, _shareThreadTarget.otherUid, _shareThreadTarget.otherUsername, {text:(document.getElementById('shareSendMessage')||{}).value||'', bundle});
+          const t=_shareThreadTarget;
+          await sendThreadMessage(t.pk, t.otherUid, t.otherUsername, {text:(document.getElementById('shareSendMessage')||{}).value||'', bundle});
           forgeToast('Envoyé dans la discussion ✓');
           _shareReplyTo=null;
           _navClose(_closeShareOverlay);
-          if(typeof openThread==='function') openThread(_shareThreadTarget.pk, _shareThreadTarget.otherUid, _shareThreadTarget.otherUsername, true).catch(()=>{});
+          if(typeof openThread==='function') openThread(t.pk, t.otherUid, t.otherUsername, true).catch(()=>{});
           return;
         }
         const sent=await _shareSendToPseudo(bundle, input.value, (document.getElementById('shareSendMessage')||{}).value);
@@ -9948,11 +9949,11 @@ function _profileDocForWrite(base){
     key:currentPublicProfile.key,
     photoURL:photo||'',
     photoIsCustom:!!(base&&base.photoIsCustom),
-    showPRs:!!(base&&base.showPRs),
+    showPRs:!base || base.showPRs!==false,
     invisible:!!(base&&base.invisible),
     likes:(base&&base.likes)||0,
     likedBy:(base&&base.likedBy)||[],
-    prsSummary:(base&&base.showPRs)?(base.prsSummary||buildPrsSummary()):[],
+    prsSummary:(base && base.showPRs===false) ? [] : buildPrsSummary(),
     updatedAt:new Date().toISOString()
   };
 }
@@ -10108,7 +10109,7 @@ function renderSocialMyCard(){
       <div id="socialMyAvatar" style="position:relative;flex-shrink:0;">${_avatarHtml(currentUser.uid,48,currentPublicProfile.username)}</div>
       <div class="settings-row-left" style="min-width:0;">
         <div class="settings-row-label">@${_progEsc(currentPublicProfile.username)} ❤️ ${likes}</div>
-        <div class="settings-row-sub">${me.showPRs?'🏋️ Records visibles sur ton profil':'Records perso cachés'} · ${me.invisible?' invisible dans la recherche':'visible dans la recherche'}</div>
+        <div class="settings-row-sub">${me.showPRs!==false?'🏋️ Records visibles sur ton profil':'Records perso cachés'} · ${me.invisible?' invisible dans la recherche':'visible dans la recherche'}</div>
       </div>
       <div style="color:var(--ash);font-size:18px;">›</div>
     </div>
@@ -10328,7 +10329,8 @@ async function openProfileView(uid){
   document.getElementById('socialThreadView').style.display='none';
   const panel=document.getElementById('socialProfileView');
   panel.style.display='block';
-  const prsList=(p.showPRs&&Array.isArray(p.prsSummary))?p.prsSummary:[];
+  const pShow=(p.showPRs!==false);
+  const prsList=(pShow&&Array.isArray(p.prsSummary))?p.prsSummary:[];
   panel.innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin:4px 0 16px;">
       <button class="btn ghost" id="profileBackBtn" style="padding:6px 12px;">‹</button>
@@ -10348,13 +10350,13 @@ async function openProfileView(uid){
     <div class="settings-section">
       <div class="settings-section-title">🏆 Records perso</div>
       <div class="settings-card">
-        ${me&&!p.showPRs?'<div style="font-size:12px;color:var(--ash);">Cachés — active « 🏋️ Afficher mes records perso » dans ⚙️ Réglages pour les montrer.</div>':''}
-        ${(!me&&!p.showPRs)?'<div style="font-size:12px;color:var(--ash);">@'+_progEsc(String(p.username||'?'))+' ne montre pas ses records.</div>':''}
-        ${(p.showPRs&&prsList.length)?prsList.map(pr=>{
+        ${me&&!pShow?'<div style="font-size:12px;color:var(--ash);">Cachés — active « 🏋️ Afficher mes records perso » dans ⚙️ Réglages pour les montrer.</div>':''}
+        ${(!me&&!pShow)?'<div style="font-size:12px;color:var(--ash);">@'+_progEsc(String(p.username||'?'))+' ne montre pas ses records.</div>':''}
+        ${(pShow&&prsList.length)?prsList.map(pr=>{
           const unitTxt=pr.unit==='s'?' s':(pr.unit==='kg'?' kg':(pr.unit&&pr.unit!=='reps'?' '+_progEsc(String(pr.unit)):''));
           return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--border);font-size:13px;"><span>${_progEsc(pr.exercise)}</span><span style="font-weight:700;">${_progEsc(String(pr.value))}${unitTxt}</span></div>`;
         }).join(''):''}
-        ${(p.showPRs&&!prsList.length)?'<div style="font-size:12px;color:var(--ash);">Aucun record enregistré.</div>':''}
+        ${(pShow&&!prsList.length)?'<div style="font-size:12px;color:var(--ash);">Aucun record enregistré.</div>':''}
       </div>
     </div>`;
   const av=document.getElementById('pvAvatar');
@@ -10475,7 +10477,7 @@ async function initSocialSettingToggles(){
   const me=_ppCache[currentUser&&currentUser.uid]||{};
   const prsTog=document.getElementById('showPRsToggle');
   const invTog=document.getElementById('invisibleToggle');
-  if(prsTog){ prsTog.checked=!!me.showPRs; prsTog.onchange=async()=>{
+  if(prsTog){ prsTog.checked=me.showPRs!==false; prsTog.onchange=async()=>{
     if(!currentUser){ prsTog.checked=false; forgeToast('Connecte-toi d\'abord'); return; }
     try{ const doc=await syncMyPublicProfileWith({showPRs:prsTog.checked}); forgeToast(prsTog.checked?'Records visibles sur ton profil ✓':'Records cachés ✓'); }catch(e){ prsTog.checked=!prsTog.checked; forgeToast('Impossible : '+((e&&e.message)||'?')); }
   }; }

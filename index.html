@@ -3267,7 +3267,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.64 · dialogs au-dessus des réglages</div>
+    <div class="settings-version">FORGE · v109.65 · restauration avant publication</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8932,8 +8932,10 @@ async function handlePostSignIn(){
   // hériterait des données locales de l'ancien)
   await maybeOfferFreshStart();
   await ensureForgeUsername();
-  await syncMyPublicProfile().catch(()=>{});
+  // restaurer le cloud AVANT de publier le profil (données locales
+  // potentiellement issues d'un autre compte sinon)
   await syncCloudOnStartup();
+  await syncMyPublicProfile().catch(()=>{});
 }
 
 async function syncCloudOnStartup(){
@@ -9123,7 +9125,7 @@ async function initAccountSettings(){
     currentUser = await fbGetCurrentUser();
     currentPublicProfile = currentUser ? await fbGetDocument('publicProfiles/'+currentUser.uid).catch(()=>null) : null;
     renderAccountUI(currentUser);
-    if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncMyPublicProfile().catch(()=>{});await syncCloudOnStartup();}
+    if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncCloudOnStartup();await syncMyPublicProfile().catch(()=>{});}
     else await maybeOfferGoogleConnect();
     return;
   }
@@ -9145,8 +9147,10 @@ async function initAccountSettings(){
       renderAccountUI(currentUser);
       await maybeOfferFreshStart();
       await ensureForgeUsername();
-      await syncMyPublicProfile().catch(()=>{});
+      // IMPORTANT : restaurer d'abord le cloud (sinon on publie depuis
+      // des données locales potentiellement d'un autre compte)
       await syncCloudOnStartup();
+      await syncMyPublicProfile().catch(()=>{});
       return;
     }
   }catch(e){

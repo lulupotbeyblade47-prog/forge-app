@@ -3275,7 +3275,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.58 · discussions corrigées</div>
+    <div class="settings-version">FORGE · v109.59 · changement de compte propre</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8935,7 +8935,12 @@ async function cloudRestore(showFeedback){
 }
 
 async function handlePostSignIn(){
+  // même protection que sur le web : si c'est un compte différent et
+  // vide, proposer de repartir de zéro (sinon le nouveau compte
+  // hériterait des données locales de l'ancien)
+  await maybeOfferFreshStart();
   await ensureForgeUsername();
+  await syncMyPublicProfile().catch(()=>{});
   await syncCloudOnStartup();
 }
 
@@ -9038,7 +9043,17 @@ async function doGoogleSignOut(){
   await fbSignOut();
   currentUser = null;
   currentPublicProfile = null;
+  // cet appareil redevient un poste neutre : aucune donnée du compte
+  // ne doit rester localement (sinon le prochain compte qui se
+  // connectera héritera de ces profils/séances)
+  try{ localStorage.removeItem('forge-last-uid'); }catch(e){}
+  try{ sessionStorage.removeItem('forge-cloud-restored-user'); }catch(e){}
+  _mirrorRepairDone.clear();
+  _ppCache={}; _ppCacheAt=0; _myThreads=[]; _homeLoadedAt=0;
+  try{ await resetLocalDataForFreshAccount(); }catch(e){ console.warn('[FORGE] purge après déconnexion impossible', e); }
+  try{ if(VIEW_ORDER[currentViewIdx]==='social') renderSocialHome(true); }catch(e){}
   renderAccountUI(null);
+  forgeToast('Déconnecté — tes données restent dans ton compte cloud');
 }
 
 /* Changement de compte (autre Google / compte neuf) : si ce compte est
@@ -9055,11 +9070,17 @@ async function resetLocalDataForFreshAccount(){
   activeProfileId='default';
   persistProfiles(); sSet('forge-active-profile', activeProfileId);
   savePrograms(); savePRs(); saveTimerHistory(); sSet('forge-timer-history', timerHistory);
+  // stats locales liées à l'ancien compte
+  try{ statsProfileIds.clear(); saveStatsProfileIds(); }catch(e){}
+  try{ sSet('forge-stats-ex', ''); }catch(e){}
+  // historiques de lecture des discussions sociaux
+  try{ localStorage.removeItem('forge-thread-read'); localStorage.removeItem('forge-thread-notified'); }catch(e){}
   document.getElementById('profileBtnLabel').textContent='Général';
   try{ renderExSelects(); }catch(e){}
   try{ renderSeanceList(); }catch(e){}
   try{ renderProgramList(); }catch(e){}
   try{ renderStats(); }catch(e){}
+  try{ if(VIEW_ORDER[currentViewIdx]==='social') renderSocialHome(true); }catch(e){}
 }
 async function maybeOfferFreshStart(){
   if(!currentUser) return;
@@ -9080,7 +9101,21 @@ async function maybeOfferFreshStart(){
       await cloudSave(false);
       setCloudSyncStatus('Nouveau compte vide, sauvegardé ✓');
     }
-  }catch(e){ console.warn('[FORGE] demande de repart à zéro impossible', e); }
+  }catch(e){
+    // lecture du cloud impossible (hors-ligne, règles, réseau) : on ne
+    // peut PAS savoir si ce compte vient d'être utilisé ailleurs — on
+    // propose quand même de repartir de zéro pour éviter de mélanger
+    // les données de deux comptes
+    console.warn('[FORGE] lecture cloud du nouveau compte impossible', e);
+    try{ localStorage.setItem(marker,'1'); }catch(e2){}
+    const choice=await showForgeDialog({kicker:'Compte Forge',title:'Nouveau compte détecté',message:'Impossible de lire les données de ce compte maintenant (réseau). Repartir de zéro pour ne pas mélanger avec l\'autre compte ?',detail:'Si tu gardes telles quelles, ce compte risque d\'afficher les séances de l\'autre compte.',primaryLabel:'Repartir de zéro',secondaryLabel:'Garder telles quelles'});
+    if(choice==='Repartir de zéro'){
+      await resetLocalDataForFreshAccount();
+      forgeToast('Nouveau compte prêt, tout est à zéro');
+      await cloudSave(false).catch(()=>{});
+      setCloudSyncStatus('Nouveau compte vide, sauvegardé ✓');
+    }
+  }
 }
 
 async function maybeOfferGoogleConnect(){

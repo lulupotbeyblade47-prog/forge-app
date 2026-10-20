@@ -3231,20 +3231,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
             <div class="settings-row-sub">Télécharger un backup JSON</div>
           </div>
           <div style="color:var(--ash);font-size:18px;">›</div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-row-left">
-            <div class="settings-row-label">Afficher les données démo</div>
-            <div class="settings-row-sub">Affiche les profils et l'historique d'exemple</div>
-          </div>
-          <div class="toggle-wrap">
-            <label class="toggle">
-              <input type="checkbox" id="demoVisibleToggle">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
+        </div>      </div>
     </div>
 
     <div class="settings-section" id="shareSection">
@@ -3267,7 +3254,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.65 · restauration avant publication</div>
+    <div class="settings-version">FORGE · v109.66 · démo supprimée</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8460,7 +8447,30 @@ function seedDemoLogsOnce(){
   const now=new Date(); function daysAgo(n){ const d=new Date(now); d.setDate(d.getDate()-n); return d.toISOString(); } buildDensePRs('demopr',daysAgo); savePRs();
 }
 
-function patchDemoV3(){ prs=prs.filter(p=>!p.id.startsWith('demopr')&&!p.id.startsWith('demoprv2')); const now=new Date(); function daysAgo(n){ const d=new Date(now); d.setDate(d.getDate()-n); return d.toISOString(); } buildDensePRs('dprv3-',daysAgo); savePRs(); }
+function purgeDemoData(){
+  // neutralise (sans rien ré-injecter) tous les résidus de la démo
+  // 3 profils démo + historique 'demo…/stress…' + records demopr/demoprv2/dprv3-
+  try{
+    const beforeP=profiles.length;
+    profiles=profiles.filter(p=>!String(p&&p.id||'').startsWith('demo-'));
+    if(profiles.length!==beforeP){
+      if(String(activeProfileId||'').startsWith('demo-')){ activeProfileId=(profiles[0]||{id:'default'}).id; sSet('forge-active-profile', activeProfileId); }
+      persistProfiles();
+      renderProfileDropdown(); renderSeanceList(); renderStats();
+    }
+    const beforeL=logs.length;
+    logs=logs.filter(l=>!((String(l.sessionId||'').startsWith('demo')||String(l.sessionId||'').startsWith('stress'))||String(l.profileId||'').startsWith('demo-')));
+    if(logs.length!==beforeL){ sSet('forge-logs', logs); }
+    const beforeR=prs.length;
+    prs=prs.filter(p=>!(String(p&&p.id||'').startsWith('demopr')||String(p&&p.id||'').startsWith('demoprv2')||String(p&&p.id||'').startsWith('dprv3-')));
+    if(prs.length!==beforeR){ savePRs(); }
+    // marqueurs : plus jamais de re-seed
+    sSet('forge-demo-seeded', true);
+    sSet('forge-demo-patch-v2', true);
+    sSet('forge-demo-patch-v3', true);
+    try{ sSet('forge-demo-visible', false); }catch(e){}
+  }catch(e){ console.warn('[FORGE] purge démo partielle', e); }
+}
 function patchDemoV2(){ let profilesChanged=false; const vierge=profiles.find(p=>p.id==='demo-vierge'); if(vierge){ const mer=(vierge.week.mercredi||[]).find(s=>s.id==='demo-v-s2'); if(mer&&!mer.exercises.find(e=>e.name==='Squats')){ mer.exercises.push({name:'Squats',sets:[{reps:15,weight:0}]}); profilesChanged=true; } if(!(vierge.week.vendredi||[]).find(s=>s.id==='demo-v-s3')){ vierge.week.vendredi=(vierge.week.vendredi||[]).concat([{id:'demo-v-s3',name:'Full Body EMOM (exemple)',exercises:[{name:'Pistol squats',sets:[{reps:3,weight:0}]},{_emom:true,minutes:10,roundsDone:0,exos:[{name:'Pompes',reps:8,weight:0},{name:'Tractions (pull-ups)',reps:5,weight:0},{name:'Gainage (planche ventrale)',seconds:20,weight:0}]}]}]); profilesChanged=true; } } if(profilesChanged) persistProfiles(); const now=new Date(); function daysAgo(n){ const d=new Date(now); d.setDate(d.getDate()-n); return d.toISOString(); } const missingPRs=[{exercise:'Handstand push-ups',pts:[[1,850],[3,500],[5,250],[8,50]],unit:'reps'},{exercise:'Pistol squats',pts:[[1,900],[4,600],[8,300],[12,60]],unit:'reps'},{exercise:'Rowing australien',pts:[[10,700],[18,450],[26,200],[35,40]],unit:'reps'},{exercise:'Gainage (planche ventrale)',pts:[[20,650],[40,400],[65,180],[90,20]],unit:'s'}]; let prsChanged=false; missingPRs.forEach(group=>{ if(!prs.find(pr=>pr.exercise===group.exercise)){ group.pts.forEach(([value,ago],i)=>{ prs.push({id:'demoprv2-'+group.exercise.replace(/\W+/g,'')+i,exercise:group.exercise,value,unit:group.unit,date:daysAgo(ago)}); }); prsChanged=true; } }); if(prsChanged) savePRs(); }
 
 /* ================================================================
@@ -9268,22 +9278,8 @@ document.getElementById('exportDataBtn').onclick = ()=>{
 /* Import JSON retiré (v109.60) : la restauration passe par le cloud
    (compte Google) — « ⬇️ Restaurer depuis le cloud » dans Réglages. */
 
-// Demo Visibility Toggle
-const demoToggle = document.getElementById('demoVisibleToggle');
-const updateDemoToggleUI = async () => {
-  const visible = await sGet('forge-demo-visible', false);
-  demoToggle.checked = visible;
-};
-updateDemoToggleUI();
-
-demoToggle.onchange = async () => {
-  const visible = demoToggle.checked;
-  sSet('forge-demo-visible', visible);
-  renderProfileDropdown();
-  renderSeanceList();
-  renderStats();
-  if(document.getElementById('recordsOverlay').classList.contains('open')) renderRecordsList();
-};
+// Demo Visibility Toggle — la démo n'est plus générée (v109.66) ;
+// purge de tout résidu démarrée plus haut, la bascule est retirée.
 
 const getFilteredProfiles = () => {
   const visible = localStorage.getItem('forge-demo-visible') === 'true';
@@ -10735,15 +10731,14 @@ const renderSocialChat = renderSocialHome;
 
   setSelectedStatEx(exToUse, false);
 
-  const demoSeeded = await sGet('forge-demo-seeded', false);
-  if(!demoSeeded){ seedDemoProfiles(); seedDemoLogsOnce(); sSet('forge-demo-seeded', true); }
+  // DÉMO SUPPRIMÉE (v109.66) : l'auto-injection de la démo polluait
+  // TOUTES les installations avec des faux records/historiques qui
+  // repartaient ensuite dans le cloud. À la place : purge de tout
+  // résidu démo encore présent sur ce téléphone.
   await loadPRs();
+  purgeDemoData();
   programs = await sGet('forge-programs', []);
   patchProgramLabelsToSeance();
-  const demoPatchedV2 = await sGet('forge-demo-patch-v2', false);
-  if(!demoPatchedV2){ patchDemoV2(); sSet('forge-demo-patch-v2', true); }
-  const demoPatchedV3 = await sGet('forge-demo-patch-v3', false);
-  if(!demoPatchedV3){ patchDemoV3(); sSet('forge-demo-patch-v3', true); }
   // Init glass APRÈS avoir chargé toutes les données
   await initTheme();
   await initGlass();

@@ -3275,7 +3275,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.59 · changement de compte propre</div>
+    <div class="settings-version">FORGE · v109.60 · discussions plus de soi-même</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -10119,6 +10119,7 @@ function _avatarBgFix(el, uid){
 
 /* ── Discussions ── */
 async function ensureThread(otherUid, otherUsername){
+  if(!otherUid || otherUid===currentUser.uid) throw new Error('destination invalide');
   const pk=pairOf(currentUser.uid, otherUid);
   let th=null;
   try{ th=await fbGetDocument('threads/'+pk); }catch(e){}
@@ -10281,6 +10282,15 @@ function renderSocialThreadList(){
     if(d.other===currentUser.uid && pk2.includes('__') && !_mirrorRepairDone.has(pk2)){
       _mirrorRepairDone.add(pk2);
       const otherUid=pk2.split('__').find(u=>u!==currentUser.uid);
+      if(!otherUid){
+        // paire "moi__moi" : une discussion avec soi-même créée par l'ancien
+        // bug — on supprime seulement le miroir pour la faire disparaître
+        // (le thread ne peut pas être supprimé par un client : règles)
+        fbDeleteDocument('userThreads/'+currentUser.uid+'/threads/'+pk2)
+          .then(()=>renderSocialHome(true))
+          .catch(()=>{});
+        return;
+      }
       if(otherUid){
         loadPublicProfiles().then(()=>{
           const p=_ppCache[otherUid]||{};
@@ -10330,6 +10340,7 @@ function renderSocialSearchResults(){
 /* ── Vue discussion (chat) ── */
 async function openThread(pk, otherUid, otherUsername, keepPanel){
   if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
+  if(!otherUid || otherUid===currentUser.uid){ forgeToast('On ne discute pas avec soi-même 😉'); return; }
   // on ignore la paire fournie et on (re)calcule : la discussion peut
   // ne pas exister encore (ouverte depuis la recherche/le profil)
   try{

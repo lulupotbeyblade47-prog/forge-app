@@ -3265,7 +3265,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.78 · retours matériel dans les dialogues</div>
+    <div class="settings-version">FORGE · v109.79 · icône de l'app réparée (choix qui tient)</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3507,7 +3507,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
 </div>
 
 <!-- ICÔNE DE L'APP — page plein écran dédiée -->
-<div id="iconAppOverlay" style="position:fixed;inset:0;z-index:70;background:var(--bg);display:none;flex-direction:column;">
+<div id="iconAppOverlay" style="position:fixed;inset:0;z-index:440;background:var(--bg);display:none;flex-direction:column;">
   <div style="padding:18px 18px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
     <button id="iconAppOverlayClose" style="background:none;border:none;color:var(--ash);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
     <span style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ember);flex:1;">Icône de l'app</span>
@@ -4489,20 +4489,14 @@ if(typeof _origApplyThemeForIcon === 'function'){
 
 async function initIconSettings(){
   iconFigureKey = await sGet('forge-icon-figure', 'planche');
-  // L’ancien choix Manna avait été confondu avec le logo Forge ; le logo
-  // officiel est la Planche noire sur fond blanc. Migrer ce choix enregistré.
-  const migrateMannaIcon = iconFigureKey === 'manna';
-  if(migrateMannaIcon){
-    iconFigureKey = 'planche';
-    sSet('forge-icon-figure', iconFigureKey);
-  }
+  // NB : l'ancienne migration forcée « manna → planche » a été retirée :
+  // elle rejouait le remplacement à CHAQUE démarrage et, combinée à la sync
+  // cloud (qui conserve le choix réel, ex. "manna"), elle réécrasait
+  // l'icône en permanence — d'où l'impression que l'app « remet l'icône
+  // de base » sans arrêt. Le choix de l'utilisateur est désormais respecté.
   if(!ICON_FIGURES.find(f=>f.key===iconFigureKey)) iconFigureKey = 'planche';
   const savedSel = await sGet('forge-icon-theme-selection', null);
   iconThemeSelection = (Array.isArray(savedSel) && savedSel.length) ? savedSel : ['auto'];
-  if(migrateMannaIcon){
-    iconThemeSelection = ['dark'];
-    sSet('forge-icon-theme-selection', iconThemeSelection);
-  }
   iconRandomEnabled = await sGet('forge-icon-random-enabled', false);
   const savedPool = await sGet('forge-icon-random-pool', null);
   iconRandomPool = Array.isArray(savedPool) ? savedPool.filter(k=>ICON_FIGURES.find(f=>f.key===k)) : [];
@@ -8637,7 +8631,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 53, name: '109.78' };
+const FORGE_INDEX_VERSION = { code: 54, name: '109.79' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -9008,7 +9002,13 @@ function _applyCloudSettings(settings){
   if(settings.activeProfileId) sSet('forge-active-profile', settings.activeProfileId);
   if(settings.timerTabEnabled !== undefined){ sSet('forge-timer-global', settings.timerTabEnabled); sSet('forge-timer-global-user','1'); }
   if(Array.isArray(settings.tabOrder) && settings.tabOrder.length){ sSet('forge-tab-order', settings.tabOrder.map(k=>k==='settings'?'social':k)); }
-  if(settings.iconFigureKey !== undefined) sSet('forge-icon-figure', settings.iconFigureKey);
+  if(settings.iconFigureKey !== undefined && settings.iconFigureKey !== iconFigureKey){
+    iconFigureKey = settings.iconFigureKey;
+    sSet('forge-icon-figure', settings.iconFigureKey);
+    // Applique tout de suite la nouvelle icône (sync en direct), sans
+    // attendre le prochain démarrage de l'app.
+    try{ applyAppIcon(); }catch(e){}
+  }
   if(settings.iconThemeSelection !== undefined) sSet('forge-icon-theme-selection', settings.iconThemeSelection);
   if(settings.iconRandomEnabled !== undefined) sSet('forge-icon-random-enabled', settings.iconRandomEnabled);
   if(settings.iconRandomPool !== undefined) sSet('forge-icon-random-pool', settings.iconRandomPool);

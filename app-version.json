@@ -1,6 +1,6 @@
 {
-  "versionCode": 53,
-  "versionName": "109.78",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.78/forge-android-v109.78.apk",
-  "releaseNotes": "Correction de navigation : le retour matériel ferme maintenant le bon écran dans TOUTES les fenêtres (Administration Forge, partages, choix du pseudo, confirmations…) au lieu de fermer la vue en dessous."
+  "versionCode": 54,
+  "versionName": "109.79",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.79/forge-android-v109.79.apk",
+  "releaseNotes": "Icône de l'app réparée : elle s'ouvre maintenant AU-DESSUS des Réglages (avant : rien ne se passait, puis le retour affichait les icônes), et ton choix d'icône ne se réinitialise plus tout seul à chaque démarrage."
 }

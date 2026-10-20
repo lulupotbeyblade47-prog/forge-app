@@ -3254,7 +3254,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.66 · démo supprimée</div>
+    <div class="settings-version">FORGE · v109.67 · records auto à la séance</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -6895,7 +6895,9 @@ function _finishCurrentSession(programStatus=null){
 
     if(blk._emom){ blk.exos.forEach(ex=>{ const set = {}; if(ex.reps) set.reps = ex.reps; if(ex.weight) set.weight = ex.weight; if(ex.seconds) set.seconds = ex.seconds; set.emomRounds = blk.roundsDone || 0; set.emomMinutes = blk.minutes; logs.unshift({id:sessionId+'-emom-'+ex.name.replace(/\s+/g,'').slice(0,5)+Math.random().toString(36).slice(2,4),sessionId,exercise:ex.name,date:iso,profileId:p.id,routine:seance.name,sets:[set],_fromEmom:true}); }); return; }
     if(blk.sets.length===0) return;
-    logs.unshift({id:sessionId+'-'+blk.name.replace(/\s+/g,'').slice(0,6)+Math.random().toString(36).slice(2,4),sessionId,exercise:blk.name,date:iso,profileId:p.id,routine:seance.name,sets:JSON.parse(JSON.stringify(blk.sets)),...(blk.performanceResult==='missed'?{outcome:'missed'}:{})});
+    const newLog={id:sessionId+'-'+blk.name.replace(/\s+/g,'').slice(0,6)+Math.random().toString(36).slice(2,4),sessionId,exercise:blk.name,date:iso,profileId:p.id,routine:seance.name,sets:JSON.parse(JSON.stringify(blk.sets)),...(blk.performanceResult==='missed'?{outcome:'missed'}:{})};
+    logs.unshift(newLog);
+    _touchPRsFromLog(newLog);
   });
   if(programStatus){
     seance.status='success';
@@ -6925,6 +6927,29 @@ function _finishCurrentSession(programStatus=null){
   sSet('forge-logs', logs); persistProfiles();
   _closeToHome();
 }
+
+/* ── Record auto (v109.67) : à la fin d'une séance, chaque exercice
+   enregistré met à jour / crée son record perso automatiquement
+   (meilleure série : weight>0 → kg, sinon seconds → s, sinon reps).
+   Les records restent visibles dans Stats (+ add manuels) et
+   apparaissent sur le profil public si « Afficher mes records » est
+   activé (synchro via savePRs → scheduleProfileSync). ── */
+function _touchPRsFromLog(log){
+  try{
+    if(!log || !log.exercise || !Array.isArray(log.sets) || !log.sets.length) return;
+    const mx = f => log.sets.reduce((a,s)=>Math.max(a, Number(s[f]||0)), 0);
+    let unit=null, best=0;
+    if(mx('weight')>0){ unit='kg'; best=mx('weight'); }
+    else if(mx('seconds')>0){ unit='s'; best=mx('seconds'); }
+    else { unit='reps'; best=mx('reps'); }
+    if(best<=0) return;
+    const cur=bestPRs().find(p=>p.exercise===log.exercise && p.unit===unit);
+    if(cur && Number(best)<=Number(cur.value)) return; // pas mieux : rien
+    prs.push({id:'pr'+Date.now().toString(36), exercise:log.exercise, value:best, unit, date:log.date||new Date().toISOString()});
+    savePRs(); renderRecordsCard();
+  }catch(e){ console.warn('[FORGE] record auto impossible', e); }
+}
+
 document.getElementById('finishSessionBtn').onclick = ()=>_finishCurrentSession();
 document.getElementById('finishSessionBtn').onclick = ()=>{const seance=currentSeanceObj();_finishCurrentSession(_programRefs(seance).length?'success':null);};
 
@@ -10024,13 +10049,10 @@ async function loadPublicProfiles(force){
   return _ppCache;
 }
 function buildPrsSummary(){
-  const best={};
-  prs.forEach(pr=>{
-    if(!pr||!pr.exercise) return;
-    const cur=best[pr.exercise];
-    if(!cur || Number(pr.value)>Number(cur.value)) best[pr.exercise]={exercise:pr.exercise, value:pr.value, unit:pr.unit||'', date:pr.date||''};
-  });
-  return Object.values(best).slice(0,20);
+  // même source que la carte « Records perso » des Stats (bestPRs) :
+  // le profil affiche exactement les records visibles dans Stats
+  // (filtrés, meilleur par exercice), sauf records désactivés
+  return bestPRs().slice(0,20).map(pr=>({exercise:pr.exercise, value:pr.value, unit:pr.unit||'', date:pr.date||''}));
 }
 function _profileDocForWrite(base){
   const googlePhoto=String(currentUser.photoUrl||currentUser.photoURL||'');

@@ -3177,22 +3177,22 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       <div class="settings-card">
         <div class="settings-row" id="shareExportBtn" style="cursor:pointer;">
           <div class="settings-row-left">
-            <div class="settings-row-label">📤 Envoyer…</div>
-            <div class="settings-row-sub">Par pseudo à un ami (@…) ou code FORGE1:</div>
+            <div class="settings-row-label">📤 Envoyer à un ami…</div>
+            <div class="settings-row-sub">Direct dans son app, par pseudo (@…)</div>
           </div>
           <div style="color:var(--ash);font-size:18px;">›</div>
         </div>
-        <div class="settings-row" id="shareImportBtn" style="cursor:pointer;border-top:1px solid var(--border);">
+        <div class="settings-row" id="shareInboxBtn" style="cursor:pointer;border-top:1px solid var(--border);">
           <div class="settings-row-left">
-            <div class="settings-row-label">📥 Importer un code</div>
-            <div class="settings-row-sub">Coller un code reçu d'un ami</div>
+            <div class="settings-row-label">💬 Réceptions</div>
+            <div class="settings-row-sub">Les partages qu'on t'a envoyés</div>
           </div>
           <div style="color:var(--ash);font-size:18px;">›</div>
         </div>
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.50 · partage en un clic</div>
+    <div class="settings-version">FORGE · v109.52 · suggestions @ en direct</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8601,6 +8601,62 @@ async function fbDeleteDocumentAllowed(reference){
   const ok=await ensureFirebaseWebSdk();if(!ok)return;
   try{ await window.firebase.firestore().doc(reference).delete(); }catch(e){ console.warn('[FORGE] Suppression impossible', e); }
 }
+/* Recherche de pseudos (suggestions @ en temps réel). La liste complète
+   est lue (autorisée aux comptes connectés) puis filtrée côté client :
+   Firestore natif ne gère pas "commence par". Un cache évite de
+   retélécharger à chaque touche tapée. */
+let _usernameCache = null, _usernameCacheAt = 0;
+async function fbQueryUsernames(prefix, limit=6){
+  const q=String(prefix||'').trim().toLowerCase();
+  if(!q) return [];
+  const now=Date.now();
+  if(!_usernameCache || now-_usernameCacheAt>60000){
+    let rows=[];
+    if(isNativePlatform()){
+      const res=await window.Capacitor.Plugins.FirebaseFirestore.getCollection({reference:'usernames'});
+      rows=(res&&res.snapshots||[]).map(s=>s.data||{});
+    }else{
+      const ok=await ensureFirebaseWebSdk();if(!ok)throw new Error('Pas de connexion internet.');
+      const snap=await window.firebase.firestore().collection('usernames').get();
+      rows=snap.docs.map(d=>d.data()||{});
+    }
+    _usernameCache=rows.filter(r=>r&&typeof r.username==='string');
+    _usernameCacheAt=now;
+  }
+  const starts=[], contains=[];
+  _usernameCache.forEach(u=>{
+    const name=normalizeForgeUsername(u.username);
+    if(!(currentPublicProfile&&normalizeForgeUsername(currentPublicProfile.username)===name)){
+      if(name.startsWith(q)) starts.push(u.username);
+      else if(name.includes(q)) contains.push(u.username);
+    }
+  });
+  return starts.sort().concat(contains.sort()).slice(0,limit);
+}
+function _shareBindPseudoSearch(inputEl, box, errEl){
+  let timer=null;
+  const run=async()=>{
+    const q=inputEl.value;
+    if(q.length<2){ box.innerHTML=''; box.style.display='none'; return; }
+    try{
+      const list=await fbQueryUsernames(q);
+      if(!list.length){
+        if(String(inputEl.value).trim().length<2){ return; }
+        box.innerHTML=`<div style="padding:8px 12px;font-size:12px;color:var(--ash);">Aucun pseudo ne ressemble à ça — il l'a peut-être pas encore.</div>`;
+        box.style.display='block';
+        return;
+      }
+      box.innerHTML=list.map(name=>`<div data-pick="${_progEsc(name)}" style="padding:10px 12px;font-size:14px;color:var(--chalk);cursor:pointer;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);"><span style="color:var(--ember);">›</span>@${_progEsc(name)}</div>`).join('');
+      box.style.display='block';
+      box.querySelectorAll('[data-pick]').forEach(p=>{ p.onclick=(e)=>{ e.stopPropagation(); inputEl.value='@'+p.dataset.pick; box.innerHTML=''; box.style.display='none'; if(errEl) errEl.textContent=''; }; });
+    }catch(e){
+      box.innerHTML=`<div style="padding:8px 12px;font-size:12px;color:var(--ash);">${_progEsc((e&&e.message)||'Recherche indisponible.')}</div>`;
+      box.style.display='block';
+    }
+  };
+  inputEl.addEventListener('input',()=>{ clearTimeout(timer); timer=setTimeout(run,250); });
+  inputEl.addEventListener('focus',()=>{ clearTimeout(timer); timer=setTimeout(run,150); });
+}
 async function fbDeleteDocument(reference){
   if(!isForgeAdminAccount()) throw new Error('Accès administrateur refusé.');
   if(isNativePlatform()) return window.Capacitor.Plugins.FirebaseFirestore.deleteDocument({reference});
@@ -8886,6 +8942,48 @@ async function doGoogleSignOut(){
   renderAccountUI(null);
 }
 
+/* Changement de compte (autre Google / compte neuf) : si ce compte est
+   vide côté cloud, proposer de repartir de zéro sur ce téléphone —
+   sinon le nouvel affiche les même données que l'ancien (le stockage
+   local suit le téléphone, pas le compte). */
+async function resetLocalDataForFreshAccount(){
+  logs=[]; programs=[]; timerHistory=[];
+  prs=[]; sSet('forge-prs', prs);
+  exercises = DEFAULT_EXERCISES.map(migrateExercise);
+  sSet('forge-exercises', exercises);
+  sSet('forge-logs', logs);
+  profiles=[{id:'default', name:'Général', week: emptyWeek()}];
+  activeProfileId='default';
+  persistProfiles(); sSet('forge-active-profile', activeProfileId);
+  savePrograms(); savePRs(); saveTimerHistory(); sSet('forge-timer-history', timerHistory);
+  document.getElementById('profileBtnLabel').textContent='Général';
+  try{ renderExSelects(); }catch(e){}
+  try{ renderSeanceList(); }catch(e){}
+  try{ renderProgramList(); }catch(e){}
+  try{ renderStats(); }catch(e){}
+}
+async function maybeOfferFreshStart(){
+  if(!currentUser) return;
+  let last=null;
+  try{ last=localStorage.getItem('forge-last-uid'); }catch(e){}
+  try{ localStorage.setItem('forge-last-uid', String(currentUser.uid)); }catch(e){}
+  if(!last || last===String(currentUser.uid)) return;
+  let marker=null;
+  try{ marker='forge-fresh-asked-'+currentUser.uid; if(localStorage.getItem(marker)) return; }catch(e){}
+  try{
+    const remote=await fbGetDocument(userDocRef());
+    try{ localStorage.setItem(marker,'1'); }catch(e){}
+    if(remote) return; // le compte a déjà des données : syncCloudOnStartup les restaurera
+    const choice=await showForgeDialog({kicker:'Compte Forge',title:'Nouveau compte détecté',message:'Ce compte ne contient rien dans le cloud. Veux-tu repartir de zéro sur ce téléphone ?',detail:'Les données actuellement affichées appartiennent à ton autre compte — elles seront toujours là quand tu te reconnecteras dessus.',primaryLabel:'Repartir de zéro',secondaryLabel:'Garder telles quelles'});
+    if(choice==='Repartir de zéro'){
+      await resetLocalDataForFreshAccount();
+      forgeToast('Nouveau compte prêt, tout est à zéro');
+      await cloudSave(false);
+      setCloudSyncStatus('Nouveau compte vide, sauvegardé ✓');
+    }
+  }catch(e){ console.warn('[FORGE] demande de repart à zéro impossible', e); }
+}
+
 async function maybeOfferGoogleConnect(){
   if(currentUser||_forgeGoogleOfferShownThisLaunch)return;
   if(await sGet(FORGE_GOOGLE_OFFER_DISMISSED_KEY,false))return;
@@ -8900,7 +8998,7 @@ async function initAccountSettings(){
     currentUser = await fbGetCurrentUser();
     currentPublicProfile = currentUser ? await fbGetDocument('publicProfiles/'+currentUser.uid).catch(()=>null) : null;
     renderAccountUI(currentUser);
-    if(currentUser){await ensureForgeUsername();await syncCloudOnStartup();}
+    if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncCloudOnStartup();}
     else await maybeOfferGoogleConnect();
     return;
   }
@@ -8920,6 +9018,7 @@ async function initAccountSettings(){
       currentUser = _mapFbWebUser(redirectResult.user);
       currentPublicProfile = null;
       renderAccountUI(currentUser);
+      await maybeOfferFreshStart();
       await ensureForgeUsername();
       await syncCloudOnStartup();
       return;
@@ -8931,7 +9030,7 @@ async function initAccountSettings(){
   currentUser = _mapFbWebUser(window.firebase.auth().currentUser);
   currentPublicProfile = currentUser ? await fbGetDocument('publicProfiles/'+currentUser.uid).catch(()=>null) : null;
   renderAccountUI(currentUser);
-  if(currentUser){await ensureForgeUsername();await syncCloudOnStartup();}
+  if(currentUser){await maybeOfferFreshStart();await ensureForgeUsername();await syncCloudOnStartup();}
   else if(!redirectPending) await maybeOfferGoogleConnect();
   if(redirectPending && !currentUser){
     const detail = redirectError && (redirectError.code || redirectError.message)
@@ -9363,6 +9462,7 @@ function _shareRenderInbox(){
           </div>
           <div style="font-size:13px;color:var(--chalk);margin-top:4px;">t'a envoyé ${_shareKINDLabel(d.kind)}</div>
           <div style="font-size:13px;color:var(--ash);margin-top:2px;">${_progEsc(desc.title)}${desc.lines.length?' · '+_progEsc(desc.lines.join(' · ')):''}</div>
+          ${d.message?`<div style="font-size:13px;color:var(--chalk);margin-top:8px;padding:10px 12px;background:var(--surface);border-radius:12px;border:1px solid var(--border);">« ${_progEsc(String(d.message))} »</div>`:''}
           <div style="display:flex;gap:8px;margin-top:10px;">
             <button class="btn primary" data-msgadd="${i}" style="flex:2;padding:9px 10px;font-size:13px;">${isSession?'➕ Ajouter à mes séances':'➕ Ajouter'}</button>
             <button class="btn ghost" data-msgdel="${i}" style="flex:1;padding:9px 10px;font-size:13px;">Supprimer</button>
@@ -9398,7 +9498,7 @@ function openShareOverlayForBundle(bundle){
   _navPush(_closeShareOverlay);
   _shareRender();
 }
-async function _shareSendToPseudo(bundle, rawPseudo){
+async function _shareSendToPseudo(bundle, rawPseudo, message){
   if(!currentUser) throw new Error('Connecte-toi d\'abord (menu Partage).');
   if(!currentPublicProfile||!currentPublicProfile.username) throw new Error('Choisis d\'abord ton pseudo.');
   const nameInput=String(rawPseudo||'').trim().replace(/^@/,'');
@@ -9410,10 +9510,11 @@ async function _shareSendToPseudo(bundle, rawPseudo){
   if(claimed.uid===currentUser.uid) throw new Error('C\'est ton pseudo à toi 😄');
   const payload=JSON.parse(JSON.stringify(bundle));
   const docId='shr'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  await fbSetDocument(
-    'inbox/'+key+'/items/'+docId,
-    {to:key, fromUid:currentUser.uid, fromUsername:currentPublicProfile.username, kind:bundle.kind, bundle:payload, createdAt:new Date().toISOString()}
-  );
+  const data={to:key, fromUid:currentUser.uid, fromUsername:currentPublicProfile.username, kind:bundle.kind, bundle:payload, createdAt:new Date().toISOString()};
+  const msg=String(message||'').trim();
+  if(msg && msg.length<=140) data.message=msg;
+  await fbSetDocument('inbox/'+key+'/items/'+docId, data);
+  return key;
 }
 function _shareRender(){
   const body=document.getElementById('shareOverlayBody');
@@ -9431,7 +9532,7 @@ function _shareRender(){
     if(!signed){
       top=`<div class="settings-card" style="margin-bottom:12px;">
         <div class="settings-row-label" style="margin-bottom:4px;">Compte Forge</div>
-        <div style="font-size:12px;color:var(--ash);margin-bottom:10px;">Pour envoyer à un ami (par pseudo) et recevoir ses partages, connecte-toi et choisis un pseudo.</div>
+        <div style="font-size:12px;color:var(--ash);margin-bottom:10px;">Pour envoyer à un ami (envoi direct dans son app) et recevoir ses partages, connecte-toi et choisis un pseudo.</div>
         <button class="btn primary block" data-shareact="signin">Se connecter avec Google</button>
       </div>`;
     } else if(!pseudo){
@@ -9441,16 +9542,15 @@ function _shareRender(){
         <button class="btn primary block" data-shareact="username">Choisir mon pseudo</button>
       </div>`;
     } else {
-      top=`<div style="font-size:12px;color:var(--ash);margin-bottom:12px;line-height:1.5;">Connecté en tant que <strong style="color:var(--chalk);">@${_progEsc(pseudo)}</strong>. Envoie un profil, une séance, tes exercices ou une progression : le receveur l'importe en un tap, sans écraser rien chez lui.</div>`;
+      top=`<div style="font-size:12px;color:var(--ash);margin-bottom:12px;line-height:1.5;">Connecté en tant que <strong style="color:var(--chalk);">@${_progEsc(pseudo)}</strong>. Tu envoies un profil, une séance ou une progression : ça arrive direct dans le chat de ton ami, plus de code à copier-coller.</div>`;
     }
     body.innerHTML=top+
-      `<button class="btn ghost block" data-shareact="export" style="border-color:var(--ember);color:var(--ember);margin-bottom:10px;">📤 Envoyer…</button>`+
-      (signed&&pseudo?`<button class="btn ghost block" data-shareact="inbox">📥 Réceptions</button>`:'')+
-      `<button class="btn ghost block" data-shareact="import">Code FORGE1: (import par copier-coller)</button>`;
+      `<button class="btn ghost block" data-shareact="export" style="border-color:var(--ember);color:var(--ember);margin-bottom:10px;">📤 Envoyer à un ami…</button>`+
+      (signed&&pseudo?`<button class="btn ghost block" data-shareact="inbox">💬 Réceptions${_shareState.context.unread?' ('+_shareState.context.unread+' nouveaux)':''}</button>`:'')+
+      (!signed&&!pseudo?`<div style="font-size:11px;color:var(--ash);margin-top:10px;text-align:center;">Les partages envoyés par pseudo créent un message dans l'app de ton ami.</div>`:'');
     body.querySelectorAll('[data-shareact]').forEach(btn=>btn.onclick=()=>{
       const act=btn.dataset.shareact;
       if(act==='export') _sharePush('export-kind');
-      else if(act==='import') _sharePush('import-paste');
       else if(act==='inbox') _sharePush('inbox',{});
       else if(act==='username'){ ensureForgeUsername().then(ok=>{ if(ok&&currentPublicProfile){ _sharePush('menu'); } }); }
       else if(act==='signin'){ _navClose(_closeShareOverlay); doGoogleSignIn().then(()=>{ if(currentUser) openShareOverlay('menu'); }); }
@@ -9543,50 +9643,43 @@ function _shareRender(){
   }
 
   if(step==='code'){
-    title.textContent='📤 Partage';
+    title.textContent='📤 Envoyer à un ami';
     const bundle=_shareState.context.bundle;
-    const code=_shareEncode(bundle);
     const desc=_shareDescribe(bundle);
     const signed=!!currentUser && currentPublicProfile && currentPublicProfile.username;
     let bodyHtml=`<div style="font-size:13px;margin-bottom:10px;"><strong>${_progEsc(desc?desc.title:'?')}</strong>${desc?desc.lines.map(l=>`<div style="font-size:12px;color:var(--ash);">${_progEsc(l)}</div>`).join(''):''}</div>`;
     if(signed){
-      bodyHtml+=`<div class="settings-card" style="margin-bottom:12px;">
-        <div class="settings-row-label" style="margin-bottom:8px;">📨 Envoyer à un pseudo</div>
+      bodyHtml+=`<div class="settings-card">
+        <div class="settings-row-label" style="margin-bottom:8px;">📨 À qui l'envoyer ?</div>
         <div style="display:flex;gap:8px;">
-          <input id="shareSendToInput" placeholder="@pseudo" autocomplete="off" maxlength="21" style="flex:1;min-width:0;padding:10px 12px;border-radius:10px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);font-size:14px;">
-          <button class="btn primary" id="shareSendNowBtn" style="padding:10px 16px;">Envoyer</button>
+          <input id="shareSendToInput" placeholder="@pseudo de ton ami" autocomplete="off" maxlength="21" style="flex:1;min-width:0;padding:11px 12px;border-radius:12px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);font-size:14px;">
+          <button class="btn primary" id="shareSendNowBtn" style="padding:11px 18px;">Envoyer</button>
         </div>
-        <div id="shareSendError" style="font-size:12px;color:var(--danger);margin-top:6px;"></div>
+        <div id="shareSuggestBox" style="display:none;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;"></div>
+        <input id="shareSendMessage" placeholder="Message (facultatif) — ex : voilà ma séance 💪" maxlength="140" style="width:100%;box-sizing:border-box;margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);font-size:13px;">
+        <div id="shareSendError" style="font-size:12px;color:var(--danger);margin-top:8px;"></div>
+        <div style="font-size:11px;color:var(--ash);margin-top:10px;line-height:1.5;">Ton ami reçoit ça directement dans son onglet Partage → 💬 Réceptions chez lui. Il choisit de l'ajouter (ou pas) — rien ne s'écrase chez lui.</div>
+      </div>`;
+    } else {
+      bodyHtml+=`<div class="settings-card">
+        <div class="settings-row-label" style="margin-bottom:6px;">Compte requis</div>
+        <div style="font-size:12px;color:var(--ash);margin-bottom:10px;">Pour envoyer à un ami, connecte-toi et choisis ton pseudo : ton ami te recevra directement dans son app.</div>
+        <button class="btn primary block" data-shareact="signin">Se connecter avec Google</button>
       </div>`;
     }
-    bodyHtml+=
-      (code?`<div style="font-size:11px;color:var(--ash);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Code de partage (à copier dans une messagerie)</div>
-      <textarea id="shareCodeText" readonly style="width:100%;min-height:96px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--chalk);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical;">${_progEsc(code)}</textarea>
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        ${navigator.share?'<button class="btn ghost" id="shareSendBtn" style="flex:1;">Partager…</button>':''}
-        <button class="btn primary" id="shareCopyBtn" style="flex:2;">Copier le code</button>
-      </div>`
-      :'<div class="empty">Impossible de générer le code.</div>');
     body.innerHTML=bodyHtml;
-    const copyBtn=document.getElementById('shareCopyBtn');
-    if(copyBtn) copyBtn.onclick=async()=>{
-      const ok=await _shareCopyText(code);
-      copyBtn.textContent=ok?'✓ Copié !':'Échec de la copie';
-      setTimeout(()=>{copyBtn.textContent='Copier le code';},1500);
-    };
-    const sendBtn=document.getElementById('shareSendBtn');
-    if(sendBtn) sendBtn.onclick=async()=>{
-      try{ await navigator.share({title:'FORGE — partage',text:'Voici un partage FORGE :\n\n'+code}); }
-      catch(e){}
-    };
+    const signinBtn=body.querySelector('[data-shareact="signin"]');
+    if(signinBtn) signinBtn.onclick=()=>{ _navClose(_closeShareOverlay); doGoogleSignIn().then(()=>{ if(currentUser) openShareOverlayForBundle(bundle); }); };
     const sendNowBtn=document.getElementById('shareSendNowBtn');
+    const sendToInput=document.getElementById('shareSendToInput');
+    if(sendToInput) _shareBindPseudoSearch(sendToInput, document.getElementById('shareSuggestBox'), document.getElementById('shareSendError'));
     if(sendNowBtn) sendNowBtn.onclick=async()=>{
       const err=document.getElementById('shareSendError');
       const input=document.getElementById('shareSendToInput');
       sendNowBtn.disabled=true; err.textContent='';
       try{
-        await _shareSendToPseudo(bundle, input.value);
-        forgeToast(`Envoyé à @${String(input.value).trim().replace(/^@/,'')} ✓`);
+        const sent=await _shareSendToPseudo(bundle, input.value, (document.getElementById('shareSendMessage')||{}).value);
+        forgeToast(sent?`Envoyé à @${sent} ✓`:'Envoyé ✓');
         _navClose(_closeShareOverlay);
       }catch(e){
         err.textContent=(e&&e.message)||'Envoi impossible.';
@@ -9688,7 +9781,7 @@ function _shareRender(){
 document.getElementById('shareBackBtn').onclick=()=>_shareBack();
 document.getElementById('shareCloseBtn').onclick=()=>_navClose(_closeShareOverlay);
 document.getElementById('shareExportBtn').onclick=()=>openShareOverlay('menu');
-document.getElementById('shareImportBtn').onclick=()=>openShareOverlay('import-paste');
+document.getElementById('shareInboxBtn').onclick=()=>openShareOverlay('inbox');
 
 /* ================================================================
    INIT

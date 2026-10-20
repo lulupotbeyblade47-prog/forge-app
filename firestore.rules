@@ -19,7 +19,7 @@ service cloud.firestore {
 
     match /usernames/{key} {
       allow get: if signedIn();
-      allow list: if false;
+      allow list: if signedIn();
       allow create: if signedIn()
         && validUsernameClaim(key)
         && !exists(/databases/$(database)/documents/usernames/$(key));
@@ -61,6 +61,7 @@ service cloud.firestore {
         && request.resource.data.kind is string
         && request.resource.data.fromUsername is string
         && request.resource.data.bundle != null
+        && (!('message' in request.resource.data) || request.resource.data.message is string)
         && exists(/databases/$(database)/documents/usernames/$(key));
       allow read, delete: if inboxOwner(key);
     }

@@ -3254,7 +3254,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.81 · import de données de retour, partage hors Réglages</div>
+    <div class="settings-version">FORGE · v109.82 · scroll sur la courbe, partage retiré de Progrès</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -7531,7 +7531,28 @@ function renderCurveChart(wrap, rows, metrics, exName, emomRows, zoomFilter, ani
   const chosenDate=chosen?new Date(chosen.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
   const rangeText=points.length>1?`${dateLabel(points[0])} – ${dateLabel(points[points.length-1])}`:points.length?dateLabel(points[0]):'Aucune séance sur cette période';
   const indEl=document.getElementById('periodIndicator'); if(indEl) indEl.textContent=rangeText;
-  wrap.innerHTML=`<div style="display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;">${metricButtons}</div><div style="display:flex;background:var(--surface2);border-radius:11px;padding:3px;margin:0 0 8px;">${periodButtons}</div>${empty?`<div class="empty" data-chart-swipe-area style="padding:28px 8px;touch-action:pan-y;">${points.length===0 && source.length===0?'Pas encore de donnée pour cette mesure.':'Aucune séance sur cette période.'}<div style="font-size:11px;margin-top:8px;">Glisse vers la droite pour consulter le passé</div></div>`:`<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 2px 0;"><span style="font:600 12px 'Oswald',sans-serif;color:var(--ash);text-transform:uppercase;letter-spacing:.06em;">${meta.label}${meta.unit?` (${meta.unit})`:''}</span><span style="font:600 12px 'JetBrains Mono',monospace;color:var(--ash);">${periodLabel}</span></div><svg id="statsLineChart" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;overflow:visible;touch-action:pan-y;">${grid}<polyline points="${coords}" fill="none" stroke="${meta.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${selectedPointMarkup}${axisDates}</svg><div id="statsPointDetail" style="display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:3px;"><div style="min-width:0;"><div style="font-size:12px;color:var(--ash);text-transform:capitalize;">${chosenDate}</div><div style="font:700 19px 'JetBrains Mono',monospace;color:var(--chalk);margin-top:3px;">${chosen.detail}</div><div style="font-size:11px;color:var(--ash);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${chosen.log.routine||'Séance'}</div></div><span style="width:10px;height:10px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span></div><div style="text-align:center;color:var(--ash);font-size:11px;margin-top:8px;">${rangeText} · glisse vers la droite pour le passé · touche un point pour son détail</div>`}`;
+  wrap.innerHTML=`<div style="display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;">${metricButtons}</div><div style="display:flex;background:var(--surface2);border-radius:11px;padding:3px;margin:0 0 8px;">${periodButtons}</div>${empty?`<div class="empty" data-chart-swipe-area style="padding:28px 8px;touch-action:pan-y;">${points.length===0 && source.length===0?'Pas encore de donnée pour cette mesure.':'Aucune séance sur cette période.'}<div style="font-size:11px;margin-top:8px;">Glisse vers la droite pour consulter le passé</div></div>`:`<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 2px 0;"><span style="font:600 12px 'Oswald',sans-serif;color:var(--ash);text-transform:uppercase;letter-spacing:.06em;">${meta.label}${meta.unit?` (${meta.unit})`:''}</span><span style="font:600 12px 'JetBrains Mono',monospace;color:var(--ash);">${periodLabel}</span></div><svg id="statsLineChart" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;display:block;overflow:visible;touch-action:none;user-select:none;">${grid}<polyline points="${coords}" fill="none" stroke="${meta.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${selectedPointMarkup}${axisDates}</svg><div id="statsPointDetail" style="display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:3px;"><div style="min-width:0;"><div style="font-size:12px;color:var(--ash);text-transform:capitalize;">${chosenDate}</div><div style="font:700 19px 'JetBrains Mono',monospace;color:var(--chalk);margin-top:3px;">${chosen.detail}</div><div style="font-size:11px;color:var(--ash);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${chosen.log.routine||'Séance'}</div></div><span style="width:10px;height:10px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span></div><div style="text-align:center;color:var(--ash);font-size:11px;margin-top:8px;">${rangeText} · glisse vers la droite pour le passé · touche un point pour son détail</div>`}`;
+  /* v109.82 : slisser vers le haut/bas SUR la courbe doit faire défiler la
+     page comme partout ailleurs. Certains WebView ignorent touch-action
+     sur un SVG → pan vertical géré manuellement (1:1, sans momentum) ;
+     les taps sur les points restent intacts (click ≠ pan). */
+  (()=>{
+    const chartEl=wrap.querySelector('#statsLineChart');
+    if(!chartEl) return;
+    const statView=document.getElementById('view-stats');
+    if(!statView) return;
+    let vy=0,va=false;
+    chartEl.addEventListener('touchstart',e=>{ if(e.touches.length===1){va=true;vy=e.touches[0].clientY;} else va=false; },{passive:true});
+    chartEl.addEventListener('touchmove',e=>{
+      if(!va||e.touches.length!==1) return;
+      const y=e.touches[0].clientY;
+      statView.scrollTop+=vy-y;
+      vy=y;
+    },{passive:true});
+    const _curStop=()=>{va=false;};
+    chartEl.addEventListener('touchend',_curStop,{passive:true});
+    chartEl.addEventListener('touchcancel',_curStop,{passive:true});
+  })();
   const nav=document.createElement('div');
   nav.style.cssText='display:flex;align-items:center;justify-content:center;gap:12px;margin:4px 0 8px;';
   const formatWindowDate=d=>d.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
@@ -7981,12 +8002,11 @@ function renderProgramList(){
         <div class="pr-row-name">${_progEsc(ex.exerciseName)}</div>
         <div class="pr-row-sub">${_progEsc(p.name)} · ${p.numWeeks} semaines · sem. ${_programWeekNow(p)}${scheduled?' · ajoutée à Tracker':' · pas encore dans Tracker'}</div>
       </div>
-      <button class="shareprog-btn" data-shareprog="${p.id}" data-shareex="${_progEsc(ex.exerciseName)}" title="Partager" style="background:none;border:none;color:var(--ember);font-size:18px;padding:0 6px;line-height:1;cursor:pointer;">📤</button>
       <button class="del-prog-btn" data-progdel="${p.id}" data-progexdel="${_progEsc(ex.exerciseName)}" style="background:none;border:none;color:var(--danger);font-size:22px;padding:0 4px;line-height:1;cursor:pointer;">×</button>
     </div>`;
   })).join('');
   list.querySelectorAll('.pr-row[data-progid]').forEach(row=>{
-    row.onclick = (e)=>{ if(e.target.closest('.del-prog-btn')) return; if(e.target.closest('.shareprog-btn')){ e.stopPropagation(); const p=programs.find(x=>x.id===row.dataset.shareprog); if(!p) return; const copy=JSON.parse(JSON.stringify(p)); copy.currentWeek=undefined; copy.startDate=undefined; openShareOverlayForBundle(_shareBundleProgram(copy)); return; } openProgramDetail(row.dataset.progid,row.dataset.exname); };
+    row.onclick = (e)=>{ if(e.target.closest('.del-prog-btn')) return; openProgramDetail(row.dataset.progid,row.dataset.exname); };
   });
   list.querySelectorAll('.del-prog-btn').forEach(btn=>{
     btn.onclick = (e)=>{ e.stopPropagation(); const id=btn.dataset.progdel,exName=btn.dataset.progexdel,p=programs.find(x=>x.id===id); showConfirm(`Supprimer la progression de "${exName}" ?`, ()=>{ if(p){p.exercises=p.exercises.filter(ex=>ex.exerciseName!==exName);if(!p.exercises.length)programs=programs.filter(x=>x.id!==id);} DAY_KEYS.forEach(day=>(activeProfile().week[day]||[]).forEach(routine=>{const refs=_programRefs(routine).flatMap(ref=>{if(ref.programId!==id)return[ref];const names=Array.isArray(ref.exerciseNames)?ref.exerciseNames:(p?.exercises||[]).map(ex=>ex.exerciseName).concat(exName);const remaining=names.filter(name=>name!==exName);return remaining.length?[{...ref,exerciseNames:remaining}]:[];});routine.programRefs=refs;if(!refs.length)delete routine.programRefs;delete routine.programRef;}));savePrograms();persistProfiles();renderProgramList(); }); };
@@ -8624,7 +8644,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 56, name: '109.81' };
+const FORGE_INDEX_VERSION = { code: 57, name: '109.82' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;

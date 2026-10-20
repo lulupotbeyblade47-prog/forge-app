@@ -1,6 +1,6 @@
 {
-  "versionCode": 46,
-  "versionName": "109.71",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.71/forge-android-v109.71.apk",
-  "releaseNotes": "Bouton retour Android réparé (Social, profils, discussions) au lieu de quitter l'app. Appuyer sur l'onglet courant ramène en arrière comme sur le Tracker."
+  "versionCode": 47,
+  "versionName": "109.72",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.72/forge-android-v109.72.apk",
+  "releaseNotes": "Réglages et Records perso : plus d'espace en haut, bouton retour plus facile à cliquer. Nouveau toggle « Afficher l'onglet Timer » dans Réglages > Navigation."
 }

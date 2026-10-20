@@ -1708,7 +1708,7 @@ body:not([data-theme="light"])[data-glass="1"] .drum-item.selected{
 /* Réglages n'est plus un onglet : panneau plein écran ouvert par ⚙️ dans Social.
    Hors piste des onglets (display:none) pour ne pas casser la géométrie translateX. */
 #view-settings{display:none;}
-#view-settings.overlay-open{display:block;position:fixed;inset:0;z-index:420;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 18px calc(24px + env(safe-area-inset-bottom));}
+#view-settings.overlay-open{display:block;position:fixed;inset:0;z-index:420;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:26px 18px calc(24px + env(safe-area-inset-bottom));}
 #view-settings.overlay-open #settingsCloseBtn{display:inline-block;}
 #view-settings #settingsCloseBtn{display:none;}
 #view-timer{padding:0;overflow:hidden;}
@@ -1911,9 +1911,9 @@ body:not([data-theme="light"])[data-glass="1"] .drum-scroll{
 .records-card-arrow{color:var(--ash);font-size:18px;}
 .records-overlay{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;flex-direction:column;overflow:hidden;}
 .records-overlay.open{display:flex;}
-.records-overlay-header{padding:18px 18px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.records-overlay-header{padding:30px 18px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .records-overlay-header h2{font-family:'Oswald',sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:0.03em;margin:0;flex:1;}
-.records-overlay-back{background:none;border:none;color:var(--ash);font-size:20px;padding:0 8px 0 0;cursor:pointer;font-family:'Oswald',sans-serif;}
+.records-overlay-back{background:none;border:none;color:var(--ash);font-size:20px;padding:10px 14px 10px 0;cursor:pointer;font-family:'Oswald',sans-serif;min-height:44px;min-width:44px;}
 .records-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 18px 100px;}
 .pr-row{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;padding:14px 16px;gap:12px;transition:border-color .15s;}
 .pr-row[data-exname]:active{border-color:var(--amber);}
@@ -3219,6 +3219,18 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
             </label>
           </div>
         </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">⏱️ Afficher l'onglet Timer</div>
+            <div class="settings-row-sub">Désactivé, l'onglet disparaît de la barre du bas</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" id="timerTabToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -3254,7 +3266,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.71 · retour Android + onglets</div>
+    <div class="settings-version">FORGE · v109.72 · confort + timer optionnel</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3941,6 +3953,39 @@ const _startupTabOrder = (()=>{
 })();
 _applyTabOrder(_startupTabOrder,_startupTabOrder[0],true);
 
+/* ── Onglet Timer désactivable (Réglages > Navigation) :
+   caché = retiré de la barre et de VIEW_ORDER ; l'ordre sauvegardé
+   est conservé pour tout remettre à la réactivation. ── */
+function _timerTabVisible(){
+  try{ return JSON.parse(localStorage.getItem('forge-timer-tab'))!==false; }catch(e){ return true; }
+}
+function _applyTimerTabVisibility(){
+  const visible=_timerTabVisible();
+  const btn=document.querySelector('.tabbar [data-view="timer"]');
+  if(btn) btn.style.display = visible ? '' : 'none';
+  let order=null;
+  if(visible){
+    const full=['timer','tracker','stats','progression','social'];
+    try{
+      const saved=JSON.parse(localStorage.getItem('forge-tab-order')||'null');
+      if(Array.isArray(saved)&&saved.length===full.length&&saved.every(k=>full.includes(k))) order=saved;
+      else if(!localStorage.getItem('forge-tab-order')) order=full.slice(); // pas d'ordre personnalisé : ordre par défaut COMPLET
+    }catch(e){ order=full.slice(); }
+    if(!order) order=full.slice(); // ordre perso corrompu : défaut complet
+  }
+  if(!order) order=VIEW_ORDER.filter(k=>k!=='timer'); // caché : retire timer
+  if(order.length && (order.length!==VIEW_ORDER.length || order.some((k,i)=>k!==VIEW_ORDER[i]))){
+    _applyTabOrder(order, VIEW_ORDER[currentViewIdx], false);
+  }
+}
+document.getElementById('timerTabToggle').addEventListener('change', function(){
+  sSet('forge-timer-tab', this.checked);
+  _applyTimerTabVisibility();
+  forgeToast(this.checked ? 'Onglet Timer affiché ✓' : 'Onglet Timer masqué ✓');
+});
+document.getElementById('timerTabToggle').checked = _timerTabVisible();
+_applyTimerTabVisibility();
+
 /* ================================================================
    RÉORDONNANCEMENT DES ONGLETS — mode dédié, activé/désactivé par
    l'interrupteur "Réorganiser les onglets" dans Réglages > Navigation.
@@ -4042,7 +4087,10 @@ function _wireTabDrag(){
         document.removeEventListener('touchend', onEnd);
 
         const newOrder = [...tabbar.querySelectorAll('.tabbtn')].map(b=>b.dataset.view);
-        sSet('forge-tab-order', newOrder);
+        // Si l'onglet Timer est caché, il n'est pas dans la barre : on le
+        // remet en tête de l'ordre sauvegardé pour qu'il retrouve sa place
+        // (position par défaut) à la réactivation.
+        sSet('forge-tab-order', _timerTabVisible() ? newOrder : ['timer', ...newOrder.filter(k=>k!=='timer')]);
         _applyTabOrder(newOrder);
 
         setTimeout(()=>{ // timer 200ms
@@ -8529,7 +8577,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 46, name: '109.71' };
+const FORGE_INDEX_VERSION = { code: 47, name: '109.72' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;

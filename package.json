@@ -1,0 +1,20 @@
+{
+  "name": "forge",
+  "version": "1.0.0",
+  "description": "FORGE \u2014 app muscu (index.html)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lulupotbeyblade47-prog/forge-app.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lulupotbeyblade47-prog/forge-app/issues"
+  },
+  "homepage": "https://github.com/lulupotbeyblade47-prog/forge-app#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.0.0"
+  }
+}

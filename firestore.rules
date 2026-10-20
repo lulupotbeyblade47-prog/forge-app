@@ -43,5 +43,26 @@ service cloud.firestore {
     match /users/{userId}/{document=**} {
       allow read, write: if owns(userId) || forgeAdmin();
     }
+
+    // Partage par pseudo : chaque compte Forge a une boîte titrée par
+    // son pseudo (clé usernames). Envoyer = créer un document dans la
+    // boîte du destinataire ; lire/supprimer = être le propriétaire du
+    // pseudo. Le contenu des partages est public entre comptes, sans
+    // données perso (juste profils/séances/exercices/progressions).
+    function inboxOwner(key) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/usernames/$(key))
+        && get(/databases/$(database)/documents/usernames/$(key)).data.uid == request.auth.uid;
+    }
+    match /inbox/{key}/items/{item} {
+      allow create: if signedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.to == key
+        && request.resource.data.kind is string
+        && request.resource.data.fromUsername is string
+        && request.resource.data.bundle != null
+        && exists(/databases/$(database)/documents/usernames/$(key));
+      allow read, delete: if inboxOwner(key);
+    }
   }
 }

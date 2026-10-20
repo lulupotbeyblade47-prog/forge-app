@@ -3178,7 +3178,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
         <div class="settings-row" id="shareExportBtn" style="cursor:pointer;">
           <div class="settings-row-left">
             <div class="settings-row-label">📤 Envoyer…</div>
-            <div class="settings-row-sub">Profil, séance, exercices ou progression</div>
+            <div class="settings-row-sub">Par pseudo à un ami (@…) ou code FORGE1:</div>
           </div>
           <div style="color:var(--ash);font-size:18px;">›</div>
         </div>
@@ -3192,7 +3192,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.46 · saisie des performances ratées</div>
+    <div class="settings-version">FORGE · v109.47 · partage par pseudo</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8052,6 +8052,16 @@ function _applyProgramSchedule(prog,profile,selections,exerciseNames){
   persistProfiles(); _navClose(closeProgramSchedule); renderSeanceList(); renderProgramDetail(prog.id,returnExerciseName);
 }
 
+function _programPlanTarget(progId, sessionIndex){
+  const profile=activeProfile();
+  for(const day of DAY_KEYS){
+    for(const routine of (profile.week[day]||[])){
+      const ref=_programRefs(routine).find(r=>r.programId===progId && (Number(r.sessionIndex)||0)===sessionIndex);
+      if(ref) return {day, routine};
+    }
+  }
+  return null;
+}
 function _progPlannedPassageIndexes(progId, exerciseName){
   const planned=new Set();
   const profile=activeProfile();
@@ -8157,7 +8167,27 @@ function renderProgramDetail(progId, exerciseName=null){
     </div>`).join('')}
   </div>` : '';
 
-  body.innerHTML = `<button class="btn primary block" id="planProgramBtn" style="margin:0 0 12px;">${exerciseName?'Ajouter cette progression à une séance Tracker':'Ajouter à des séances Tracker existantes'}</button>` + frozenHtml + weekStepperHtml + weeksHtml;
+  // Résumé du plan actuel : tous les liens (passage -> jour · séance)
+  const profile=activeProfile();
+  const planSummary=[];
+  prog.exercises.forEach(ex=>{
+    if(exerciseName && ex.exerciseName!==exerciseName) return;
+    const planned=_progPlannedPassageIndexes(progId,ex.exerciseName);
+    ex.sessions.forEach((s,si)=>{
+      if(!planned.has(si)) return;
+      DAY_KEYS.forEach(day=>(profile.week[day]||[]).forEach(routine=>{
+        const ref=_programRefs(routine).find(r=>r.programId===progId && (Number(r.sessionIndex)||0)===si && (!Array.isArray(r.exerciseNames)||r.exerciseNames.includes(ex.exerciseName)));
+        if(ref) planSummary.push(`${_progEsc(ex.exerciseName)} · ${_progEsc(s.label||('Passage '+(si+1)))} — ${day[0].toUpperCase()+day.slice(1)} · ${_progEsc(routine.name)}`);
+      }));
+    });
+  });
+  const planSummaryHtml = planSummary.length ? `<div class="settings-card" style="margin-bottom:12px;">
+    <div class="settings-row-label" style="margin-bottom:6px;">🗓️ Jours prévus</div>
+    ${planSummary.map(line=>`<div style="font-size:12px;color:var(--ash);padding:3px 0;border-top:1px solid var(--border);">${line}</div>`).join('')}
+  </div>` : '';
+  const hasLinks=planSummary.length>0;
+
+  body.innerHTML = `<button class="btn primary block" id="planProgramBtn" style="margin:0 0 12px;">${hasLinks?'🗓️ Changer les jours / séances':'Ajouter à des séances Tracker existantes'}</button>` + planSummaryHtml + frozenHtml + weekStepperHtml + weeksHtml;
 
   document.getElementById('planProgramBtn').onclick=()=>openProgramSchedule(progId,exerciseName);
 
@@ -8198,11 +8228,11 @@ document.getElementById('progressionEditBtn').onclick = ()=>{
 
 /* ── Insertion directe dans la séance en cours ──────────────────
    Depuis l'écran de séance : "📈 Depuis un programme" → choisit
-   l'exercice (si plusieurs programmes/exercices) → choisit la
-   séance (1/2/3, avec le poids déjà calculé affiché) → les séries
-   sont ajoutées telles quelles à la séance en cours,
-   avec le poids arrondi au 0,5 kg le plus proche (pratique pour le
-   chargement de la barre). ────────────────────────────────────── */
+   l'exercice (si plusieurs programmes/exercices) → choisit le
+   passage (1/2/3, avec le poids de la semaine en cours affiché).
+   Depuis v109.47 : ce n'est plus une copie figée — la séance est
+   rattachée à la progression, donc la charge est recalculée toute
+   seule et monte (ou descend) chaque semaine. ────────────────────*/
 function closeProgInsertOverlay(){ document.getElementById('progInsertOverlay').classList.remove('open'); }
 document.getElementById('progInsertCancelBtn').onclick = ()=> _navClose(closeProgInsertOverlay);
 
@@ -8242,16 +8272,17 @@ function renderProgressionSeanceChoice(prog, ex){
     body.innerHTML = `<div class="empty">${ex.exerciseName} ne commence qu'à la semaine ${ex.startWeek} (le programme est actuellement à la semaine ${currentWeek}).</div>`;
     return;
   }
-  body.innerHTML = `<label style="display:block;font-size:12px;color:var(--ash);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">${ex.exerciseName} — semaine ${week} — choisis la séance</label>` +
+  body.innerHTML = `<div style="font-size:12px;color:var(--ash);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">${ex.exerciseName} — la charge suivra la progression semaine après semaine</div>` +
+    `<div style="font-size:12px;color:var(--ash);margin-bottom:10px;">Aperçu pour cette semaine (${week}) : le poids affiché ici sera recalculé automatiquement à chaque séance suivante.</div>` +
     data.seances.map((s,i)=>{
       const weight = Math.round(s.weight*2)/2;
       return `<button class="btn ghost block" data-seanceidx="${i}" style="text-align:left;margin-bottom:8px;padding:14px 16px;">
         <div style="font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:13px;color:var(--ember);margin-bottom:4px;">${s.label}</div>
-        <div style="font-size:13px;color:var(--chalk);">${s.sets}×${s.reps} @${_progFmtKg(weight)} kg (${s.percent}%)</div>
+        <div style="font-size:13px;color:var(--chalk);">${s.sets}x${s.reps} @${_progFmtKg(weight)} kg (${s.percent}%)</div>
       </button>`;
     }).join('');
   body.querySelectorAll('[data-seanceidx]').forEach(btn=>{
-    btn.onclick = ()=>{ insertProgressionIntoSeance(ex, data.seances[+btn.dataset.seanceidx], week); };
+    btn.onclick = ()=>{ insertProgressionIntoSeance(prog, ex, +btn.dataset.seanceidx); };
   });
 }
 
@@ -8271,20 +8302,36 @@ function _ensureExerciseHasFields(exerciseName, neededFields){
   }
 }
 
-function insertProgressionIntoSeance(ex, s, week){
-  const seance = currentSeanceObj();
-  if(!seance) return;
-  const weight = Math.round(s.weight*2)/2;
-  const sets = [];
-  for(let i=0;i<s.sets;i++) sets.push({ reps:s.reps, weight });
+function insertProgressionIntoSeance(prog, ex, sessionIndex){
+  if(!currentSeanceRef){ return; }
+  const profile=activeProfile();
+  const template=profile.week[currentSeanceRef.day] && profile.week[currentSeanceRef.day][currentSeanceRef.idx];
+  if(!template){ return; }
+  // 1) rattacher vivant : la séance suit désormais la progression
+  template.programRefs=template.programRefs||[];
+  let ref=template.programRefs.find(r=>r.programId===prog.id && (Number(r.sessionIndex)||0)===sessionIndex);
+  if(ref){
+    if(Array.isArray(ref.exerciseNames) && ref.exerciseNames.includes(ex.exerciseName)){
+      forgeToast('Déjà rattaché : cette séance suit déjà la progression pour ce passage.');
+      _navClose(closeProgInsertOverlay); return;
+    }
+    ref.exerciseNames=Array.isArray(ref.exerciseNames)?ref.exerciseNames.concat([ex.exerciseName]):[ex.exerciseName];
+  } else {
+    template.programRefs.push({programId:prog.id, sessionIndex, sessionLabel:`Passage ${sessionIndex+1}`, exerciseNames:[ex.exerciseName]});
+  }
+  // 2) retirer l'éventuelle copie figée du même exercice : le poids calculé
+  //    prend le relais (sinon il y aurait deux blocs pour le même nom)
+  let hadFrozen=false;
+  template.exercises=(template.exercises||[]).filter(b=>{
+    if(b && !b._emom && b.name && b.name.trim().toLowerCase()===ex.exerciseName.trim().toLowerCase()){ hadFrozen=true; return false; }
+    return true;
+  });
   _ensureExerciseHasFields(ex.exerciseName, ['reps','weight']);
-  seance.exercises.push({ name: ex.exerciseName, sets });
+  _ensureProgramStartDate(prog); savePrograms();
   persistProfiles();
   _navClose(closeProgInsertOverlay);
   renderSeanceDetail();
-  // Ces séries sont une copie figée : on le dit clairement, sinon on croit à
-  // une progression qui « ne bouge plus » d'une semaine à l'autre.
-  forgeToast(`Semaine ${week||1} ajoutée : ${s.sets}×${s.reps} @${_progFmtKg(weight)} kg. Attention, ce sont des séries figées — pour que la charge monte chaque semaine, rattache la progression à la séance depuis l’onglet Progression.`);
+  forgeToast(`${ex.exerciseName} ${hadFrozen?'rattaché (copie figée retirée)':'rattaché'} : la charge se calculera toute seule et montera chaque semaine.`);
 }
 
 
@@ -8512,6 +8559,26 @@ async function fbGetCollection(reference){
   const ok=await ensureFirebaseWebSdk();if(!ok)throw new Error('Pas de connexion internet.');
   const snap=await window.firebase.firestore().collection(reference).get();
   return snap.docs.map(d=>({id:d.id,path:d.ref.path,data:d.data()||{}}));
+}
+
+/* ── Boîtes de partage par pseudo (voir rules : inbox/{pseudo}/items) ── */
+async function fbListInboxItems(reference){
+  if(isNativePlatform()){
+    const result=await window.Capacitor.Plugins.FirebaseFirestore.getCollection({reference});
+    return (result&&result.snapshots||[]).map(s=>({id:s.id,path:s.path,data:s.data||{}}));
+  }
+  const ok=await ensureFirebaseWebSdk();if(!ok)throw new Error('Pas de connexion internet.');
+  const snap=await window.firebase.firestore().collection(reference).get();
+  return snap.docs.map(d=>({id:d.id,path:d.ref.path,data:d.data()||{}}));
+}
+async function fbDeleteDocumentAllowed(reference){
+  // suppression d'un élément de sa propre boîte (règle : inboxOwner)
+  if(isNativePlatform()){
+    try{ await window.Capacitor.Plugins.FirebaseFirestore.deleteDocument({reference}); }catch(e){}
+    return;
+  }
+  const ok=await ensureFirebaseWebSdk();if(!ok)return;
+  try{ await window.firebase.firestore().doc(reference).delete(); }catch(e){ console.warn('[FORGE] Suppression impossible', e); }
 }
 async function fbDeleteDocument(reference){
   if(!isForgeAdminAccount()) throw new Error('Accès administrateur refusé.');
@@ -9242,6 +9309,70 @@ function _shareRows(list,onPick,emptyLabel){
     ${row.sub?`<div style="font-size:12px;color:var(--ash);margin-top:2px;">${_progEsc(String(row.sub))}</div>`:''}
   </div>`).join('');
 }
+function _shareKINDLabel(kind){
+  return {profile:'👤 Profil', session:'🗓️ Séance', program:'📈 Progression', exercises:'🏋️ Exercices'}[kind]||'Partage';
+}
+function _shareRenderInbox(){
+  const body=document.getElementById('shareOverlayBody');
+  const items=_shareState.context.items||[];
+  if(!items.length){
+    body.innerHTML='<div class="empty" style="padding:10px 0;">Aucun partage reçu pour l\'instant.<br>Ta boîte est vide — ton pseudo t\'attend 😄</div>';
+    return;
+  }
+  body.innerHTML=items.map((it,i)=>{
+    const d=it.data||{};
+    const desc=_shareDescribe(d.bundle)||{title:'?',lines:[]};
+    return `<div class="seancerow" data-receive="${i}" style="padding:13px 16px;margin-bottom:8px;min-height:auto;cursor:pointer;">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:15px;">@${_progEsc(String(d.fromUsername||'?'))}</div>
+          <div style="font-size:12px;color:var(--ash);margin-top:2px;">${_shareKINDLabel(d.kind)} · ${_progEsc(desc.title)}</div>
+          <div style="font-size:11px;color:var(--ash);margin-top:2px;">${desc.lines.map(l=>_progEsc(String(l))).join(' · ')}</div>
+        </div>
+        <button class="del-prog-btn" data_redirectedel="${i}" style="background:none;border:none;color:var(--danger);font-size:22px;padding:0 4px;line-height:1;cursor:pointer;">×</button>
+      </div>
+    </div>`;
+  }).join('');
+  body.querySelectorAll('[data-receive]').forEach(el=>{
+    el.onclick=(e)=>{
+      if(e.target.closest('[data_redirectedel]')) return;
+      const it=items[+el.dataset.receive];
+      _sharePush('import-review',{bundle:it.data.bundle, inboxItem:it, _localOnly:true});
+    };
+  });
+  body.querySelectorAll('[data_redirectedel]').forEach(btn=>{
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      const it=items[+btn.dataset.redirectedel];
+      _navClose(_closeShareOverlay);
+      showConfirm('Supprimer ce partage reçu sans l\'importer ?',async()=>{
+        const key=currentPublicProfile&&currentPublicProfile.key;
+        await fbDeleteDocumentAllowed('inbox/'+key+'/items/'+it.id);
+        openShareOverlay('inbox');
+      });
+    };
+  });
+}
+/* Envoi direct : crée un document dans la boîte du destinataire
+   (inbox/{pseudo}/items). Firestore vérifie côté serveur que :
+   l'expéditeur est connecté et que le pseudo existe. */
+async function _shareSendToPseudo(bundle, rawPseudo){
+  if(!currentUser) throw new Error('Connecte-toi d\'abord (menu Partage).');
+  if(!currentPublicProfile||!currentPublicProfile.username) throw new Error('Choisis d\'abord ton pseudo.');
+  const nameInput=String(rawPseudo||'').trim().replace(/^@/,'');
+  const valid=validateForgeUsername(nameInput);
+  if(valid!==true) throw new Error(typeof valid==='string'?valid:'Pseudo invalide.');
+  const key=normalizeForgeUsername(nameInput);
+  const claimed=await fbGetDocument('usernames/'+key);
+  if(!claimed) throw new Error('Aucun compte Forge avec ce pseudo.');
+  if(claimed.uid===currentUser.uid) throw new Error('C\'est ton pseudo à toi 😄');
+  const payload=JSON.parse(JSON.stringify(bundle));
+  const docId='shr'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  await fbSetDocument(
+    'inbox/'+key+'/items/'+docId,
+    {to:key, fromUid:currentUser.uid, fromUsername:currentPublicProfile.username, kind:bundle.kind, bundle:payload, createdAt:new Date().toISOString()}
+  );
+}
 function _shareRender(){
   const body=document.getElementById('shareOverlayBody');
   const title=document.getElementById('shareOverlayTitle');
@@ -9252,13 +9383,35 @@ function _shareRender(){
 
   if(step==='menu'){
     title.textContent='📤 Partage';
-    body.innerHTML=`<div style="font-size:12px;color:var(--ash);margin-bottom:12px;line-height:1.5;">Envoie un profil complet, une séance, tes exercices personnalisés ou une progression via un code à coller dans une messagerie. L'import n'écrase rien.</div>
-    <button class="btn ghost block" data-shareact="export" style="border-color:var(--ember);color:var(--ember);margin-bottom:10px;">📤 Envoyer…</button>
-    <button class="btn ghost block" data-shareact="import">📥 Importer un code</button>`;
+    const signed=!!currentUser;
+    const pseudo=currentPublicProfile&&currentPublicProfile.username;
+    let top='';
+    if(!signed){
+      top=`<div class="settings-card" style="margin-bottom:12px;">
+        <div class="settings-row-label" style="margin-bottom:4px;">Compte Forge</div>
+        <div style="font-size:12px;color:var(--ash);margin-bottom:10px;">Pour envoyer à un ami (par pseudo) et recevoir ses partages, connecte-toi et choisis un pseudo.</div>
+        <button class="btn primary block" data-shareact="signin">Se connecter avec Google</button>
+      </div>`;
+    } else if(!pseudo){
+      top=`<div class="settings-card" style="margin-bottom:12px;">
+        <div class="settings-row-label" style="margin-bottom:4px;">Bienvenue ${_progEsc(currentUser.displayName||currentUser.email||'')}</div>
+        <div style="font-size:12px;color:var(--ash);margin-bottom:10px;">Choisis un pseudo : ce sera ton adresse de partage (ex. @LuluForge).</div>
+        <button class="btn primary block" data-shareact="username">Choisir mon pseudo</button>
+      </div>`;
+    } else {
+      top=`<div style="font-size:12px;color:var(--ash);margin-bottom:12px;line-height:1.5;">Connecté en tant que <strong style="color:var(--chalk);">@${_progEsc(pseudo)}</strong>. Envoie un profil, une séance, tes exercices ou une progression : le receveur l'importe en un tap, sans écraser rien chez lui.</div>`;
+    }
+    body.innerHTML=top+
+      `<button class="btn ghost block" data-shareact="export" style="border-color:var(--ember);color:var(--ember);margin-bottom:10px;">📤 Envoyer…</button>`+
+      (signed&&pseudo?`<button class="btn ghost block" data-shareact="inbox">📥 Réceptions</button>`:'')+
+      `<button class="btn ghost block" data-shareact="import">Code FORGE1: (import par copier-coller)</button>`;
     body.querySelectorAll('[data-shareact]').forEach(btn=>btn.onclick=()=>{
       const act=btn.dataset.shareact;
       if(act==='export') _sharePush('export-kind');
-      else _sharePush('import-paste');
+      else if(act==='import') _sharePush('import-paste');
+      else if(act==='inbox') _sharePush('inbox',{});
+      else if(act==='username'){ ensureForgeUsername().then(ok=>{ if(ok&&currentPublicProfile){ _sharePush('menu'); } }); }
+      else if(act==='signin'){ _navClose(_closeShareOverlay); doGoogleSignIn().then(()=>{ if(currentUser) openShareOverlay('menu'); }); }
     });
     return;
   }
@@ -9348,18 +9501,31 @@ function _shareRender(){
   }
 
   if(step==='code'){
-    title.textContent='📤 Code de partage';
+    title.textContent='📤 Partage';
     const bundle=_shareState.context.bundle;
     const code=_shareEncode(bundle);
     const desc=_shareDescribe(bundle);
-    body.innerHTML=`<div style="font-size:13px;margin-bottom:10px;"><strong>${_progEsc(desc?desc.title:'?')}</strong>${desc?desc.lines.map(l=>`<div style="font-size:12px;color:var(--ash);">${_progEsc(l)}</div>`).join(''):''}</div>`+
-      (code?`
-      <textarea id="shareCodeText" readonly style="width:100%;min-height:120px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--chalk);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical;">${_progEsc(code)}</textarea>
+    const signed=!!currentUser && currentPublicProfile && currentPublicProfile.username;
+    let bodyHtml=`<div style="font-size:13px;margin-bottom:10px;"><strong>${_progEsc(desc?desc.title:'?')}</strong>${desc?desc.lines.map(l=>`<div style="font-size:12px;color:var(--ash);">${_progEsc(l)}</div>`).join(''):''}</div>`;
+    if(signed){
+      bodyHtml+=`<div class="settings-card" style="margin-bottom:12px;">
+        <div class="settings-row-label" style="margin-bottom:8px;">📨 Envoyer à un pseudo</div>
+        <div style="display:flex;gap:8px;">
+          <input id="shareSendToInput" placeholder="@pseudo" autocomplete="off" maxlength="21" style="flex:1;min-width:0;padding:10px 12px;border-radius:10px;background:var(--surface2);color:var(--chalk);border:1px solid var(--border);font-size:14px;">
+          <button class="btn primary" id="shareSendNowBtn" style="padding:10px 16px;">Envoyer</button>
+        </div>
+        <div id="shareSendError" style="font-size:12px;color:var(--danger);margin-top:6px;"></div>
+      </div>`;
+    }
+    bodyHtml+=
+      (code?`<div style="font-size:11px;color:var(--ash);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Code de partage (à copier dans une messagerie)</div>
+      <textarea id="shareCodeText" readonly style="width:100%;min-height:96px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--chalk);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical;">${_progEsc(code)}</textarea>
       <div style="display:flex;gap:10px;margin-top:10px;">
         ${navigator.share?'<button class="btn ghost" id="shareSendBtn" style="flex:1;">Partager…</button>':''}
         <button class="btn primary" id="shareCopyBtn" style="flex:2;">Copier le code</button>
       </div>`
       :'<div class="empty">Impossible de générer le code.</div>');
+    body.innerHTML=bodyHtml;
     const copyBtn=document.getElementById('shareCopyBtn');
     if(copyBtn) copyBtn.onclick=async()=>{
       const ok=await _shareCopyText(code);
@@ -9370,6 +9536,20 @@ function _shareRender(){
     if(sendBtn) sendBtn.onclick=async()=>{
       try{ await navigator.share({title:'FORGE — partage',text:'Voici un partage FORGE :\n\n'+code}); }
       catch(e){}
+    };
+    const sendNowBtn=document.getElementById('shareSendNowBtn');
+    if(sendNowBtn) sendNowBtn.onclick=async()=>{
+      const err=document.getElementById('shareSendError');
+      const input=document.getElementById('shareSendToInput');
+      sendNowBtn.disabled=true; err.textContent='';
+      try{
+        await _shareSendToPseudo(bundle, input.value);
+        forgeToast(`Envoyé à @${String(input.value).trim().replace(/^@/,'')} ✓`);
+        _navClose(_closeShareOverlay);
+      }catch(e){
+        err.textContent=(e&&e.message)||'Envoi impossible.';
+        sendNowBtn.disabled=false;
+      }
     };
     return;
   }
@@ -9384,6 +9564,30 @@ function _shareRender(){
       if(!bundle){ showConfirm('Ce code est invalide ou incomplet. Vérifie qu\'il commence bien par FORGE1: et qu\'il a été copié en entier.',()=>{}); return; }
       _sharePush('import-review',{bundle});
     };
+    return;
+  }
+
+  if(step==='inbox'){
+    title.textContent='📥 Réceptions';
+    const key=currentPublicProfile&&currentPublicProfile.key;
+    if(!currentUser||!key){
+      body.innerHTML='<div class="empty" style="padding:10px 0;">Connecte-toi et choisis un pseudo pour recevoir des partages.</div>';
+      return;
+    }
+    if(_shareState.context.items){
+      _shareRenderInbox();
+      return;
+    }
+    body.innerHTML='<div class="empty" style="padding:10px 0;">Chargement…</div>';
+    fbListInboxItems('inbox/'+key+'/items').then(items=>{
+      items.sort((a,b)=>String((b.data&&b.data.createdAt)||'').localeCompare(String((a.data&&a.data.createdAt)||'')));
+      _shareState.context.items=items;
+      _shareRenderInbox();
+    }).catch(e=>{
+      body.innerHTML=`<div class="empty" style="padding:10px 0;">Impossible de charger : ${_progEsc((e&&e.message)||'erreur')}</div>
+      <button class="btn ghost block" data-shareact="retry">Réessayer</button>`;
+      body.querySelector('[data-shareact="retry"]').onclick=()=>{ _shareState.context.items=null; _shareRender(); };
+    });
     return;
   }
 
@@ -9411,13 +9615,20 @@ function _shareRender(){
       document.getElementById('shareDestProfile').onchange=e=>{ _shareState.context.destProfileId=e.target.value; };
       document.getElementById('shareDestDay').onchange=e=>{ _shareState.context.destDay=e.target.value; };
     }
-    document.getElementById('shareDoImportBtn').onclick=()=>{
+    document.getElementById('shareDoImportBtn').onclick=async()=>{
       try{
         const summary=_shareApplyBundle(bundle,{profileId:_shareState.context.destProfileId, day:_shareState.context.destDay});
         _shareToast(desc.title,summary);
         _navClose(_closeShareOverlay);
         if(typeof renderSeanceList==='function') renderSeanceList();
         if(typeof renderProgramList==='function') renderProgramList();
+        // venu d'une réception : retirer l'élément de la boîte
+        const item=_shareState.context.inboxItem;
+        if(item && item.id){
+          const key=currentPublicProfile&&currentPublicProfile.key;
+          if(key) await fbDeleteDocumentAllowed('inbox/'+key+'/items/'+item.id);
+          forgeToast('Partage importé ✓');
+        }
       }catch(e){
         showConfirm('Import impossible : '+(e&&e.message?e.message:'erreur inconnue'),()=>{});
       }

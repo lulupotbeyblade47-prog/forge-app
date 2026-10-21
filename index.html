@@ -2668,6 +2668,40 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
   border-right: 1px solid rgba(255,255,255,0.18);
   box-shadow: 0 6px 24px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.28);
 }
+/* règles .exo-grid / .exo-chip déplacées ici depuis le script (l'app ne démarrait plus) */
+.exo-grid{display:flex;flex-wrap:wrap;gap:7px;padding:2px 14px 6px;}
+.exo-chip{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font:600 13px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--chalk);cursor:pointer;transition:border-color .15s,color .15s;}
+.exo-chip:active{border-color:var(--ember);}
+.exo-chip.on{border-color:var(--ember);color:var(--ember);background:var(--surface);}
+.exo-chip svg{width:17px;height:17px;flex-shrink:0;color:var(--ash);}
+.exo-chip.on svg,.exo-chip.on:hover svg{color:var(--ember);}
+.exo-chip .sub{font:500 11px 'JetBrains Mono',monospace;color:var(--ash);text-transform:none;letter-spacing:0;}
+.exo-chip.locked{opacity:.45;}
+/* ============ SÉLECTEUR D'EXERCICES V2 (d'après « Ajouter un exercice.html ») ============ */
+#exSheetOv{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:90;}
+#exSheetOv.open{display:flex}
+#exSheet{width:100%;max-width:460px;background:var(--surface);border:1px solid var(--border);border-radius:22px 22px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 40px rgba(0,0,0,.4);}
+#exSheetHead{display:flex;align-items:center;gap:10px;margin-bottom:2px;}
+#exSheetClose{background:none;border:0;color:var(--chalk);font-size:18px;cursor:pointer;padding:4px 8px;margin-left:auto;line-height:1;}
+.exico{flex:none;width:30px;height:30px;border-radius:9px;background:var(--surface2);display:grid;place-items:center;color:var(--ember);overflow:hidden;}
+.exico svg{width:18px;height:18px;}
+.exico img{width:100%;height:100%;object-fit:cover;display:block;}
+.exgrp{display:flex;align-items:center;gap:12px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;color:var(--chalk);font:600 14px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.03em;text-align:left;cursor:pointer;}
+.exgrp:active,.exgrp:hover{border-color:#3a332c;}
+.exgrp.on{border-color:var(--ember);color:var(--ember);}
+.exgrp .cnt{color:var(--ash);font:500 12px 'JetBrains Mono',monospace;text-transform:none;letter-spacing:0;}
+.exgrp .chev{margin-left:auto;color:var(--ash);font-size:16px;flex-shrink:0;}
+.exgrplist{display:flex;flex-direction:column;gap:8px;}
+.exlab{font-size:12px;color:var(--ash);margin:12px 0 6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;}
+.expillrow{display:flex;flex-wrap:wrap;gap:4px;background:var(--surface2);border-radius:14px;padding:4px;}
+.expill{border:0;background:transparent;color:var(--ash);font:600 13px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.03em;padding:9px 12px;border-radius:10px;cursor:pointer;}
+.expill[aria-pressed="true"]{background:var(--ember);color:#1b1009;font-weight:700;text-transform:none;}
+.expill:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through;}
+.exres{margin-top:12px;font-size:14px;color:var(--ash);}
+.exres b{display:block;color:var(--chalk);font-size:15px;margin-top:2px;font-weight:600;}
+.exbtn{width:100%;margin-top:12px;border:0;border-radius:14px;background:var(--ember);color:#1b1009;font:700 15px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;padding:13px;cursor:pointer;}
+#exSheetToast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);color:var(--chalk);padding:10px 16px;border-radius:12px;font-size:13px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;opacity:0;pointer-events:none;transition:opacity .2s;z-index:95;max-width:90%;}
+#exSheetToast.on{opacity:1}
 </style>
 </head>
 <body>
@@ -3254,7 +3288,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.88 · rebond élastique aux bords des onglets</div>
+    <div class="settings-version">FORGE · v109.89 · sélecteur d'exercices : groupe › variation › variante</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3477,13 +3511,15 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
   </div>
 </div>
 
-<!-- SÉLECTEUR D'EXERCICE PLEIN ÉCRAN — partagé partout (séance, EMOM, record perso, stats) -->
-<div id="fsExPickerOverlay" style="position:fixed;inset:0;z-index:70;background:var(--bg);display:none;flex-direction:column;">
-  <div style="padding:18px 18px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-    <button id="fsExPickerClose" style="background:none;border:none;color:var(--ash);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
-    <span id="fsExPickerTitle" style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ember);flex:1;"></span>
+<!-- SÉLECTEUR D'EXERCICE — panneau flottant au-dessus de la page (la séance reste visible derrière), partagé partout -->
+<div id="fsExPickerOverlay" style="position:fixed;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:none;">
+  <div id="fsExPickerPanel" style="pointer-events:auto;width:calc(100% - 24px);max-width:640px;margin-bottom:calc(env(safe-area-inset-bottom) + 12px);background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 12px 44px rgba(0,0,0,.5);display:flex;flex-direction:column;max-height:min(70vh,600px);overflow:hidden;">
+    <div style="padding:12px 14px 8px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+      <span id="fsExPickerTitle" style="font-family:'Oswald',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ember);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button id="fsExPickerClose" style="background:none;border:none;color:var(--ash);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;">×</button>
+    </div>
+    <div id="fsExPickerBody" style="flex:1;min-height:0;display:flex;flex-direction:column;padding:0 12px 12px;"></div>
   </div>
-  <div id="fsExPickerBody" style="flex:1;min-height:0;display:flex;flex-direction:column;padding:0 18px calc(env(safe-area-inset-bottom) + 18px);"></div>
 </div>
 
 <!-- DÉTAIL EMOM PAR ROUND — plein écran, même style que le sélecteur d'exercice -->
@@ -3575,6 +3611,10 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
     </div>
   </div>
 </div>
+
+<!-- SÉLECTEUR V2 — petite fenêtre compacte GROUPE › MOUVEMENT › VARIANTE -->
+<div id="exSheetOv" role="dialog" aria-modal="true"><div id="exSheet"></div></div>
+<div id="exSheetToast"></div>
 
 <div id="exitToast" style="position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(16px);background:rgba(20,21,19,0.94);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-family:'Oswald',sans-serif;letter-spacing:0.04em;text-transform:uppercase;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,0.35);">Appuie encore pour quitter</div>
 
@@ -5843,8 +5883,397 @@ const DEFAULT_EXERCISES = [
   {name:'Pont (bridge) hold', fields:['seconds']},{name:'Grand écart hold', fields:['seconds']},{name:'Squat profond (mobilité)', fields:['seconds']}
 ];
 const DAY_KEYS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+
+/* ================================================================
+   ARBRE D'EXERCICES — Groupe 👉 variation 👉 variante (progression).
+   Le nom final = « variation variante » (ex: « Front lever pull-ups tuck »),
+   une simple chaîne : compatible logs/PRs/programmes existants.
+   Les noms d'items correspondent aux noms par défaut déjà utilisés
+   (« Tractions (pull-ups) », « Front lever tuck » = « Front lever »+« tuck »…).
+   ================================================================ */
+const _PROG_STREETS = ['tuck','adv tuck','straddle','half lay','full'];
+/* Icônes SVG internes (même style que les boutons d'onglets : stroke 24×24) */
+const EXO_ICONS = {
+  front:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V3"/><path d="M6 4h11l-2.5 3L17 10H6"/></svg>',
+  planche:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="6" r="2.5"/><path d="M17 8.5 5 14"/><path d="M3 11l2-2.5M5 17l3 1"/><path d="M2 20h20"/></svg>',
+  pullups:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M8 4v5M16 4v5"/><path d="M12 20v-7"/><path d="M9.5 15.5 12 13l2.5 2.5"/></svg>',
+  dips:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16"/><path d="M4 16h6M14 16h6"/><circle cx="12" cy="10" r="2"/><path d="M12 12v2M10 17h4"/></svg>',
+  pompes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="8" r="2.5"/><path d="M15 10 3 14"/><path d="M2 12l2-1"/><path d="M14 13l3 1"/><path d="M2 19h20"/></svg>',
+  handstand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.5"/><path d="M12 7v6"/><path d="M8 20l4-7 4 7"/><path d="M2 20h20"/></svg>',
+  rowing:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14" r="4"/><circle cx="16" cy="14" r="4"/><path d="M4 5h5M15 5h5"/></svg>',
+  jambes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v7a5 5 0 0 0 5 5"/><path d="M17 3v7a5 5 0 0 1-5 5"/><path d="M6 21h5M13 21h5"/></svg>',
+  core:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="7" rx="3.5"/><circle cx="7.5" cy="12.5" r="1.4"/><circle cx="16.5" cy="12.5" r="1.4"/></svg>',
+  statiques:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v16H8z"/><path d="M10 6h4M10 18h4"/></svg>',
+  cardio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 5 13h6l-1 9 9-12h-6l1-8z"/></svg>',
+  mobilite:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 15a5 5 0 0 1 10 0"/><path d="M2 20h20"/></svg>',
+  autres:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
+};
+const EXO_GROUPS = [
+  {name:'Front lever', ico:'front', progressions:_PROG_STREETS, items:[
+    {name:'Front lever', fields:['seconds','weight']},
+    {name:'Front lever pull-ups', fields:['reps','weight']},
+    {name:'Front lever pull-ups to touch', fields:['reps','weight']},
+    {name:'Front lever press négative', fields:['reps','weight']},
+  ]},
+  {name:'Planche', ico:'planche', progressions:_PROG_STREETS, items:[
+    {name:'Planche', fields:['seconds','weight']},
+    {name:'Planche lean', fields:['seconds']},
+    {name:'Planche push-up', fields:['reps','weight']},
+    {name:'Planche press négative', fields:['reps','weight']},
+  ]},
+  {name:'Pull-ups', ico:'pullups', items:[
+    {name:'Tractions (pull-ups)', fields:['reps','weight']},
+    {name:'Tractions supination (chin-ups)', fields:['reps','weight']},
+    {name:'Tractions prise serrée', fields:['reps','weight']},
+    {name:'Tractions prise large', fields:['reps','weight']},
+    {name:'Tractions archer', fields:['reps','weight']},
+    {name:'Tractions à un bras', fields:['reps','weight']},
+    {name:'Tractions commando', fields:['reps','weight']},
+    {name:'Tractions lestées explosives', fields:['reps','weight']},
+    {name:'Muscle-ups', fields:['reps','weight']},
+    {name:'Muscle-ups barre', fields:['reps','weight']},
+    {name:'Toes to bar', fields:['reps']},
+  ]},
+  {name:'Dips', ico:'dips', items:[
+    {name:'Dips', fields:['reps','weight']},
+    {name:'Dips coréens', fields:['reps','weight']},
+  ]},
+  {name:'Pompes', ico:'pompes', items:[
+    {name:'Pompes', fields:['reps','weight']},
+    {name:'Pompes diamant', fields:['reps','weight']},
+    {name:'Pompes archer', fields:['reps','weight']},
+    {name:'Pompes déclinées', fields:['reps','weight']},
+    {name:'Pompes inclinées', fields:['reps','weight']},
+    {name:'Pompes pike', fields:['reps','weight']},
+    {name:'Pompes hindoues', fields:['reps','weight']},
+    {name:'Pompes explosives (clap)', fields:['reps']},
+  ]},
+  {name:'Handstand', ico:'handstand', items:[
+    {name:'Développé pike (HSPU progression)', fields:['reps','weight']},
+    {name:'Handstand push-ups', fields:['reps','weight']},
+    {name:'ATR / Handstand', fields:['seconds']},
+    {name:'Handstand walk', fields:['seconds']},
+  ]},
+  {name:'Rowing / Anneaux', ico:'rowing', items:[
+    {name:'Rowing australien', fields:['reps','weight']},
+    {name:'Rowing TRX / anneaux', fields:['reps','weight']},
+    {name:'Iron cross (anneaux)', fields:['seconds']},
+  ]},
+  {name:'Jambes', ico:'jambes', items:[
+    {name:'Squats', fields:['reps','weight']},
+    {name:'Pistol squats', fields:['reps','weight']},
+    {name:'Squats bulgares', fields:['reps','weight']},
+    {name:'Squats sautés', fields:['reps','weight']},
+    {name:'Fentes avant', fields:['reps','weight']},
+    {name:'Fentes sautées', fields:['reps']},
+    {name:'Nordic curls', fields:['reps','weight']},
+    {name:'Hip thrust', fields:['reps','weight']},
+    {name:'Mollets debout', fields:['reps','weight']},
+    {name:'Step-ups', fields:['reps','weight']},
+    {name:'Wall sit', fields:['seconds','weight']},
+    {name:'Chaise (gainage jambes)', fields:['seconds','weight']},
+  ]},
+  {name:'Gainage / Core', ico:'core', items:[
+    {name:'Gainage (planche ventrale)', fields:['seconds','weight']},
+    {name:'Gainage latéral', fields:['seconds','weight']},
+    {name:'Crunchs', fields:['reps','weight']},
+    {name:'Relevés de jambes', fields:['reps','weight']},
+    {name:'Relevés de jambes suspendu', fields:['reps','weight']},
+    {name:'Roulette abdo (ab wheel)', fields:['reps']},
+    {name:'Dragon flag', fields:['reps','weight']},
+    {name:'Hollow body hold', fields:['seconds','weight']},
+    {name:'Gainage L-sit', fields:['seconds','weight']},
+    {name:'V-sit', fields:['seconds','weight']},
+    {name:'Russian twist', fields:['reps','weight']},
+  ]},
+  {name:'Éléments statiques', ico:'statiques', items:[
+    {name:'Back lever', fields:['seconds','weight']},
+    {name:'Human flag', fields:['seconds']},
+    {name:'Suspension à un bras', fields:['seconds','weight']},
+  ]},
+  {name:'Cardio', ico:'cardio', items:[
+    {name:'Burpees', fields:['reps']},
+    {name:'Mountain climbers', fields:['reps']},
+    {name:'Jumping jacks', fields:['reps']},
+    {name:'Corde à sauter', fields:['seconds']},
+    {name:'Sprint', fields:['seconds']},
+    {name:'Battle rope', fields:['seconds']},
+  ]},
+  {name:'Mobilité', ico:'mobilite', items:[
+    {name:'Pont (bridge) hold', fields:['seconds']},
+    {name:'Grand écart hold', fields:['seconds']},
+    {name:'Squat profond (mobilité)', fields:['seconds']},
+  ]},
+  {name:'Autres', ico:'autres', dynamic:true},
+];
 const DAY_SHORT = {lundi:'Lun',mardi:'Mar',mercredi:'Mer',jeudi:'Jeu',vendredi:'Ven',samedi:'Sam',dimanche:'Dim'};
 const FIELD_LABELS = {reps:'×', weight:'kg', seconds:'s'};
+
+/* ================================================================
+   FORMAT V2 — sélection en 3 niveaux : GROUPE 👉 MOUVEMENT 👉 VARIANTE
+   Un exercice est identifié partout (logs/PRs/programmes = chaînes)
+   par son nom affiché généré : « Front lever · Pull-ups · Adv tuck »
+   (la variante est optionnelle). Facile à étendre : ajouter un
+   mouvement / une variante / une exclusion ci-dessous.
+   ================================================================ */
+/* Icônes : réutilisation stricte des SVG existants (EXO_ICONS). */
+const EXO_GROUP_ICON = {
+  'Front lever':'front','Planche':'planche','Pull-ups':'pullups','Dips':'dips',
+  'Pompes':'pompes','Handstand':'handstand','Rowing / Anneaux':'rowing',
+  'Jambes':'jambes','Cardio':'cardio','Mobilité':'mobilite'
+};
+/* Silhouettes « Icône de l'app » (ICON_FIGURES) utilisées comme icônes des
+   groupes dans le sélecteur — uniquement quand une silhouette correspond
+   vraiment ; sans silhouette (Dips, Pompes, Cardio…) → pas d'icône du tout. */
+const EXO_GROUP_FIGURE = {
+  'Front lever':'front_lever','Planche':'planche','Pull-ups':'pullup',
+  'Handstand':'handstand','Rowing / Anneaux':'iron_cross'
+};
+function _exGroupIconHTML(group){
+  const key=EXO_GROUP_FIGURE[group];
+  if(!key) return '';
+  const fig=ICON_FIGURES.find(x=>x.key===key);
+  if(!fig) return '';
+  /* on suit le thème de l'INTERFACE (pas celui de l'icône de l'app) :
+     sombre → pastille sombre + figure blanche ; clair → l'inverse */
+  const dark=!document.body.hasAttribute('data-theme');
+  return `<img src="${dark?fig.previewDark:fig.previewLight}" alt="" aria-hidden="true">`;
+}
+
+const EXERCISES = {
+  'Front lever': {
+    mouvements:['Hold','Négative','Press','Pull-ups','Pull-ups to touch'],
+    variantes:['Tuck','Adv tuck','Adv tuck plus','Half','One leg','Straddle','Full'],
+    exclusions:{ 'Pull-ups to touch':['Full'] },
+    fields:{ Hold:['seconds','weight'], _def:['reps','weight'] },
+  },
+  'Planche': {
+    mouvements:['Hold','Négative','Press','Push-ups','Lean'],
+    variantes:['Tuck','Adv tuck','Adv tuck plus','Half','Straddle','Full'],
+    exclusions:{},
+    fields:{ Lean:['seconds'], Hold:['seconds','weight'], _def:['reps','weight'] },
+  },
+  'Pull-ups': {
+    mouvements:['Classique','Lestée','Négative','Archer','Typewriter','Explosive','L-sit','Un bras'],
+    variantes:['Pronation','Supination','Neutre','Large','Serrée'],
+    exclusions:{},
+    fields:{ _def:['reps','weight'] },
+  },
+  'Dips': {
+    mouvements:['Barres','Anneaux'],
+    variantes:['Classique','Lesté'],
+    exclusions:{},
+    fields:{ _def:['reps','weight'] },
+  },
+  'Pompes': {
+    mouvements:['Classique','Diamant','Archer','Pike','Pseudo planche','Une main'],
+    variantes:['Au sol','Surélevées','Pieds surélevés','Lestées'],
+    exclusions:{},
+    fields:{ _def:['reps','weight'] },
+  },
+  'Développé': {
+    mouvements:['Couché','Incliné','Militaire'],
+    /* 4 niveaux pour ce groupe : Groupe → Mouvement → Matériel → Prise.
+       « Classique » = matériel neutre : il n'apparaît JAMAIS dans le nom enregistré. */
+    variantes:['Classique','Smith','Haltère'],
+    variantes2:['Pronation','Neutre','Supination','Serrée','Large','Pieds sur le banc'],
+    exclusions:{ 'Incliné':['Pieds sur le banc'], 'Militaire':['Pieds sur le banc'] },
+    fields:{ _def:['reps','weight'] },
+  },
+  'Handstand': {
+    mouvements:['Hold mur','Hold libre','Pike push-ups','HSPU'],
+    variantes:['Normal','Surélevé','Archer'],
+    exclusions:{},
+    fields:{ 'Hold mur':['seconds'],'Hold libre':['seconds'], _def:['reps','weight'] },
+  },
+  'Rowing / Anneaux': {
+    mouvements:['Rowing','Rowing archer','Ring support'],
+    variantes:['Pieds au sol','Pieds surélevés','Lesté'],
+    exclusions:{},
+    fields:{ 'Ring support':['seconds'], _def:['reps','weight'] },
+  },
+  'Jambes': {
+    mouvements:['Squat','Pistol','Fentes','Nordic','Mollets','Hip thrust'],
+    variantes:['Assisté','Normal','Lesté','Bulgare'],
+    exclusions:{},
+    fields:{ _def:['reps','weight'] },
+  },
+  'Cardio': {
+    mouvements:['Course','Corde à sauter','Vélo','Burpees','Marche'],
+    variantes:[],
+    exclusions:{},
+    fields:{ Burpees:['reps'], _def:['seconds'] },
+  },
+  'Mobilité': {
+    mouvements:['Épaules','Hanches','Poignets'],
+    variantes:[],
+    exclusions:{},
+    fields:{ _def:['seconds'] },
+  },
+};
+
+function exoDisplayName(g,mv,v){ const p=[g]; if(mv) p.push(mv); if(v) p.push(v); return p.join(' · '); }
+/* Parse « Groupe · Mouvement · Variante » — null si pas du format v2. */
+function exoParseName(name){
+  const parts=String(name||'').split(' · ').map(s=>s.trim());
+  if(parts.length<2) return null;
+  const cfg=EXERCISES[parts[0]]||null; if(!cfg) return null;
+  if(!cfg.mouvements.includes(parts[1])) return null;
+  /* variante = tout ce qui suit le mouvement, joint (gère les noms à 4 segments
+     du groupe Développé : « Développé · Couché · Smith · Pronation ») */
+  return {groupe:parts[0], mouvement:parts[1], variante:parts.slice(2).join(' · ')||null};
+}
+function exoVariantesValides(groupe, mouvement){
+  const g=EXERCISES[groupe]; if(!g) return [];
+  const ex=((g.exclusions||{})[mouvement])||[];
+  return ((g.variantes||[])).filter(v=>!ex.includes(v));
+}
+function exoFieldsFromName(name){
+  const parsed=exoParseName(name);
+  if(parsed && EXERCISES[parsed.groupe].fields){ const f=EXERCISES[parsed.groupe].fields; return (f[parsed.mouvement]||f._def||['reps','weight']); }
+  const known=(typeof exercises!=='undefined')&&exercises.find(e=>e.name===name);
+  return known?known.fields:['reps'];
+}
+
+/* ================================================================
+   MIGRATION V2 — anciens noms (« Front lever tuck », « Pompes
+   archer »…) → format v2, SANS perdre aucune donnée : on renomme la
+   chaîne partout (exercises/logs/EMOM/profiles/PRs/programmes/stats).
+   Les anciens noms sans équivalent ne sont PAS renommés : ils restent
+   visibles dans l'historique mais ne seront plus proposés à l'ajout.
+   ================================================================ */
+const LEGACY_EXO_MAP = {};
+(function buildLegacyExoMap(){
+  const V={ 'tuck':'Tuck','adv tuck':'Adv tuck','adv tuck + half straddle':'Adv tuck plus','straddle':'Straddle','half lay':'Half','full':'Full' };
+  const add=(old,g,mv,v)=>{ LEGACY_EXO_MAP[old]={groupe:g,mouvement:mv,variante:(v===undefined?null:v)}; };
+  /* Front lever / Planche : ancien arbre = nom + variante en suffixe.
+     « Front lever press négative » → Press (le mouvement « Négative »
+     reste disponible à l'ajout). */
+  const bases={
+    'Front lever':['Front lever','Hold','Full'],
+    'Front lever pull-ups':['Front lever','Pull-ups','Full'],
+    'Front lever pull-ups to touch':['Front lever','Pull-ups to touch',null],
+    'Front lever press négative':['Front lever','Press',null],
+    'Planche':['Planche','Hold','Full'],
+    'Planche lean':['Planche','Lean',null],
+    'Planche push-up':['Planche','Push-ups',null],
+    'Planche press négative':['Planche','Press',null],
+  };
+  Object.keys(bases).forEach(old=>{
+    add(old, bases[old][0], bases[old][1], bases[old][2]);
+    Object.keys(V).forEach(sfx=> add(old+' '+sfx, bases[old][0], bases[old][1], V[sfx]));
+  });
+  /* Pull-ups */
+  add('Tractions (pull-ups)','Pull-ups','Classique','Pronation');
+  add('Tractions supination (chin-ups)','Pull-ups','Classique','Supination');
+  add('Tractions prise serrée','Pull-ups','Classique','Serrée');
+  add('Tractions prise large','Pull-ups','Classique','Large');
+  add('Tractions archer','Pull-ups','Archer','Pronation');
+  add('Tractions lestées explosives','Pull-ups','Lestée','Pronation');
+  add('Tractions à un bras','Pull-ups','Un bras',null);
+  /* Gainage → groupe le plus proche */
+  add('Gainage L-sit','Pull-ups','L-sit',null);
+  /* Dips */
+  add('Dips','Dips','Barres','Classique');
+  add('Dips coréens','Dips','Anneaux','Classique');
+  /* Pompes */
+  add('Pompes','Pompes','Classique','Au sol');
+  add('Pompes diamant','Pompes','Diamant','Au sol');
+  add('Pompes archer','Pompes','Archer','Au sol');
+  add('Pompes déclinées','Pompes','Classique','Pieds surélevés');
+  add('Pompes inclinées','Pompes','Classique','Surélevées');
+  add('Pompes pike','Pompes','Pike',null);
+  /* Handstand */
+  add('Développé pike (HSPU progression)','Handstand','Pike push-ups','Normal');
+  add('Handstand push-ups','Handstand','HSPU','Normal');
+  add('ATR / Handstand','Handstand','Hold mur',null);
+  /* Rowing / Anneaux */
+  add('Rowing australien','Rowing / Anneaux','Rowing','Pieds au sol');
+  add('Rowing TRX / anneaux','Rowing / Anneaux','Rowing','Pieds surélevés');
+  /* Jambes */
+  add('Squats','Jambes','Squat','Normal');
+  add('Pistol squats','Jambes','Pistol','Normal');
+  add('Squats bulgares','Jambes','Squat','Bulgare');
+  add('Fentes avant','Jambes','Fentes','Normal');
+  add('Nordic curls','Jambes','Nordic','Normal');
+  add('Hip thrust','Jambes','Hip thrust','Normal');
+  add('Mollets debout','Jambes','Mollets','Normal');
+  /* Cardio */
+  add('Sprint','Cardio','Course',null);
+  add('Corde à sauter','Cardio','Corde à sauter',null);
+  add('Burpees','Cardio','Burpees',null);
+  /* Mobilité */
+  add('Squat profond (mobilité)','Mobilité','Hanches',null);
+})();
+/* Noms hérités sans équivalent dans les nouveaux groupes : visibles dans
+   l'historique, mais plus proposés à l'ajout (le groupe « Autres » ne
+   liste que les exercices créés à la main qui en sont eux-mêmes exclus). */
+const LEGACY_UNMAPPED = new Set();
+[
+  ...DEFAULT_EXERCISES.map(e=>e.name),
+  ...EXO_GROUPS.filter(g=>g.items).flatMap(g=>g.items.map(i=>i.name)),
+].forEach(n=>{ if(!LEGACY_EXO_MAP[n]) LEGACY_UNMAPPED.add(n); });
+function _exUnmatched(){
+  return exercises.filter(e=> !exoParseName(e.name) && !LEGACY_UNMAPPED.has(e.name));
+}
+
+/* Renommage de variantes déjà stockées au format v2 (ex. un exo
+   enregistré « Front lever · Hold · Half lay » devient « … · Half »). */
+const VARIANTE_RENAMES = { 'Adv tuck + half straddle':'Adv tuck plus', 'Half lay':'Half' };
+/* Changements de structure portés à la config (nom v2 complet → nouveau). */
+const STRUCT_RENAMES = { 'Planche · Hold · Lean':'Planche · Lean' };
+
+function migrateExoNamesV2(){
+  if(!exercises && !logs) return;
+  const renameOne=(n)=>{
+    if(typeof n!=='string'||!n) return n;
+    if(n.indexOf(' · ')>-1){
+      /* déjà au format v2 : suit quand même les renommages de config */
+      if(STRUCT_RENAMES[n]) return STRUCT_RENAMES[n];
+      const p=String(n).split(' · ');
+      const renamed=VARIANTE_RENAMES[p[p.length-1]];
+      if(renamed!==undefined){ p[p.length-1]=renamed; return p.join(' · '); }
+      return n;
+    }
+    const m=LEGACY_EXO_MAP[n]; if(!m) return n;
+    return exoDisplayName(m.groupe, m.mouvement, m.variante);
+  };
+  const beforeEx=exercises.map(e=>e.name).join('\u0001');
+  exercises=exercises.map(e=>{ if(e.name!==renameOne(e.name)){ const c={...e}; c.name=renameOne(e.name); return c; } return e; });
+  /* Dédoublonne (deux anciens noms vers la même cible), garde le 1er */
+  const seen=new Set(); exercises=exercises.filter(e=>{ if(seen.has(e.name)) return false; seen.add(e.name); return true; });
+  if(exercises.map(e=>e.name).join('\u0001')!==beforeEx) sSet('forge-exercises', exercises);
+  let logsChanged=false;
+  logs.forEach(l=>{ const n=renameOne(l.exercise); if(n!==l.exercise){ l.exercise=n; logsChanged=true; } });
+  if(logsChanged) sSet('forge-logs', logs);
+  let profilesChanged=false;
+  (profiles||[]).forEach(p=>{ if(!p.week) return; DAY_KEYS.forEach(d=>(p.week[d]||[]).forEach(r=>(r.exercises||[]).forEach(x=>{
+    const n=renameOne(x.name); if(n!==x.name){ x.name=n; profilesChanged=true; }
+    if(x._emom) (x.exos||[]).forEach(y=>{ const n2=renameOne(y.name); if(n2!==y.name){ y.name=n2; profilesChanged=true; } });
+  }))); });
+  if(profilesChanged) persistProfiles();
+  let prsChanged=false;
+  (prs||[]).forEach(x=>{ const n=renameOne(x.exercise); if(n!==x.exercise){ x.exercise=n; prsChanged=true; } });
+  if(prsChanged) savePRs();
+  let programsChanged=false;
+  (programs||[]).forEach(p=>(p.exercises||[]).forEach(x=>{ const n=renameOne(x.exerciseName); if(n!==x.exerciseName){ x.exerciseName=n; programsChanged=true; } }));
+  if(programsChanged) savePrograms();
+  /* S'assure que chaque nom v2 référencé a bien son entrée canonicalisée */
+  const referenced=new Set();
+  logs.forEach(l=>referenced.add(l.exercise));
+  (prs||[]).forEach(x=>referenced.add(x.exercise));
+  let added=false;
+  referenced.forEach(n=>{ if(exoParseName(n)&&!exercises.some(e=>e.name===n)){ exercises.push({name:n, fields:exoFieldsFromName(n)}); added=true; } });
+  if(added) sSet('forge-exercises', exercises);
+  /* La clé stats sauvegardée contient « Nom|metric » → on la suit aussi */
+  (async()=>{ try{
+    const k=await sGet('forge-stats-ex','');
+    if(k){ const i=k.indexOf('|');
+      const exN=i>0?k.slice(0,i):k, nn=renameOne(exN);
+      if(nn!==exN) sSet('forge-stats-ex', nn+(i>0?k.slice(i):''));
+    }
+  }catch(e){} })();
+}
 
 let exercises = [], logs = [], profiles = [], activeProfileId = 'default';
 let currentDay = DAY_KEYS[(new Date().getDay()+6)%7];
@@ -6838,8 +7267,20 @@ function deleteExercise(name){ exercises = exercises.filter(e=> e.name !== name)
 let pendingEditExName = null;
 function renderExercisePicker(container, onPick, opts){
   opts = opts || {};
-  container.innerHTML = `<div style="position:relative;display:flex;flex-direction:column;height:100%;justify-content:flex-end;"><button class="btn ghost block" id="exSearchNewToggle" style="margin-bottom:8px;flex-shrink:0;">+ Créer un nouvel exercice</button><div id="exSearchNewForm" style="display:none;margin-bottom:8px;flex-shrink:0;"></div><div style="position:relative;flex-shrink:0;"><div id="exSearchResults" style="position:absolute;bottom:calc(100% + 4px);left:0;right:0;max-height:65vh;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);z-index:50;box-shadow:0 -8px 28px rgba(0,0,0,0.35);display:none;"></div><input type="text" id="exSearchInput" placeholder="Rechercher (ex: tr, pomp, gain...)" style="width:100%;"></div></div>`;
-  const input = container.querySelector('#exSearchInput'), results = container.querySelector('#exSearchResults');
+  /* Design v2 (tiré de « Ajouter un exercice.html ») : liste verticale de
+     groupes avec icône, recherche en bas, et au clic sur un groupe une
+     petite fenêtre compacte groupe › mouvement › variante. */
+  container.innerHTML = `<div style="position:relative;display:flex;flex-direction:column;height:100%;min-height:0;"><div id="exList" class="exgrplist" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 10px;"></div><button class="btn ghost block" id="exSearchNewToggle" style="margin:8px 0;flex-shrink:0;">+ Créer un nouvel exercice</button><div id="exSearchNewForm" style="display:none;margin-bottom:8px;flex-shrink:0;"></div><input type="text" id="exSearchInput" placeholder="Rechercher (ex: tr, pomp, jam...)" style="flex-shrink:0;"></div>`;
+  const listEl = container.querySelector('#exList'), input = container.querySelector('#exSearchInput');
+  const isKnown=(n)=> exercises.some(e=>e.name===n);
+  const _active=(name)=> opts.isActive ? !!opts.isActive(name) : false;
+  // Le nom final reste une simple chaîne (« Front lever · Pull-ups · Tuck »),
+  // créée automatiquement dans exercises/ si absente → compatible avec
+  // tout l'existant (logs, PRs, programmes) sans migration.
+  function _pickFinal(name, fields){
+    if(fields && !isKnown(name)){ exercises.push({name, fields:[...fields]}); sSet('forge-exercises', exercises); renderExSelects(); }
+    onPick(name);
+  }
   function saveExEdit(name){
     sSet('forge-exercises', exercises);
     persistProfiles(); // Ensure profiles with renamed exos are saved
@@ -6850,95 +7291,103 @@ function renderExercisePicker(container, onPick, opts){
     renderResults();
   }
   function renderEditPanel(name){ const ex = exercises.find(e=>e.name===name); if(!ex) return ''; return `<div class="ex-edit-panel" data-editpanel="${name}"><div style="font-size:12px;color:var(--ember);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Modifier l'exercice</div><div class="field"><input type="text" class="edit-name" value="${ex.name}" style="width:100%;margin-bottom:8px;"></div><div class="check-row"><label><input type="checkbox" class="edit-fld" data-ex="${name}" data-fld="reps" ${ex.fields.includes('reps')?'checked':''}> Reps</label><label><input type="checkbox" class="edit-fld" data-ex="${name}" data-fld="weight" ${ex.fields.includes('weight')?'checked':''}> Kg</label><label><input type="checkbox" class="edit-fld" data-ex="${name}" data-fld="seconds" ${ex.fields.includes('seconds')?'checked':''}> Secondes</label></div><button class="btn primary" data-saveedit="${name}" style="width:100%;min-height:44px;font-size:14px;">✓ Valider</button></div>`; }
-  function renderResults(){
-    const qRaw = input.value, q = normalizeSearch(qRaw), matches = exercises.filter(e=> !q || normalizeSearch(e.name).includes(q));
 
-    // Priorité aux exos avec des séries (hors démo)
+  function _badges(fields){
+    return fields.map(f=> `<span style="font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 6px;color:var(--ash);font-family:'JetBrains Mono',monospace;">${f==='reps'?'×':f==='weight'?'kg':'s'}</span>`).join('');
+  }
+
+  /* ---------- niveau 1 : groupes ---------- */
+  function _grpRow(def, tail){
+    const n = def.dyn ? _exUnmatched().length : EXERCISES[def.name].mouvements.length;
+    const icoHtml = _exGroupIconHTML(def.name);
+    return `<button type="button" class="exgrp" data-group="${def.name}">${icoHtml?`<span class="exico">${icoHtml}</span>`:''}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;">${def.name}</span><span class="cnt">· ${n}</span>${tail||'<span class="chev">›</span>'}</button>`;
+  }
+  function _allRow(){
+    const allActive = opts.allowAll && opts.isActive && opts.isActive(null);
+    return opts.allowAll ? `<button type="button" class="exgrp${allActive?' on':''}" data-allopt="1"><span class="exico">${EXO_ICONS.autres}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;">${opts.allLabel||'Tous les exercices'}</span>${allActive?'<span style="color:var(--ember);margin-left:auto;flex-shrink:0;">✓</span>':''}</button>` : '';
+  }
+  function _groupDefs(){
+    /* Groupes masqués à l'ajout (gérés par ailleurs via l'historique) :
+       leurs exercices existants restent migrés et visibles. */
+    const hiddenExGroups = ['Rowing / Anneaux','Jambes','Mobilité','Cardio'];
+    const defs=Object.keys(EXERCISES).filter(g=>!hiddenExGroups.includes(g)).map(g=>({name:g, ico:EXO_GROUP_ICON[g]||'autres', dyn:false}));
+    return defs;
+  }
+  function renderGroups(defs){
+    defs = defs || _groupDefs();
+    listEl.innerHTML = _allRow() + defs.map(def=>_grpRow(def)).join('') + (defs.length?'':'<div style="color:var(--ash);font-size:13px;padding:10px 2px;">Aucun groupe trouvé.</div>');
+    listEl.querySelectorAll('[data-group]').forEach(btn=>{ btn.onclick=(e)=>{ e.stopPropagation(); openExPickerSheet(btn.dataset.group, (finalName, fields)=> _pickFinal(finalName, fields)); }; });
+    if(opts.allowAll){ const a=listEl.querySelector('[data-allopt]'); if(a) a.onclick=(e)=>{ e.stopPropagation(); onPick(null); }; }
+  }
+
+  /* ---------- recherche plate : garde l'édition/suppression ---------- */
+  // Si la recherche ne correspond à aucun groupe mais à des exercices,
+  // on bascule sur la liste plate historique (édition ✎ / suppression ×).
+  function renderFlatRows(){
+    const qRaw = input.value, q = normalizeSearch(qRaw), matches = exercises.filter(e=> !q || normalizeSearch(e.name).includes(q));
     const exCounts = {};
     logs.forEach(l => {
       if (!l.profileId || !l.profileId.startsWith('demo-')) {
         exCounts[l.exercise] = (exCounts[l.exercise] || 0) + (l.sets ? l.sets.length : 0);
       }
     });
-
     matches.sort((a, b) => (exCounts[b.name] || 0) - (exCounts[a.name] || 0));
-
-    let listHtml = '';
-    const allActive = opts.allowAll && opts.isActive && opts.isActive(null);
-    const allRow = (opts.allowAll && !q) ? `<div class="seancerow" data-allopt="1" style="padding:10px 14px;margin-bottom:8px;min-height:auto;display:flex;align-items:center;gap:6px;${allActive?'border-color:var(--ember);':''}"><div style="flex:1;min-width:0;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">📋</span><span class="name" style="font-size:14px;${allActive?'color:var(--ember);':''}">${opts.allLabel||'Tous les exercices'}</span></div>${allActive?'<span style="color:var(--ember);font-size:16px;">✓</span>':''}</div>` : '';
-    if(matches.length === 0){
-      listHtml = allRow + (allRow ? '' : `<div class="empty" style="padding:14px 0;">Aucun exercice trouvé.</div>`);
-    } else {
-      listHtml = allRow + matches.map(e=>{ const editing = pendingEditExName === e.name; const active = opts.isActive && opts.isActive(e.name); const delBtn = `<button class="del-ex-btn" data-exdel="${e.name}" title="Supprimer" style="background:none;border:none;color:var(--danger);font-size:20px;padding:0 4px;line-height:1;flex-shrink:0;cursor:pointer;">×</button>`; const editBtn = `<button class="edit-ex-btn" data-exedit="${e.name}" title="Modifier les champs" style="background:none;border:none;color:${editing?'var(--ember)':'var(--ash)'};font-size:16px;padding:0 6px;line-height:1;flex-shrink:0;cursor:pointer;">✎</button>`; const fieldBadges = e.fields.map(f=> `<span style="font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 6px;color:var(--ash);font-family:'JetBrains Mono',monospace;">${f==='reps'?'×':f==='weight'?'kg':'s'}</span>`).join(''); return `<div><div class="seancerow" data-name="${e.name}" style="padding:10px 14px;margin-bottom:${editing?'0':'8px'};min-height:auto;display:flex;align-items:center;gap:6px;${editing?'border-bottom-left-radius:0;border-bottom-right-radius:0;border-color:var(--ember);':(active?'border-color:var(--ember);':'')}"><div style="flex:1;min-width:0;"><div class="name" style="font-size:14px;${active?'color:var(--ember);':''}">${e.name}</div><div style="display:flex;gap:4px;margin-top:4px;">${fieldBadges}</div></div>${active?'<span style="color:var(--ember);font-size:16px;margin-right:2px;">✓</span>':''}${editBtn}${delBtn}</div>${editing ? renderEditPanel(e.name) : ''}</div>`; }).join('');
-    }
-
-    const createBtnHtml = `<div style="padding:8px 14px;border-top:1px solid var(--border);"><button class="btn ghost block" id="resultsCreateBtn" style="font-size:13px;">+ Créer un nouvel exercice</button></div>`;
-    results.innerHTML = listHtml + createBtnHtml;
-
-    if(opts.allowAll){
-      const allRowEl = results.querySelector('[data-allopt]');
-      if(allRowEl){
-        allRowEl.addEventListener('touchstart', ()=>{ _keepOpen = true; }, {passive:true});
-        allRowEl.addEventListener('mousedown', ()=>{ _keepOpen = true; });
-        allRowEl.onclick = ()=>{ onPick(null); };
-      }
-    }
-
-    results.querySelector('#resultsCreateBtn').onclick = (e)=>{
-      e.stopPropagation();
-      results.style.display = 'none';
-      const f = container.querySelector('#exSearchNewForm');
-      f.style.display = 'block';
-      renderInlineNewExForm(f, (name)=> onPick(name));
-      const nameInp = f.querySelector('#inlineExName');
-      if(nameInp) nameInp.value = qRaw;
-    };
-    results.querySelectorAll('[data-name]').forEach(row=>{
-      row.addEventListener('touchstart', ()=>{ _keepOpen = true; }, {passive:true});
-      row.addEventListener('mousedown', ()=>{ _keepOpen = true; });
-      row.onclick = (e)=>{ if(e.target.closest('.del-ex-btn')||e.target.closest('.edit-ex-btn')) return; pendingEditExName = null; onPick(row.dataset.name); };
+    const listHtml = matches.length===0
+      ? `<div style="color:var(--ash);font-size:13px;padding:10px 2px;">Aucun exercice trouvé.</div>`
+      : matches.map(e=>{
+          const editing = pendingEditExName === e.name;
+          const active = opts.isActive && opts.isActive(e.name);
+          const delBtn = `<button class="del-ex-btn" data-exdel="${e.name}" title="Supprimer" style="background:none;border:none;color:var(--danger);font-size:20px;padding:0 4px;line-height:1;flex-shrink:0;cursor:pointer;">×</button>`;
+          const editBtn = `<button class="edit-ex-btn" data-exedit="${e.name}" title="Modifier les champs" style="background:none;border:none;color:${editing?'var(--ember)':'var(--ash)'};font-size:16px;padding:0 6px;line-height:1;flex-shrink:0;cursor:pointer;">✎</button>`;
+          const fieldBadges = _badges(e.fields);
+          return `<div><div class="seancerow" data-name="${e.name}" style="padding:10px 14px;margin-bottom:${editing?'0':'2px'};min-height:auto;display:flex;align-items:center;gap:6px;${editing?'border-bottom-left-radius:0;border-bottom-right-radius:0;border-color:var(--ember);':(active?'border-color:var(--ember);':'')}"><div style="flex:1;min-width:0;"><div class="name" style="font-size:14px;${active?'color:var(--ember);':''}">${e.name}</div><div style="display:flex;gap:4px;margin-top:4px;">${fieldBadges}</div></div>${active?'<span style="color:var(--ember);font-size:16px;margin-right:2px;">✓</span>':''}${editBtn}${delBtn}</div>${editing ? renderEditPanel(e.name) : ''}</div>`;
+        }).join('');
+    listEl.classList.remove('exgrplist');
+    listEl.innerHTML = listHtml;
+    listEl.querySelectorAll('[data-name]').forEach(row=>{
+      row.onclick = (eve)=>{ if(eve.target.closest('.del-ex-btn')||eve.target.closest('.edit-ex-btn')) return; pendingEditExName = null; _pickFinal(row.dataset.name); };
     });
-    results.querySelectorAll('.edit-ex-btn').forEach(btn=>{ btn.onclick = (e)=>{ e.stopPropagation(); const name = btn.dataset.exedit; pendingEditExName = pendingEditExName===name ? null : name; pendingDeleteExName = null; clearTimeout(pendingDeleteExTimer); renderResults(); }; });
-    results.querySelectorAll('[data-saveedit]').forEach(btn=>{ btn.onclick = (e)=>{ e.stopPropagation(); const oldName = btn.dataset.saveedit, ex = exercises.find(ex=>ex.name===oldName); if(!ex) return; const panel = results.querySelector(`[data-editpanel="${oldName}"]`); if(!panel) return; const newName = panel.querySelector('.edit-name').value.trim(); if(!newName) return; const checked = [...panel.querySelectorAll('.edit-fld:checked')].map(c=>c.dataset.fld); ex.fields = checked.length ? checked : ['reps']; if(newName !== oldName){
-      ex.name = newName;
-      logs.forEach(l=> { if(l.exercise===oldName) l.exercise=newName; });
-      prs.forEach(p=> { if(p.exercise===oldName) p.exercise=newName; });
-      profiles.forEach(p=> {
-        Object.values(p.week).forEach(dayList=> {
-          dayList.forEach(s=> {
-            s.exercises.forEach(exS=> { if(exS.name===oldName) exS.name=newName; });
-          });
-        });
-      });
-    }
-    saveExEdit(newName);
-  }; });
-    results.querySelectorAll('.del-ex-btn').forEach(btn=>{
-      btn.addEventListener('touchstart', ()=>{ _keepOpen = true; }, {passive:true});
-      btn.addEventListener('mousedown', ()=>{ _keepOpen = true; });
-      btn.onclick = (e)=>{ e.stopPropagation(); const name = btn.dataset.exdel; showConfirm(`Supprimer "${name}" ?`, ()=>{ pendingEditExName = null; deleteExercise(name); renderResults(); showResults(); }); };
-    });
+    _wireFlatTools();
   }
-  let _keepOpen = false;
-  function showResults(){ results.style.display = results.innerHTML.trim() ? 'block' : 'none'; }
-  function hideResults(){ if(_keepOpen){ _keepOpen=false; return; } results.style.display = 'none'; }
-  results.addEventListener('mousedown', ()=>{ _keepOpen = true; });
-  input.oninput = ()=>{ pendingDeleteExName=null; pendingEditExName=null; clearTimeout(pendingDeleteExTimer); renderResults(); showResults(); };
-  input.addEventListener('focus', ()=>{ renderResults(); showResults(); });
-  input.addEventListener('blur', ()=>{ setTimeout(hideResults, 220); });
-  renderResults(); // pré-calcul sans afficher
-  setTimeout(()=> input.focus(), 30);
+
+  function _wireFlatTools(){
+    listEl.querySelectorAll('[data-saveedit]').forEach(btn=>{ btn.onclick = (e)=>{ e.stopPropagation(); const oldName = btn.dataset.saveedit, ex = exercises.find(x=>x.name===oldName); const panel = listEl.querySelector(`[data-editpanel="${oldName}"]`); if(!ex||!panel) return; const newName = panel.querySelector('.edit-name').value.trim(); const checked = [...panel.querySelectorAll('.edit-fld:checked')].map(c=>c.dataset.fld); if(checked.length) ex.fields = checked; if(newName && newName!==oldName){ renameExoEverywhere(oldName, newName); ex.name = newName; pendingEditExName = null; } saveExEdit(newName||oldName); }; });
+    listEl.querySelectorAll('.edit-ex-btn').forEach(btn=>{ btn.onclick = (e)=>{ e.stopPropagation(); const name = btn.dataset.exedit; pendingEditExName = pendingEditExName===name ? null : name; pendingDeleteExName = null; clearTimeout(pendingDeleteExTimer); renderResults(); }; });
+    listEl.querySelectorAll('.del-ex-btn').forEach(btn=>{
+      btn.onclick = (e)=>{ e.stopPropagation(); const name = btn.dataset.exdel; showConfirm(`Supprimer "${name}" ?`, ()=>{ pendingEditExName = null; deleteExercise(name); renderResults(); }); };
+    });
+    listEl.querySelectorAll('.edit-fld').forEach(cb=>{ cb.onchange = ()=>{ const exo = exercises.find(x=>x.name===cb.dataset.ex); if(!exo) return; const fld = cb.dataset.fld; const has = exo.fields.includes(fld); if(cb.checked && !has) exo.fields.push(fld); if(!cb.checked && has) exo.fields = exo.fields.filter(f=>f!==fld); if(!exo.fields.length) exo.fields = ['reps']; sSet('forge-exercises', exercises); renderResults(); }; });
+    listEl.querySelectorAll('.ex-edit-panel .edit-name').forEach(inp=>{ inp.onkeydown = (eve)=>{ if(eve.key==='Enter'){ eve.preventDefault(); const exo = exercises.find(x=>x.name===pendingEditExName); const newN=(inp.value||'').trim(); if(exo && newN && newN!==exo.name){ renameExoEverywhere(exo.name, newN); saveExEdit(newN); } } }; });
+  }
+
+  function renameExoEverywhere(oldN, newN){
+    profiles.forEach(p=>{ (p.week?DAY_KEYS:[]).forEach(d=> ((p.week&&p.week[d])||[]).forEach(s=> ((s.exercises)||[]).forEach(x=>{ if(x.name===oldN) x.name=newN; if(x._emom) (x.exos||[]).forEach(y=>{ if(y.name===oldN) y.name=newN; }); }))); });
+    logs.forEach(l=>{ if(l.exercise===oldN) l.exercise=newN; });
+    prs.forEach(x=>{ if(x.exercise===oldN) x.exercise=newN; });
+    persistProfiles(); sSet('forge-logs', logs); savePRs();
+  }
+
+  function renderResults(){
+    const q = input.value.trim();
+    if(q){
+      const qs = normalizeSearch(q);
+      const defs = _groupDefs().filter(def=> normalizeSearch(def.name).includes(qs));
+      const exMatch = exercises.some(e=> normalizeSearch(e.name).includes(qs));
+      if(defs.length || !exMatch) renderGroups(defs);
+      else { listEl.classList.add('exgrplist'); renderFlatRows(); }
+    } else { renderGroups(_groupDefs()); }
+  }
+
+  input.oninput = ()=>{ pendingDeleteExName=null; pendingEditExName=null; clearTimeout(pendingDeleteExTimer); renderResults(); };
+  renderResults();
   container.querySelector('#exSearchNewToggle').onclick = ()=>{
     const f = container.querySelector('#exSearchNewForm');
-    const results = container.querySelector('#exSearchResults');
     f.style.display = f.style.display==='none' ? 'block':'none';
     if(f.style.display==='block') {
-      results.style.display = 'none';
       renderInlineNewExForm(f, (name)=> onPick(name));
     }
   };
 }
-
 document.getElementById('addExToSessionBtn').onclick = ()=>{
   openFullscreenExPicker('Ajouter un exercice', (name)=>{
     const seance = currentSeanceObj();
@@ -7447,6 +7896,120 @@ function setSelectedStatEx(key, persist){
    record perso, stats). Recherche en bas, résultats en liste géante
    au-dessus, rien d'autre à l'écran : le clavier ne cache jamais rien.
    ================================================================ */
+/* ================================================================
+   PETITE FENÊTRE GROUPE › MOUVEMENT › VARIANTE (sélecteur v2,
+   tiré de « Ajouter un exercice.html ») — bottom sheet sur mobile,
+   fenêtre centrée au-delà de 700px. Un seul choix par ligne,
+   exclusions grisées/barrées, dernier choix mémorisé par groupe.
+   ================================================================ */
+const EX_SEL_KEY='forge-exo-sel-v2';
+let exSel={};
+try{ exSel=JSON.parse(localStorage.getItem(EX_SEL_KEY)||'{}'); }catch(e){ exSel={}; }
+const _exEsc=(s)=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+function _exSaveSel(){ try{ localStorage.setItem(EX_SEL_KEY, JSON.stringify(exSel)); }catch(e){} }
+let _exToastTimer=null;
+function _exToast(msg){ const t=document.getElementById('exSheetToast'); if(!t) return; t.textContent=msg; t.classList.add('on'); clearTimeout(_exToastTimer); _exToastTimer=setTimeout(()=>t.classList.remove('on'), 2200); }
+
+/* Groupes à 4 niveaux (Développé) : la variante stockée est la chaîne
+   [Matériel · ]Prise — « Classique » (matériel neutre) n'est jamais stocké. */
+function _exSplitV(cfg, v){
+  if(!v) return [null,null];
+  const pa=String(v).split(' · ');
+  let mat=null; const rest=pa.slice();
+  if(rest.length && (cfg.variantes||[]).includes(rest[0])) mat=rest.shift();
+  return [mat, rest.join(' · ')||null];
+}
+function _exJoinV(cfg, s){
+  if(!(cfg.variantes2||[]).length) return s.v||null;
+  const vf=cfg.variantes||[];
+  const mat=(s.mat && s.mat!=='Classique' && vf.includes(s.mat))?s.mat:null;
+  const pr=(s.prise && (cfg.variantes2||[]).includes(s.prise))?s.prise:null;
+  return [mat,pr].filter(Boolean).join(' · ')||null;
+}
+
+function _renderExSheet(group, confirmFn){
+  const sheet=document.getElementById('exSheet');
+  const cfg=EXERCISES[group]||null;
+  if(!exSel[group]){
+    exSel[group] = cfg
+      ? (cfg.variantes.length ? {m:cfg.mouvements[0], v:(exoVariantesValides(group,cfg.mouvements[0])[0]||null)} : {m:cfg.mouvements[0], v:null})
+      : { name:(()=>{ const un=_exUnmatched(); return un.length?un[0].name:null; })() };
+  }
+  const s=exSel[group];
+  let body='';
+  if(cfg){
+    /* cohérence si la config a bougé depuis la dernière fois */
+    if(!cfg.mouvements.includes(s.m)) s.m=cfg.mouvements[0];
+    const _bad=()=>((cfg.exclusions||{})[s.m])||[];
+    if((cfg.variantes2||[]).length){
+      /* 4 niveaux (ex. Développé) : variante en deux dimensions matière+prise.
+         « Classique » = matériel neutre, n'apparaît jamais dans le nom. */
+      if(s.v){ const sp=_exSplitV(cfg,s.v); s.mat=sp[0]; s.prise=sp[1]; delete s.v; }
+      if(!('mat' in s)) s.mat=cfg.variantes.includes('Classique')?'Classique':(cfg.variantes[0]||null);
+      if(s.mat && !cfg.variantes.includes(s.mat)) s.mat=cfg.variantes.includes('Classique')?'Classique':null;
+      if(s.prise){ if(!cfg.variantes2.includes(s.prise)||_bad().includes(s.prise)) s.prise=null; }
+      body=`<div class="exlab">Mouvement</div><div class="expillrow">`+cfg.mouvements.map(m=>`<button type="button" class="expill" data-m="${_exEsc(m)}" aria-pressed="${m===s.m?'true':'false'}">${_exEsc(m)}</button>`).join('')+`</div>`;
+      body+=`<div class="exlab">Matériel</div><div class="expillrow">`+cfg.variantes.map(v=>`<button type="button" class="expill" data-vm="${_exEsc(v)}" ${s.mat===v?'aria-pressed="true"':''}>${_exEsc(v)}</button>`).join('')+`</div>`;
+      body+=`<div class="exlab">Prise</div><div class="expillrow">`+cfg.variantes2.map(v=>{ const dis=_bad().includes(v); return `<button type="button" class="expill" data-vp="${_exEsc(v)}" ${s.prise===v?'aria-pressed="true"':''} ${dis?'disabled':''}>${_exEsc(v)}</button>`; }).join('')+`</div>`;
+    } else {
+      let bad=_bad();
+      if(s.v && !(cfg.variantes||[]).includes(s.v)) s.v=cfg.variantes.length?(exoVariantesValides(group,s.m)[0]||null):null;
+      if(s.v && bad.includes(s.v)) s.v=exoVariantesValides(group,s.m)[0]||null;
+      body=`<div class="exlab">Mouvement</div><div class="expillrow">`+cfg.mouvements.map(m=>`<button type="button" class="expill" data-m="${_exEsc(m)}" aria-pressed="${m===s.m?'true':'false'}">${_exEsc(m)}</button>`).join('')+`</div>`;
+      if((cfg.variantes||[]).length){
+        bad=_bad();
+        body+=`<div class="exlab">Variante</div><div class="expillrow">`+cfg.variantes.map(v=>{ const dis=bad.includes(v); return `<button type="button" class="expill" data-v="${_exEsc(v)}" ${s.v===v?'aria-pressed="true"':''} ${dis?'disabled':''}>${_exEsc(v)}</button>`; }).join('')+`</div>`;
+      } else { s.v=null; }
+    }
+  } else {
+    const un=_exUnmatched();
+    body=`<div class="exlab">Exercice</div><div class="expillrow">`+un.map(e=>`<button type="button" class="expill" data-n="${_exEsc(e.name)}" ${s.name===e.name?'aria-pressed="true"':''}>${_exEsc(e.name)}</button>`).join('')+`</div>`;
+  }
+  const composite = cfg ? [group, s.m, _exJoinV(cfg,s)].filter(Boolean).join(' · ') : (s.name||'');
+  const icoHtml = _exGroupIconHTML(group);
+  sheet.innerHTML=`<div id="exSheetHead">${icoHtml?`<span class="exico">${icoHtml}</span>`:''}<span style="font:600 17px 'Oswald',sans-serif;color:var(--chalk);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_exEsc(group)}</span><button type="button" id="exSheetClose" aria-label="Fermer">✕</button></div>${body}<div class="exres">Exercice<b>${_exEsc(composite)}</b></div><button type="button" class="exbtn" id="exSheetConfirm">Valider</button>`;
+  sheet.querySelectorAll('[data-m]').forEach(b=>{ b.onclick=()=>{ s.m=b.dataset.m; const bd=((cfg.exclusions||{})[s.m])||[]; if(s.v && bd.includes(s.v)) s.v=exoVariantesValides(group,s.m)[0]||null; if(s.prise && bd.includes(s.prise)) s.prise=null; _exSaveSel(); _renderExSheet(group,confirmFn); }; });
+  sheet.querySelectorAll('[data-v]').forEach(b=>{ b.onclick=()=>{ s.v=b.dataset.v; _exSaveSel(); _renderExSheet(group,confirmFn); }; });
+  sheet.querySelectorAll('[data-vm]').forEach(b=>{ b.onclick=()=>{ s.mat=b.dataset.vm; _exSaveSel(); _renderExSheet(group,confirmFn); }; });
+  sheet.querySelectorAll('[data-vp]').forEach(b=>{ b.onclick=()=>{ s.prise=b.dataset.vp; _exSaveSel(); _renderExSheet(group,confirmFn); }; });
+  sheet.querySelectorAll('[data-n]').forEach(b=>{ b.onclick=()=>{ s.name=b.dataset.n; _exSaveSel(); _renderExSheet(group,confirmFn); }; });
+  sheet.querySelector('#exSheetClose').onclick=()=> _navClose(closeExPickerSheet);
+  sheet.querySelector('#exSheetConfirm').onclick=()=>{
+    if(cfg && !s.m) return;
+    if(!cfg && !s.name) return;
+    const name = cfg ? exoDisplayName(group, s.m, _exJoinV(cfg,s)) : s.name;
+    _exSheetPanelShown = false; // Valider : la petite fenêtre ET le panneau se referment ensemble
+    closeExPickerSheet();
+    _exToast('Ajouté : '+name);
+    confirmFn(name, cfg ? exoFieldsFromName(name) : undefined);
+  };
+}
+function openExPickerSheet(group, confirmFn){
+  _renderExSheet(group, confirmFn);
+  /* la petite fenêtre est la seule affichée : le panneau de groupes se cache,
+     et revient à sa fermeture (retour APK, Échap, croix ou clic fond). */
+  const fsPanel=document.getElementById('fsExPickerOverlay');
+  _exSheetPanelShown = false;
+  if(fsPanel && fsPanel.style.display!=='none'){ fsPanel.style.display='none'; _exSheetPanelShown = true; }
+  document.getElementById('exSheetOv').classList.add('open');
+  _navPush(closeExPickerSheet);
+}
+let _exSheetPanelShown = true;
+function closeExPickerSheet(){
+  document.getElementById('exSheetOv').classList.remove('open');
+  if(_exSheetPanelShown){
+    _exSheetPanelShown = false;
+    const fsPanel=document.getElementById('fsExPickerOverlay');
+    if(fsPanel) fsPanel.style.display='flex';
+  }
+}
+ovExSheetBackdrop();
+function ovExSheetBackdrop(){
+  const ov=document.getElementById('exSheetOv');
+  ov.addEventListener('click', (e)=>{ if(e.target===ov) _navClose(closeExPickerSheet); });
+}
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && document.getElementById('exSheetOv').classList.contains('open')) _navClose(closeExPickerSheet); });
+
 function openFullscreenExPicker(title, onPick, opts){
   const overlay = document.getElementById('fsExPickerOverlay');
   document.getElementById('fsExPickerTitle').textContent = title;
@@ -7458,6 +8021,15 @@ function openFullscreenExPicker(title, onPick, opts){
 }
 function closeFullscreenExPicker(){ document.getElementById('fsExPickerOverlay').style.display = 'none'; }
 document.getElementById('fsExPickerClose').onclick = ()=> _navClose(closeFullscreenExPicker);
+/* clic hors du panneau flottant → fermeture (la page reste interactive) ;
+   ignoré pendant que la petite fenêtre est ouverte (c'est elle la seule affichée). */
+document.addEventListener('pointerdown', (e)=>{
+  const ov=document.getElementById('fsExPickerOverlay');
+  if(ov.style.display==='none') return;
+  if(document.getElementById('exSheetOv').classList.contains('open')) return;
+  const panel=document.getElementById('fsExPickerPanel');
+  if(panel && !panel.contains(e.target)) _navClose(closeFullscreenExPicker);
+}, true);
 
 document.getElementById('statExPickerBtn').onclick = ()=>{
   openFullscreenExPicker('Choisir un exercice', (name)=>{
@@ -8691,7 +9263,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 63, name: '109.88' };
+const FORGE_INDEX_VERSION = { code: 64, name: '109.89' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -11086,6 +11658,7 @@ const renderSocialChat = renderSocialHome;
   await loadPRs();
   purgeDemoData();
   programs = await sGet('forge-programs', []);
+  migrateExoNamesV2();
   patchProgramLabelsToSeance();
   // Init glass APRÈS avoir chargé toutes les données
   await initTheme();

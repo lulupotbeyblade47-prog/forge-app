@@ -1,6 +1,6 @@
 {
-  "versionCode": 63,
-  "versionName": "109.88",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.88/forge-android-v109.88.apk",
-  "releaseNotes": "Aux bords gauche/droit : l'écran suit d'un petit huitième de slide puis rebondit en douceur au lieu d'un demi-slide figé."
+  "versionCode": 64,
+  "versionName": "109.89",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.89/forge-android-v109.89.apk",
+  "releaseNotes": "Nouveau sélecteur d'exercices en 3 niveaux : GROUPE (Front lever, Planche, Pull-ups…) › VARIATION (press négative, pull-ups, to touch…) › VARIANTE (tuck / adv tuck / straddle / half lay / full). La recherche reste dispo. Les noms finaux restent compatibles avec tes logs et records existants."
 }

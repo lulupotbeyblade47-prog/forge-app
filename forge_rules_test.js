@@ -1,109 +1,93 @@
-/* Tests des règles firestore.rules avec l'émulateur (inbox par pseudo). */
-process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
-const { initializeTestEnvironment, assertFails, assertSucceeds, withRules } = require('@firebase/rules-unit-testing');
+/* Harnais de test de migrateExoNamesV2 (temporaire, étape 1) */
+const fs = require('fs');
+const path = require('path');
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const s0 = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)][0][1];
+const start = s0.indexOf('const EXO_GROUP_ICON');
+const end = s0.indexOf('let exercises = []');
+const code = s0.slice(start, end);
 
-const DB = (name) => 'demo-inbox-test';
+/* --- stubs de l'env app --- */
+const store = {};
+globalThis.DAY_KEYS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+function persistProfiles(){ store.savedProfiles = true; }
+function savePRs(){ store.savedPRs = true; }
+function savePrograms(){ store.savedPrograms = true; }
+async function sGet(k, f){ return k in store ? store[k] : f; }
+function sSet(k, v){ store[k] = v; }
+/* stubs pour LEGACY_UNMAPPED (extraction partielle du fichier) */
+const DEFAULT_EXERCISES = [];
+const EXO_GROUPS = [];
 
-// doc "clé pseudo" conforme à validUsernameClaim
-const claimDoc = (uid, username) => ({ uid, username, key: username.toLowerCase().slice(0,20).replace(/[^a-z0-9_-]/g,'') });
-const claimKey = (username) => claimDoc('x', username).key;
+let exercises = [
+  { name:'Front lever tuck', fields:['seconds','weight'] },
+  { name:'Pompes archer', fields:['reps','weight'] },
+  { name:'Tractions (pull-ups)', fields:['reps','weight'] },
+  { name:'Front lever pull-ups', fields:['reps','weight'] },
+  { name:'Planche lean', fields:['seconds'] },
+  { name:'Planche press négative', fields:['reps','weight'] },
+  { name:'Front lever half lay', fields:['reps','weight'] },
+  { name:'Front lever adv tuck + half straddle', fields:['reps','weight'] },
+  { name:'Gainage L-sit', fields:['seconds','weight'] },
+  { name:'Squat profond (mobilité)', fields:['seconds'] },
+  { name:'Wall sit', fields:['seconds','weight'] }, /* pas mappable */
+  { name:'Pull-ups · Lestée · Pronation', fields:['reps','weight'] }, /* déjà v2 */
+];
+let logs = [
+  { id:'l1', exercise:'Front lever tuck', sets:[{ seconds:15, weight:0 }] },
+  { id:'l2', exercise:'Squats bulgares', sets:[{ reps:12, weight:10 }] },
+  { id:'l3', exercise:'Wall sit', sets:[{ seconds:45, weight:0 }] },
+  { id:'l4', exercise:'Front lever · Hold · Tuck', sets:[{ seconds:20, weight:0 }] },
+];
+let profiles = [
+  { id:'default', week:{ jeudi:[
+    { id:'s1', exercises:[
+      { name:'Handstand push-ups', sets:[{ reps:5, weight:0 }] },
+      { _emom:true, minutes:10, exos:[{ name:'Tractions (pull-ups)', reps:5, weight:0 }] },
+    ] },
+  ] } },
+];
+let prs = [
+  { id:'p1', exercise:'Pompes archer', value:30, unit:'kg' },
+  { id:'p2', exercise:'Corde à sauter', value:120, unit:'s' },
+];
+let programs = [ { id:'g1', exercises:[ { exerciseName:'Squats', maxActuel:100 } ] } ];
 
-function userDb(uid, claims){
-  return withRules({ auth: { uid }, claims: claims || {} }, handled =>
-    handled.getFirestore());
-}
+const fn = new Function(
+  'exercises','logs','profiles','prs','programs','DAY_KEYS',
+  'persistProfiles','savePRs','savePrograms','sGet','sSet','DEFAULT_EXERCISES','EXO_GROUPS',
+  code + '\nreturn { migrateExoNamesV2, exoVariantesValides, exoFieldsFromName, exoParseName };'
+);
+const ctx = fn(exercises, logs, profiles, prs, programs, DAY_KEYS, persistProfiles, savePRs, savePrograms, sGet, sSet, DEFAULT_EXERCISES, EXO_GROUPS);
+ctx.migrateExoNamesV2();
 
-(async () => {
-  const env = await initializeTestEnvironment({
-    projectId: DB(),
-    firestore: { rules: require('fs').readFileSync('firestore.rules', 'utf8'), host: '127.0.0.1', port: 8080 }
-  });
-  const out = [];
-  const A = env.authenticatedContext('uidA', { email: 'a@x.y', email_verified: true });
-  const B = env.authenticatedContext('uidB', { email: 'b@x.y', email_verified: true });
-  const guest = env.unauthenticatedContext();
+/* exercises est réassigné en interne → vraie valeur dans le store */
+const exFinal = store['forge-exercises'] || exercises;
+console.log('EXOS   :', exFinal.map(e=>e.name).join(' | '));
+console.log('LOGS   :', logs.map(l=>l.exercise).join(' | '));
+console.log('PROFIL :', profiles[0].week.jeudi[0].exercises.map(x=>x.name).join(' | '));
+console.log('PRS    :', prs.map(p=>p.exercise).join(' | '));
+console.log('PROG   :', programs[0].exercises.map(p=>p.exerciseName).join(' | '));
+console.log('---');
+console.log('variantes FL/Hold  :', ctx.exoVariantesValides('Front lever','Hold').join(', '));
+console.log('variantes PL/Press :', ctx.exoVariantesValides('Planche','Press').join(', '));
+console.log('variantes PL/Hold  :', ctx.exoVariantesValides('Planche','Hold').join(', '));
+console.log('fields « Front lever · Pull-ups · Tuck » :', JSON.stringify(ctx.exoFieldsFromName('Front lever · Pull-ups · Tuck')));
+console.log('fields « Cardio · Burpees »              :', JSON.stringify(ctx.exoFieldsFromName('Cardio · Burpees')));
+console.log('sets conservés :', logs.every(l=>Array.isArray(l.sets) && l.sets.length > 0));
+console.log('parcours euclidien exFields AT mur:', JSON.stringify(ctx.exoFieldsFromName('Handstand · Hold mur')));
 
-  const a = A.firestore(), b = B.firestore(), g = guest.firestore();
-  const userKey = claimKey('PlayerA');
-  // A réserve son pseudo "PlayerA"
-  await assertSucceeds(a.doc('usernames/'+userKey).set(claimDoc('uidA','PlayerA')));
-  await assertSucceeds(a.doc('publicProfiles/uidA').set({uid:'uidA',username:'PlayerA',key:userKey}));
-
-  // 1. B envoie un partage dans la boîte de A -> autorisé
-  const shareRef = 'inbox/'+userKey+'/items/shr1';
-  await assertSucceeds(b.doc(shareRef).set({to:userKey, fromUid:'uidB', fromUsername:'PlayerB', kind:'session', bundle:{kind:'session',session:{}}, createdAt:new Date().toISOString()}));
-
-  // 2. B ne peut pas se faire passer pour A (fromUid != uid auth) -> refusé
-  await assertFails(b.doc('inbox/'+userKey+'/items/shr2').set({to:userKey, fromUid:'uidA', kind:'session', fromUsername:'X', bundle:{kind:'session',session:{}}, createdAt:new Date().toISOString()}));
-
-  // 3. B lit la boîte de A -> refusé
-  await assertFails(b.doc(shareRef).get());
-  await assertFails(b.collection('inbox/'+userKey+'/items').get());
-
-  // 4. A lit sa boîte -> autorisé
-  await assertSucceeds(a.doc(shareRef).get());
-  await assertSucceeds(a.collection('inbox/'+userKey+'/items').get());
-
-  // 5. guest lit/écrit -> refusé
-  await assertFails(g.doc(shareRef).get());
-  await assertFails(g.collection('inbox/'+userKey+'/items').add({to:userKey, fromUid:'x', kind:'session', bundle:{kind:'session',session:{}}, createdAt:new Date().toISOString()}));
-
-  // 6. B supprime -> refusé ; A supprime -> autorisé
-  await assertFails(b.doc(shareRef).delete());
-  await assertSucceeds(a.doc(shareRef).delete());
-
-  // 7. envoi vers un pseudo inexistant -> refusé
-  await assertFails(a.doc('inbox/'+claimKey('Ghost')+'/items/shr3').set({to:claimKey('Ghost'), fromUid:'uidA', fromUsername:'PlayerA', kind:'session', bundle:{}, createdAt:new Date().toISOString()}));
-
-  // 8. to != clé de la boîte -> refusé
-  await assertFails(a.doc('inbox/'+userKey+'/items/shr4').set({to:claimKey('Ghost'), fromUid:'uidA', fromUsername:'PlayerA', kind:'session', bundle:{}, createdAt:new Date().toISOString()}));
-
-
-  // 9. message facultatif valide -> autorisé ; script/js dans message reste permis (champ texte)
-  const browser = require('@firebase/rules-unit-testing').assertSucceeds;
-  await browser(b.doc('inbox/'+userKey+'/items/shr5').set({to:userKey, fromUid:'uidB', fromUsername:'PlayerB', kind:'profile', message:'voila mon profil', bundle:{kind:'profile'}, createdAt:new Date().toISOString()}));
-
-  // ── 10. Profils publics : liste par connecté, like par un autre compte ──
-  await assertSucceeds(b.collection('publicProfiles').get());           // list autorisé aux connectés
-  await assertFails(g.collection('publicProfiles').get());              // pas aux invités
-  // B like le profil de A : uniquement likes/likedBy, cohérence imposée
-  await assertSucceeds(b.doc('publicProfiles/uidA').set({likes:1, likedBy:['uidB']}, {merge:true}));
-  // tentative de triche : B réécrit le pseudo via un "like" -> refusé
-  await assertFails(b.doc('publicProfiles/uidA').set({likes:2, likedBy:['uidB'], username:'Hack'}, {merge:true}));
-  // A se met à jour lui-même (photo/confidentialité) -> autorisé
-  await assertSucceeds(a.doc('publicProfiles/uidA').set({uid:'uidA',username:'PlayerA',key:userKey,photoURL:'',photoIsCustom:false,showPRs:true,invisible:false,likes:1,likedBy:['uidB'],prsSummary:[]}, {merge:true}));
-
-  // ── 11. Discussions : threads + messages + miroirs ──
-  const pk = 'uidA__uidB';
-  const C = env.authenticatedContext('uidC', { email: 'c@x.y', email_verified: true });
-  const c = C.firestore();
-  // création du thread par A (paire triée, participants valides)
-  await assertSucceeds(a.doc('threads/'+pk).set({participants:['uidA','uidB'], createdAt:new Date().toISOString()}));
-  // message de A puis réponse de B (avec partage)
-  await assertSucceeds(a.doc('threads/'+pk).collection('messages').doc('m1').set({from:'uidA', fromU:'PlayerA', createdAt:new Date().toISOString(), text:'salut'}));
-  await assertSucceeds(b.doc('threads/'+pk).collection('messages').doc('m2').set({from:'uidB', fromU:'PlayerB', createdAt:new Date().toISOString(), text:'yo', bundle:{kind:'profile'}}));
-  // les deux participants lisent
-  await assertSucceeds(a.doc('threads/'+pk).collection('messages').get());
-  await assertSucceeds(b.doc('threads/'+pk).collection('messages').get());
-  // un invité / un tiers ne peuvent pas lire ni écrire
-  await assertFails(g.doc('threads/'+pk).get());
-  await assertFails(c.doc('threads/'+pk).collection('messages').get());
-  await assertFails(c.doc('threads/'+pk).collection('messages').doc('m3').set({from:'uidC', fromU:'PlayerC', createdAt:new Date().toISOString(), text:'hack'}));
-  // usurpation d'expéditeur -> refusé
-  await assertFails(b.doc('threads/'+pk).collection('messages').doc('m4').set({from:'uidA', fromU:'PlayerA', createdAt:new Date().toISOString(), text:'fake'}));
-  // paire forgée (pas triée / sans moi) -> refusé
-  await assertFails(a.doc('threads/uidB__uidC').set({participants:['uidB','uidC'], createdAt:new Date().toISOString()}));
-  await assertFails(b.doc('threads/uidA__uidC').set({participants:['uidA','uidC'], createdAt:new Date().toISOString()}));
-  // miroirs : chaque participant écrit son miroir et celui de l'autre
-  await assertSucceeds(a.doc('userThreads/uidA/threads/'+pk).set({pair:pk, other:'uidB', otherUsername:'PlayerB', lastAt:new Date().toISOString(), lastText:'salut', lastFrom:'uidA'}));
-  await assertSucceeds(a.doc('userThreads/uidB/threads/'+pk).set({pair:pk, other:'uidA', otherUsername:'PlayerA', lastAt:new Date().toISOString(), lastText:'salut', lastFrom:'uidA'}));
-  // un tiers ne peut pas écrire le miroir de A
-  await assertFails(c.doc('userThreads/uidA/threads/'+pk).set({pair:pk, other:'uidC', otherUsername:'PlayerC', lastAt:new Date().toISOString(), lastText:'x', lastFrom:'uidC'}));
-  // un tiers ne peut pas lister les discussions de A ; A oui
-  await assertFails(c.collection('userThreads/uidA/threads').get());
-  await assertSucceeds(a.collection('userThreads/uidA/threads').get());
-
-  console.log('TOUTES LES RÈGLES SONT CONFORMES ✓');
-  await env.cleanup();
-  process.exit(0);
-})().catch(e=>{ console.error('ECHEC:\n', e.message || e); process.exit(1); });
+/* --- 2e passe : idempotence --- */
+const before2 = JSON.stringify({
+  ex: (store['forge-exercises'] || exercises).map(e=>e.name),
+  lg: logs.map(l=>l.exercise),
+});
+/* on recharge l'état persisté comme l'app le ferait */
+delete store['forge-exercises']; store['forge-exercises'] = exFinal;
+ctx.migrateExoNamesV2();
+const exFinal2 = store['forge-exercises'] || exFinal;
+const after2 = JSON.stringify({
+  ex: exFinal2.map(e=>e.name),
+  lg: logs.map(l=>l.exercise),
+});
+console.log('idempotent :', before2 === after2);

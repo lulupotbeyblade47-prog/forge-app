@@ -3288,7 +3288,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v110.5 · sélecteur d'exercices : groupe › mouvement › variante</div>
+    <div class="settings-version">FORGE · v110.6 · sélecteur d'exercices : groupe › mouvement › variante</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -8231,6 +8231,11 @@ function renderRecordsCard(){ const count=bestPRs().length; const sub=document.g
 
 let pendingDeletePREx=null, pendingDeletePRExTimer=null;
 
+/* Affichage d'un nom d'exo dans les records : les segments « Classique »
+   (mouvement ou variante neutre) sont masqués — comme « Développé · Couché ». */
+function _prExDisplay(name){
+  return String(name||'').split(' · ').filter(p=>p.trim()!=='Classique').join(' · ');
+}
 function renderRecordsList(){
   const list=document.getElementById('recordsList'), best=bestPRs();
   if(best.length===0){ list.innerHTML=`<div class="empty" style="margin-top:40px;">Aucun record pour l'instant.<br><br>Appuie sur <strong style="color:var(--ember)">+ Ajouter un record</strong> pour saisir ton premier max.</div>`; return; }
@@ -8247,7 +8252,7 @@ function renderRecordsList(){
     const unitLabel = UNIT_LABEL_PR[pr.unit] || pr.unit;
     const addBtn=`<button class="quick-add-pr-btn" data-quickaddex="${pr.exercise}" data-quickaddunit="${pr.unit}" title="Ajouter un nouveau record pour ${pr.exercise}" style="background:none;border:none;color:var(--ember);font-size:22px;padding:0 4px;line-height:1;cursor:pointer;margin-left:6px;font-weight:700;">+</button>`;
     const delBtn=`<button class="del-pr-btn" data-delprhist="${pr.exercise}" data-delunit="${pr.unit}" style="background:none;border:none;color:var(--danger);font-size:22px;padding:0 4px;line-height:1;cursor:pointer;margin-left:2px;">×</button>`;
-    return `<div class="pr-row" data-exname="${pr.exercise}" data-unit="${pr.unit}" style="cursor:pointer;"><div style="flex:1;min-width:0;"><div class="pr-row-name">${pr.exercise} <span style="font-size:10px;font-weight:700;color:var(--ember);background:var(--ember-dim);border:1px solid var(--ember);border-radius:6px;padding:2px 7px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.04em;vertical-align:middle;">${unitLabel}</span></div><div class="pr-row-sub">${dateStr}</div>${deltaHtml}</div><div style="display:flex;align-items:center;"><div style="text-align:right;"><span class="pr-row-val">${pr.value}${pr.unit}</span></div>${addBtn}${delBtn}</div></div>`;
+    return `<div class="pr-row" data-exname="${pr.exercise}" data-unit="${pr.unit}" style="cursor:pointer;"><div style="flex:1;min-width:0;"><div class="pr-row-name">${_prExDisplay(pr.exercise)} <span style="font-size:10px;font-weight:700;color:var(--ember);background:var(--ember-dim);border:1px solid var(--ember);border-radius:6px;padding:2px 7px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.04em;vertical-align:middle;">${unitLabel}</span></div><div class="pr-row-sub">${dateStr}</div>${deltaHtml}</div><div style="display:flex;align-items:center;"><div style="text-align:right;"><span class="pr-row-val">${pr.value}${pr.unit}</span></div>${addBtn}${delBtn}</div></div>`;
   }).join('');
 
   list.querySelectorAll('.pr-row[data-exname]').forEach(row=>{ row.onclick=(e)=>{ if(e.target.closest('.del-pr-btn')||e.target.closest('.quick-add-pr-btn')) return; openPRDetail(row.dataset.exname, row.dataset.unit); }; });
@@ -8414,7 +8419,7 @@ function renderPRDetail(exName, unit){
 
   _currentPRDetailMetric=metric;
 
-  document.getElementById('prDetailTitle').textContent = `${exName} (${METRIC_META[metric].label})`;
+  document.getElementById('prDetailTitle').textContent = `${_prExDisplay(exName)} (${METRIC_META[metric].label})`;
 
   const rows = prHistoryFor(exName, metric);
 
@@ -9263,7 +9268,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 70, name: '110.5' };
+const FORGE_INDEX_VERSION = { code: 71, name: '110.6' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -11411,7 +11416,7 @@ async function openProfileView(uid){
         ${g.items.map(pr=>{
           const v=_progEsc(String(pr.value)), u=_prUnitTxt(pr.unit), sr=_prSetRepTxt(pr);
           return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:13.5px;">
-            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_progEsc(String(pr.exercise))}</span>
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_progEsc(_prExDisplay(pr.exercise))}</span>
             <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14.5px;color:var(--ember);white-space:nowrap;">${v}<span style="font-size:11px;color:var(--ash);font-weight:400;">${u}</span></span>
             ${sr?`<span style="font-size:11px;color:var(--ash);white-space:nowrap;">${_progEsc(sr)}</span>`:''}
           </div>`;

@@ -1,6 +1,6 @@
 {
-  "versionCode": 70,
-  "versionName": "110.5",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v110.5/forge-android-v110.5.apk",
-  "releaseNotes": "Classement des records : les raises (raise to front lever, raise) sont classés Calisthénie."
+  "versionCode": 71,
+  "versionName": "110.6",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v110.6/forge-android-v110.6.apk",
+  "releaseNotes": "Records : « Classique » est masqué dans les noms (Dips · Barres · Classique s'affiche « Dips · Barres », Pull-ups · Classique · Pronation → « Pull-ups · Pronation »)."
 }

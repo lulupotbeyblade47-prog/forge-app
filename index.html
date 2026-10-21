@@ -3288,7 +3288,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v110.1 · sélecteur d'exercices : groupe › mouvement › variante</div>
+    <div class="settings-version">FORGE · v110.2 · sélecteur d'exercices : groupe › mouvement › variante</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3364,13 +3364,6 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
         <div class="set-col" style="padding:10px 4px;">
           <button class="drum-val-btn" id="prValBtn" style="font-size:26px;">0</button>
         </div>
-      </div>
-    </div>
-    <div class="field">
-      <label>Séries &amp; réps <span style="color:var(--ash);text-transform:none;letter-spacing:0;">(optionnel)</span></label>
-      <div style="display:flex;gap:10px;">
-        <input type="number" id="prSetsInput" min="1" inputmode="numeric" placeholder="Séries" style="flex:1;font-family:'JetBrains Mono',monospace;text-align:center;">
-        <input type="number" id="prRepsInput" min="1" inputmode="numeric" placeholder="Réps" style="flex:1;font-family:'JetBrains Mono',monospace;text-align:center;">
       </div>
     </div>
     <div class="field">
@@ -8494,8 +8487,6 @@ function availableUnitsPR(exName){ const f=exFields(exName),units=[]; if(f.inclu
 
 function openAddPRForm(){
   _prSelectedEx=null; _prSelectedUnit='reps';
-  const _srReset=()=>{ const a=document.getElementById('prSetsInput'), b=document.getElementById('prRepsInput'); if(a)a.value=''; if(b)b.value=''; if(a)a.disabled=false; if(b)b.disabled=false; };
-  _srReset();
   openFullscreenExPicker('Choisir un exercice', (name)=>{
     _prSelectedEx=name;
     document.getElementById('addPROverlay').style.display='flex';
@@ -8527,11 +8518,6 @@ function applyUnitPR(){
   _prValue = existing.length ? Math.max(...existing.map(p=>p.value)) : 0;
   const btn = document.getElementById('prValBtn');
   if(btn) btn.textContent = _prFmtVal(_prValue, _prSelectedUnit);
-  // record en reps = max en UNE série : séries/réps ne se saisissent pas
-  const isReps=_prSelectedUnit==='reps';
-  const sIn=document.getElementById('prSetsInput'), rIn=document.getElementById('prRepsInput');
-  if(sIn){ sIn.disabled=isReps; if(isReps) sIn.value=''; }
-  if(rIn){ rIn.disabled=isReps; if(isReps) rIn.value=''; }
 }
 document.getElementById('prValBtn').onclick = ()=>{
   const vals = _prValsFor(_prSelectedUnit);
@@ -8547,7 +8533,6 @@ document.getElementById('prValBtn').onclick = ()=>{
 };
 
 document.getElementById('prBackToPickerBtn').onclick=()=>{
-  const a=document.getElementById('prSetsInput'), b=document.getElementById('prRepsInput'); if(a)a.value=''; if(b)b.value=''; if(a)a.disabled=false; if(b)b.disabled=false;
   openFullscreenExPicker('Choisir un exercice', (name)=>{
     _prSelectedEx=name;
     document.getElementById('prStep2ExName').textContent=name;
@@ -8560,7 +8545,7 @@ document.getElementById('addPRBtn').onclick=openAddPRForm;
 
 document.getElementById('cancelPRBtn').onclick=()=>{ document.getElementById('addPROverlay').style.display='none'; };
 
-document.getElementById('confirmPRBtn').onclick=()=>{ const exName=_prSelectedEx,value=_prValue||0,unit=_prSelectedUnit,date=document.getElementById('prDateInput').value?new Date(document.getElementById('prDateInput').value).toISOString():new Date().toISOString(); const _s=parseInt(document.getElementById('prSetsInput').value,10)||null, _r=parseInt(document.getElementById('prRepsInput').value,10)||null; if(!exName||value<=0) return; prs.push(Object.assign({id:'pr'+Date.now().toString(36),exercise:exName,value,unit,date},(_s?{sets:_s}:{}),(_r?{reps:_r}:{}))); savePRs(); document.getElementById('addPROverlay').style.display='none'; renderRecordsList(); renderRecordsCard(); if(document.getElementById('prDetailOverlay').classList.contains('open')&&document.getElementById('prDetailTitle').textContent===exName){ renderPRDetail(exName); } };
+document.getElementById('confirmPRBtn').onclick=()=>{ const exName=_prSelectedEx,value=_prValue||0,unit=_prSelectedUnit,date=document.getElementById('prDateInput').value?new Date(document.getElementById('prDateInput').value).toISOString():new Date().toISOString(); if(!exName||value<=0) return; prs.push({id:'pr'+Date.now().toString(36),exercise:exName,value,unit,date}); savePRs(); document.getElementById('addPROverlay').style.display='none'; renderRecordsList(); renderRecordsCard(); if(document.getElementById('prDetailOverlay').classList.contains('open')&&document.getElementById('prDetailTitle').textContent===exName){ renderPRDetail(exName); } };
 
 
 
@@ -9278,7 +9263,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 66, name: '110.1' };
+const FORGE_INDEX_VERSION = { code: 67, name: '110.2' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;

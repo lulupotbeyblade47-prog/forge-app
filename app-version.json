@@ -1,6 +1,6 @@
 {
-  "versionCode": 66,
-  "versionName": "110.1",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v110.1/forge-android-v110.1.apk",
-  "releaseNotes": "Records : séries et réps sur les records — saisie optionnelle à la création, affichées sur le profil public (max tractions = « 20 rep · une série », records au poids = « 100 kg · 5 rep »)."
+  "versionCode": 67,
+  "versionName": "110.2",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v110.2/forge-android-v110.2.apk",
+  "releaseNotes": "Records : retour simple — plus de champ séries/réps à la création. Max en réps = une série (affiché), records au poids = juste le poids."
 }

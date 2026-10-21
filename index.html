@@ -3288,7 +3288,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v110.0 · sélecteur d'exercices : groupe › mouvement › variante</div>
+    <div class="settings-version">FORGE · v110.1 · sélecteur d'exercices : groupe › mouvement › variante</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3364,6 +3364,13 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
         <div class="set-col" style="padding:10px 4px;">
           <button class="drum-val-btn" id="prValBtn" style="font-size:26px;">0</button>
         </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Séries &amp; réps <span style="color:var(--ash);text-transform:none;letter-spacing:0;">(optionnel)</span></label>
+      <div style="display:flex;gap:10px;">
+        <input type="number" id="prSetsInput" min="1" inputmode="numeric" placeholder="Séries" style="flex:1;font-family:'JetBrains Mono',monospace;text-align:center;">
+        <input type="number" id="prRepsInput" min="1" inputmode="numeric" placeholder="Réps" style="flex:1;font-family:'JetBrains Mono',monospace;text-align:center;">
       </div>
     </div>
     <div class="field">
@@ -8487,6 +8494,8 @@ function availableUnitsPR(exName){ const f=exFields(exName),units=[]; if(f.inclu
 
 function openAddPRForm(){
   _prSelectedEx=null; _prSelectedUnit='reps';
+  const _srReset=()=>{ const a=document.getElementById('prSetsInput'), b=document.getElementById('prRepsInput'); if(a)a.value=''; if(b)b.value=''; if(a)a.disabled=false; if(b)b.disabled=false; };
+  _srReset();
   openFullscreenExPicker('Choisir un exercice', (name)=>{
     _prSelectedEx=name;
     document.getElementById('addPROverlay').style.display='flex';
@@ -8518,6 +8527,11 @@ function applyUnitPR(){
   _prValue = existing.length ? Math.max(...existing.map(p=>p.value)) : 0;
   const btn = document.getElementById('prValBtn');
   if(btn) btn.textContent = _prFmtVal(_prValue, _prSelectedUnit);
+  // record en reps = max en UNE série : séries/réps ne se saisissent pas
+  const isReps=_prSelectedUnit==='reps';
+  const sIn=document.getElementById('prSetsInput'), rIn=document.getElementById('prRepsInput');
+  if(sIn){ sIn.disabled=isReps; if(isReps) sIn.value=''; }
+  if(rIn){ rIn.disabled=isReps; if(isReps) rIn.value=''; }
 }
 document.getElementById('prValBtn').onclick = ()=>{
   const vals = _prValsFor(_prSelectedUnit);
@@ -8533,6 +8547,7 @@ document.getElementById('prValBtn').onclick = ()=>{
 };
 
 document.getElementById('prBackToPickerBtn').onclick=()=>{
+  const a=document.getElementById('prSetsInput'), b=document.getElementById('prRepsInput'); if(a)a.value=''; if(b)b.value=''; if(a)a.disabled=false; if(b)b.disabled=false;
   openFullscreenExPicker('Choisir un exercice', (name)=>{
     _prSelectedEx=name;
     document.getElementById('prStep2ExName').textContent=name;
@@ -8545,7 +8560,7 @@ document.getElementById('addPRBtn').onclick=openAddPRForm;
 
 document.getElementById('cancelPRBtn').onclick=()=>{ document.getElementById('addPROverlay').style.display='none'; };
 
-document.getElementById('confirmPRBtn').onclick=()=>{ const exName=_prSelectedEx,value=_prValue||0,unit=_prSelectedUnit,date=document.getElementById('prDateInput').value?new Date(document.getElementById('prDateInput').value).toISOString():new Date().toISOString(); if(!exName||value<=0) return; prs.push({id:'pr'+Date.now().toString(36),exercise:exName,value,unit,date}); savePRs(); document.getElementById('addPROverlay').style.display='none'; renderRecordsList(); renderRecordsCard(); if(document.getElementById('prDetailOverlay').classList.contains('open')&&document.getElementById('prDetailTitle').textContent===exName){ renderPRDetail(exName); } };
+document.getElementById('confirmPRBtn').onclick=()=>{ const exName=_prSelectedEx,value=_prValue||0,unit=_prSelectedUnit,date=document.getElementById('prDateInput').value?new Date(document.getElementById('prDateInput').value).toISOString():new Date().toISOString(); const _s=parseInt(document.getElementById('prSetsInput').value,10)||null, _r=parseInt(document.getElementById('prRepsInput').value,10)||null; if(!exName||value<=0) return; prs.push(Object.assign({id:'pr'+Date.now().toString(36),exercise:exName,value,unit,date},(_s?{sets:_s}:{}),(_r?{reps:_r}:{}))); savePRs(); document.getElementById('addPROverlay').style.display='none'; renderRecordsList(); renderRecordsCard(); if(document.getElementById('prDetailOverlay').classList.contains('open')&&document.getElementById('prDetailTitle').textContent===exName){ renderPRDetail(exName); } };
 
 
 
@@ -9263,7 +9278,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 65, name: '110.0' };
+const FORGE_INDEX_VERSION = { code: 66, name: '110.1' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -10897,7 +10912,7 @@ function buildPrsSummary(){
   // même source que la carte « Records perso » des Stats (bestPRs) :
   // le profil affiche exactement les records visibles dans Stats
   // (filtrés, meilleur par exercice), sauf records désactivés
-  return bestPRs().slice(0,20).map(pr=>({exercise:pr.exercise, value:pr.value, unit:pr.unit||'', date:pr.date||''}));
+  return bestPRs().slice(0,20).map(pr=>({exercise:pr.exercise, value:pr.value, unit:pr.unit||'', date:pr.date||'', sets:pr.sets||null, reps:pr.reps||null}));
 }
 function _profileDocForWrite(base){
   const googlePhoto=String(currentUser.photoUrl||currentUser.photoURL||'');
@@ -11347,6 +11362,16 @@ function _prUnitTxt(unit){
   if(!unit||unit==='reps') return '';
   return ' '+_progEsc(String(unit));
 }
+/* « Séries & réps » sur le profil public (suffixe placé après la valeur) :
+   - reps : le record EST le max en une série → « 20 rep · une série »
+   - kg   : réps éventuelle → « 100 kg · 5 rep » (+ « × 3 séries » si saisie)
+   - s    : rien de plus */
+function _prSetRepTxt(pr){
+  const st=pr.sets||null, rp=pr.reps||null;
+  if(pr.unit==='reps') return 'rep · une série';
+  if(rp) return '· '+rp+' rep'+(st&&st>1?' × '+st+' séries':'');
+  return '';
+}
 
 async function openProfileView(uid){
   if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
@@ -11391,10 +11416,11 @@ async function openProfileView(uid){
           <span style="margin-left:auto;font-size:10.5px;font-weight:700;color:var(--ember);background:var(--ember-dim);border:1px solid var(--ember);border-radius:8px;padding:1px 8px;">${g.items.length}</span>
         </div>
         ${g.items.map(pr=>{
-          const v=_progEsc(String(pr.value)), u=_prUnitTxt(pr.unit);
+          const v=_progEsc(String(pr.value)), u=_prUnitTxt(pr.unit), sr=_prSetRepTxt(pr);
           return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:13.5px;">
             <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_progEsc(String(pr.exercise))}</span>
             <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14.5px;color:var(--ember);white-space:nowrap;">${v}<span style="font-size:11px;color:var(--ash);font-weight:400;">${u}</span></span>
+            ${sr?`<span style="font-size:11px;color:var(--ash);white-space:nowrap;">${_progEsc(sr)}</span>`:''}
           </div>`;
         }).join('')}
       </div>`).join(''):''}

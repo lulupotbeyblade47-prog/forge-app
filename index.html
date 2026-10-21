@@ -3288,7 +3288,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v109.89 · sélecteur d'exercices : groupe › variation › variante</div>
+    <div class="settings-version">FORGE · v110.0 · sélecteur d'exercices : groupe › mouvement › variante</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9263,7 +9263,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 64, name: '109.89' };
+const FORGE_INDEX_VERSION = { code: 65, name: '110.0' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;

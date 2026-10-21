@@ -1,6 +1,6 @@
 {
-  "versionCode": 64,
-  "versionName": "109.89",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v109.89/forge-android-v109.89.apk",
-  "releaseNotes": "Nouveau sélecteur d'exercices en 3 niveaux : GROUPE (Front lever, Planche, Pull-ups…) › VARIATION (press négative, pull-ups, to touch…) › VARIANTE (tuck / adv tuck / straddle / half lay / full). La recherche reste dispo. Les noms finaux restent compatibles avec tes logs et records existants."
+  "versionCode": 65,
+  "versionName": "110.0",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v110.0/forge-android-v110.0.apk",
+  "releaseNotes": "Sélecteur d'exercices refait : panneau flottant de groupes + feuille GROUPE › MOUVEMENT › VARIANTE (glisser, barres/anneaux Dragon Ball, tout y est). Nouveau groupe Développé en 4 niveaux (Couché/Incliné/Militaire › Classique/Smith/Haltère › toutes les prises, pieds sur le banc sur le couché). « Classique » n'apparaît plus dans les noms. Dips : Barres/Anneaux × Classique/Lesté. Tractions à un bras migrées. Icônes des groupes = silhouettes de l'icône de l'app, suivant le thème. Anciens noms migrés automatiquement, rien n'est perdu."
 }

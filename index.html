@@ -3288,7 +3288,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-version">FORGE · v110.3 · sélecteur d'exercices : groupe › mouvement › variante</div>
+    <div class="settings-version">FORGE · v110.4 · sélecteur d'exercices : groupe › mouvement › variante</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -9263,7 +9263,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 68, name: '110.3' };
+const FORGE_INDEX_VERSION = { code: 69, name: '110.4' };
 async function checkForgeAndroidUpdate(){
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
@@ -11324,6 +11324,8 @@ function _prCategory(pr){
   const unit=String((pr&&pr.unit)||'');
   const has=s=>n.includes(s);
   const isBodyweight=()=>has('front lever')||has('planche')||has('handstand')||has('atr')||has('pistol')||has('gainage')||has('l-sit')||has('human flag')||has('nordic')||has('crow')||has('muscle-up')||has('muscle up')||has('traction')||has('pull-up')||has('pull up')||has('chin')||n==='dips'||has('dips')||has('dip ')||has('flag')||has('pompe')||has('push-up')||has('push up')||has('raise');
+  // tout ce qui est front lever = calisthénie (peu importe l'unité ou la variante)
+  if(has('front lever')) return 'calis';
   // streetlifting : les classiques pondérés au kg
   if(unit==='kg' && (has('traction')||has('pull-up')||has('pull up')||has('chin')||has('dips')||has('dip ')||n==='dips'||has('muscle-up')||has('muscle up')||has('pompe'))) return 'street';
   // set and rep : max en répetitions au poids du corps (une série) — les maxes « Dips 35 rep », « Pull-ups 20 rep »

@@ -9270,6 +9270,9 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // sinon l'app redemanderait la même mise à jour en boucle.
 const FORGE_INDEX_VERSION = { code: 71, name: '110.6' };
 async function checkForgeAndroidUpdate(){
+  /* Canal Play Store : les mises à jour passent par Play +, l'installation
+     d'APK par l'app est interdite — on coupe la proposition d'update. */
+  if(window.FORGE_PLAY_CHANNEL===true) return;
   if(!isNativePlatform() || _forgeUpdateCheckRunning) return;
   const appPlugin = window.Capacitor.Plugins.App;
   if(!appPlugin || !appPlugin.getInfo) return;

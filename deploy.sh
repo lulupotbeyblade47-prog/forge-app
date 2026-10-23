@@ -12,6 +12,7 @@ mkdir -p public
 cp landing.html public/index.html
 cp index.html public/app.html
 cp app-version.json public/app-version.json
+[ -f privacy.html ] && cp privacy.html public/privacy.html
 
 echo "public/ prêt :"
 ls -la public

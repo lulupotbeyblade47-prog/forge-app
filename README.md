@@ -1,4 +1,4 @@
-# FORGE
+# CaliMova
 
 Application de suivi de musculation (timer, EMOM, tracker de séances, records, progression).
 

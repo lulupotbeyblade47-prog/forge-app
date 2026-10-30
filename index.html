@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>FORGE</title>
-<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22FORGE%22,%22display%22:%22standalone%22}">
+<title>CaliMova</title>
+<meta name="theme-color" content="#111211">
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22CaliMova%22,%22display%22:%22standalone%22}">
 <!-- Polices Google Fonts retirées : elles nécessitaient une connexion internet
      et ralentissaient (voire bloquaient) le démarrage de l'app hors-ligne.
      Les familles ci-dessous retombent automatiquement sur les polices système
      (sans-serif / monospace) via les font-family déjà déclarés plus bas. -->
 <style>
 :root{
+  color-scheme:dark;
+  --on-ember:#1a0d05;
   --bg:#111211;
   --surface:#1a1b19;
   --surface2:#232420;
@@ -26,7 +29,7 @@
   --radius:14px;
 }
 
-/* Dialogues Forge : confirmations et identité, cohérents avec le thème actif. */
+/* Dialogues CaliMova : confirmations et identité, cohérents avec le thème actif. */
 .forge-dialog-overlay{position:fixed;inset:0;z-index:430;display:flex;align-items:flex-end;justify-content:center;padding:16px 16px env(safe-area-inset-bottom);background:rgba(0,0,0,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .forge-dialog-sheet{width:min(100%,480px);max-height:min(88vh,720px);overflow:auto;background:var(--surface);color:var(--chalk);border:1px solid var(--border);border-top:3px solid var(--ember);border-radius:22px;padding:26px 20px 20px;box-shadow:0 24px 72px rgba(0,0,0,.48);}
 .forge-admin-list{display:grid;gap:8px;margin:14px 0;max-height:38vh;overflow:auto;}
@@ -659,7 +662,7 @@ body[data-theme="light"][data-glass="1"] .drum-item.selected{
 .icon-figure-thumb.active{ border-color:var(--ember); box-shadow:0 0 0 2px var(--ember-dim); }
 .icon-figure-check{
   position:absolute; top:-6px; right:-6px; width:20px; height:20px;
-  border-radius:50%; background:var(--ember); color:#1a0d05; font-weight:700;
+  border-radius:50%; background:var(--ember); color:var(--on-ember); font-weight:700;
   font-size:12px; display:flex; align-items:center; justify-content:center;
   box-shadow:0 2px 6px rgba(0,0,0,0.4);
 }
@@ -996,7 +999,7 @@ body[data-theme="light"][data-glass="1"] #startBtn{
   box-shadow:
     inset 0  2px 0 rgba(255,255,255,0.60),
     inset 0 -2px 0 rgba(0,0,0,0.08) !important;
-  color: #1a0d05 !important;
+  color: var(--on-ember) !important;
   text-shadow: 0 1px 4px rgba(0,0,0,0.10);
   letter-spacing: 0.08em;
   border-radius: 18px;
@@ -1038,7 +1041,7 @@ body[data-theme="light"][data-glass="1"] .btn{
     0 4px 16px rgba(0,0,0,0.10),
     inset 0 1px 0 rgba(255,255,255,0.60),
     inset 0 -1px 0 rgba(0,0,0,0.05);
-  color: #1a0d05;
+  color: var(--on-ember);
 }
 body:not([data-theme="light"])[data-glass="1"] .btn.ghost{
   background: rgba(255,255,255,0.03);
@@ -1724,13 +1727,13 @@ body:not([data-theme="light"])[data-glass="1"] .drum-item.selected{
 .row{display:flex;gap:10px;}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
 .chip{background:var(--surface);border:1px solid var(--border);color:var(--ash);padding:11px 18px;border-radius:100px;font-size:14px;font-family:'Oswald',sans-serif;letter-spacing:0.03em;text-transform:uppercase;min-height:46px;display:inline-flex;align-items:center;}
-.chip.active{background:var(--ember);border-color:var(--ember);color:#1a0d05;font-weight:600;}
+.chip.active{background:var(--ember);border-color:var(--ember);color:var(--on-ember);font-weight:600;}
 label{display:block;font-size:12px;color:var(--ash);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
 input[type=number],select,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--chalk);padding:13px 14px;border-radius:10px;font-size:16px;font-family:'JetBrains Mono',monospace;min-height:48px;}
 select{font-family:'Inter',sans-serif;}
 .field{flex:1;margin-bottom:12px;}
 .btn{border:1px solid var(--border);background:var(--surface2);color:var(--chalk);padding:14px 18px;border-radius:12px;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;font-family:'Oswald',sans-serif;min-height:52px;}
-.btn.primary{background:var(--ember);border-color:var(--ember);color:#1a0d05;}
+.btn.primary{background:var(--ember);border-color:var(--ember);color:var(--on-ember);}
 .btn.ghost{background:transparent;}
 .btn.block{width:100%;}
 .btn{cursor:pointer;transition:transform .08s,opacity .08s;}
@@ -1940,13 +1943,14 @@ body:not([data-theme="light"])[data-glass="1"] .drum-scroll{
 .checkrow input[type=checkbox]{width:auto;accent-color:var(--ember);}
 
 /* day strip */
-.daystrip{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;position:relative;}
+.daystrip{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;position:relative;isolation:isolate;}
 .daystrip .day{flex:1;min-width:0;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 2px;position:relative;z-index:1;}
-.daystrip .day .dn{font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;color:var(--ash);letter-spacing:0.03em;position:relative;z-index:1;}
-.daystrip .day .dd{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;margin-top:2px;position:relative;z-index:1;}
-.daystrip .day.today{background:transparent;border-color:transparent;}
-.daystrip .day.today .dn,.daystrip .day.today .dd{color:#1a0d05;}
-/* Pill : dans .daystrip, z-index:0 — sous les .day (z-index:1) mais visible */
+.daystrip .day::before{display:none;}
+.daystrip .day .dn{font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;color:var(--ash);letter-spacing:0.03em;position:relative;z-index:5;}
+.daystrip .day .dd{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;margin-top:2px;position:relative;z-index:5;}
+.daystrip .day.today{background:var(--ember);border-color:var(--ember);}
+.daystrip .day.today .dn,.daystrip .day.today .dd{color:var(--on-ember);}
+/* La pill reste au-dessus des cartes pendant son déplacement; les libellés restent au-dessus. */
 .daystrip-pill{
   position:absolute;
   top:0;left:0;
@@ -1958,6 +1962,15 @@ body:not([data-theme="light"])[data-glass="1"] .drum-scroll{
   display:none;
   z-index:0;
 }
+
+/* Une seule couche mobile, commune aux deux thèmes : les jours portent le texte. */
+body .daystrip .day,
+body[data-theme="light"][data-glass="1"] .daystrip .day,
+body:not([data-theme="light"])[data-glass="1"] .daystrip .day{
+  background:transparent!important;border-color:transparent!important;z-index:1;
+}
+body .daystrip .day.today{background:transparent!important;}
+body .daystrip-pill{z-index:0;}
 
 /* routine picker & lists */
 .routinerow{display:flex;align-items:center;justify-content:space-between;padding:12px 4px;border-bottom:1px solid var(--border);}
@@ -2244,6 +2257,7 @@ body[data-theme="light"][data-glass="1"] .dp-col::after{  background:linear-grad
 
 /* profile dropdown */
 .profilebar{position:relative;margin-bottom:16px;}
+.profilebar.dropdown-open{z-index:1000;}
 .profilebtn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--chalk);padding:16px 18px;border-radius:var(--radius);font-family:'Oswald',sans-serif;font-size:17px;text-transform:none;display:flex;justify-content:space-between;align-items:center;min-height:56px;}
 .profilebtn .chev{color:var(--ash);font-size:11px;}
 .profiledropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:12px;z-index:20;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,0.45);}
@@ -2292,6 +2306,8 @@ body[data-theme="light"][data-glass="1"] .dp-col::after{  background:linear-grad
 .settings-section{margin-bottom:28px;}
 .settings-section-title{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:0.12em;color:var(--ash);text-transform:uppercase;margin-bottom:10px;padding-left:2px;}
 .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
+/* Les menus des préférences doivent pouvoir dépasser la carte sans être coupés. */
+#view-settings.overlay-open .settings-card{overflow:visible;}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);}
 .settings-row:last-child{border-bottom:none;}
 .settings-row-left{display:flex;flex-direction:column;gap:3px;}
@@ -2344,9 +2360,9 @@ body:not([data-theme="light"])[data-glass="1"] .toggle-slider{
 .copy-profile-item.selected{border-color:var(--ember);background:var(--ember-dim);}
 .copy-profile-item .cp-name{flex:1;font-size:15px;font-weight:600;color:var(--chalk);}
 .copy-profile-item .cp-check{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:background .12s,border-color .12s;}
-.copy-profile-item.selected .cp-check{background:var(--ember);border-color:var(--ember);color:#1a0d05;font-weight:700;}
+.copy-profile-item.selected .cp-check{background:var(--ember);border-color:var(--ember);color:var(--on-ember);font-weight:700;}
 .copy-day-btn{flex:1;min-width:calc(14% - 6px);padding:10px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-family:'Oswald',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ash);text-align:center;cursor:pointer;transition:border-color .15s,background .12s,color .15s;}
-.copy-day-btn.selected{border-color:var(--ember);background:var(--ember);color:#1a0d05;font-weight:700;}
+.copy-day-btn.selected{border-color:var(--ember);background:var(--ember);color:var(--on-ember);font-weight:700;}
 
 /* Glass override copy overlay */
 body:not([data-theme="light"])[data-glass="1"] #copySeanceOverlay > div:last-child{
@@ -2695,13 +2711,102 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
 .exlab{font-size:12px;color:var(--ash);margin:12px 0 6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;}
 .expillrow{display:flex;flex-wrap:wrap;gap:4px;background:var(--surface2);border-radius:14px;padding:4px;}
 .expill{border:0;background:transparent;color:var(--ash);font:600 13px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.03em;padding:9px 12px;border-radius:10px;cursor:pointer;}
-.expill[aria-pressed="true"]{background:var(--ember);color:#1b1009;font-weight:700;text-transform:none;}
+.expill[aria-pressed="true"]{background:var(--ember);color:var(--on-ember);font-weight:700;text-transform:none;}
 .expill:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through;}
 .exres{margin-top:12px;font-size:14px;color:var(--ash);}
 .exres b{display:block;color:var(--chalk);font-size:15px;margin-top:2px;font-weight:600;}
-.exbtn{width:100%;margin-top:12px;border:0;border-radius:14px;background:var(--ember);color:#1b1009;font:700 15px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;padding:13px;cursor:pointer;}
+.exbtn{width:100%;margin-top:12px;border:0;border-radius:14px;background:var(--ember);color:var(--on-ember);font:700 15px 'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;padding:13px;cursor:pointer;}
 #exSheetToast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);color:var(--chalk);padding:10px 16px;border-radius:12px;font-size:13px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;opacity:0;pointer-events:none;transition:opacity .2s;z-index:95;max-width:90%;}
 #exSheetToast.on{opacity:1}
+
+/* v110.8 — thème clair : contraste, surfaces et états sélectionnés. */
+body[data-theme="light"],body[data-theme="light"][data-glass="1"]{
+  color-scheme:light;
+  --on-ember:#ffffff;
+  --control-border:#8290a2;
+  --bg:#f4f5f7;--surface:#ffffff;--surface2:#e9edf2;--border:#cbd2dc;
+  --chalk:#19212d;--ash:#535f70;--ember:#b83c12;--ember-dim:#fce9e1;
+  --rest:#176f43;--rest-dim:#ddf2e5;--danger:#b42318;--amber:#875100;
+  background:var(--bg);color:var(--chalk);
+}
+body[data-theme="light"] .topbar{background:linear-gradient(var(--bg) 85%,transparent);}
+body[data-theme="light"] .tabbar{background:#fff;border-top:1px solid var(--border);box-shadow:0 -4px 20px #19212d08;}
+body[data-theme="light"] :is(.card,.settings-card,.statcard,.records-card){box-shadow:0 3px 14px #19212d06;}
+body[data-theme="light"] :is(.btn.primary,.chip.active,.daystrip-pill){background:var(--ember);border-color:var(--ember);color:#fff;}
+body[data-theme="light"] :is(.tabbtn.active,.timer-tab.active){color:var(--ember);}
+body[data-theme="light"] :is(.btn.ghost,.chip:not(.active)){color:var(--chalk);}
+body[data-theme="light"] :is(input,select,textarea){color:var(--chalk);background:var(--surface2);border-color:var(--border);accent-color:var(--ember);}
+body[data-theme="light"] :is(input,textarea)::placeholder{color:var(--ash);opacity:1;}
+body[data-theme="light"] :is(button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--ember);outline-offset:3px;}
+body[data-theme="light"] :is(.forge-dialog-overlay,#drumPickerBackdrop){background:rgba(25,33,45,.32);}
+body[data-theme="light"] .forge-dialog-sheet{box-shadow:0 20px 60px #19212d26;}
+body[data-theme="light"] .drum-col::before{background:linear-gradient(var(--surface) 40%,transparent);}
+body[data-theme="light"] .drum-col::after{background:linear-gradient(transparent,var(--surface) 60%);}
+body[data-theme="light"][data-glass="1"]{
+  --surface:rgba(255,255,255,.9);--surface2:rgba(233,237,242,.9);--border:rgba(112,128,148,.35);
+  background:radial-gradient(ellipse 100% 45% at 50% 0%,#f8e1d5 0%,transparent 65%),radial-gradient(ellipse 80% 40% at 15% 100%,#e2e9f7 0%,transparent 60%),#f4f5f7;
+}
+body[data-theme="light"][data-glass="1"] :is(.card,.settings-card,.seancerow,.statcard,.pr-row,.records-card,.emom-block,.timer-hist-chip){
+  background:rgba(255,255,255,.82);border-color:rgba(112,128,148,.32);box-shadow:0 4px 18px #19212d08,inset 0 1px 0 #fff;
+}
+body[data-theme="light"][data-glass="1"] .topbar{background:linear-gradient(#f4f5f7ed 75%,#f4f5f700);}
+body[data-theme="light"][data-glass="1"] .tabbar{background:rgba(255,255,255,.94);border-color:var(--border);}
+body[data-theme="light"][data-glass="1"] :is(.profiledropdown,.forge-dialog-sheet,#drumPickerPanel){background:rgba(255,255,255,.97);border-color:var(--border);}
+body[data-theme="light"][data-glass="1"] :is(.btn.primary,.timerctrls .btn.primary,.chip.active,.daystrip-pill){
+  background:linear-gradient(160deg,#bf4219,#a8320d)!important;border-color:#a8320d!important;color:#fff!important;box-shadow:0 4px 14px #b83c1224,inset 0 1px 0 #ffffff40!important;
+}
+body[data-theme="light"][data-glass="1"] :is(.timer-tabs,.drum-glass-wrap,.stepper,.timer-cfg-stepper){background:rgba(255,255,255,.85);border-color:var(--border);}
+body[data-theme="light"][data-glass="1"] :is(input,select,textarea){background:rgba(255,255,255,.92);border-color:var(--border);}
+body[data-theme="light"][data-glass="1"] .drum-col::before{background:linear-gradient(#fff 40%,transparent);}
+body[data-theme="light"][data-glass="1"] .drum-col::after{background:linear-gradient(transparent,#fff 60%);}
+
+body[data-theme="light"][data-glass="1"] :is(.card,.settings-card,.drum-glass-wrap,.seancerow,.statcard,.pr-row,.records-card,.timer-hist-chip)::after{content:none;}
+body[data-theme="light"] .theme-chip{background:var(--surface2);color:var(--ash);border:1px solid var(--border);}
+body[data-theme="light"] .theme-chip.active{background:var(--ember-dim);color:var(--ember);border-color:var(--ember);box-shadow:inset 0 0 0 1px var(--ember);}
+
+/* v110.10 — états clairs complets : mêmes contrastes sur tous les sélecteurs. */
+body[data-theme="light"] :is(.copy-day-btn.selected,.copy-profile-item.selected .cp-check,.expill[aria-pressed="true"],.exbtn){color:var(--on-ember);}
+body[data-theme="light"] .daystrip .day.today :is(.dn,.dd){color:var(--on-ember);}
+body[data-theme="light"] .daystrip .day.today .dn{font-weight:700;}
+body[data-theme="light"] :is(.card,.settings-card,.statcard,.records-card,.seancerow,.exblock,.emom-block,.timer-cfg-card,.profiledropdown){box-shadow:0 3px 14px rgba(25,33,45,.06);}
+body[data-theme="light"][data-glass="1"] :is(.exblock,.emom-block,.timer-cfg-card){background:rgba(255,255,255,.88);border:1px solid var(--border);}
+body[data-theme="light"][data-glass="1"] :is(.exblock,.emom-block)::after{content:none;}
+body[data-theme="light"] :is(#fsExPickerPanel,#exSheet,#drumPickerPanel,.forge-dialog-sheet){background:#fff;box-shadow:0 12px 40px rgba(25,33,45,.18);}
+body[data-theme="light"][data-glass="1"] :is(#fsExPickerPanel,#exSheet,#drumPickerPanel,.forge-dialog-sheet){background:rgba(255,255,255,.98);border:1px solid var(--border);}
+body[data-theme="light"] :is(#confirmModalSheet,#copySeanceOverlay > div:last-child){box-shadow:0 -8px 36px rgba(25,33,45,.16)!important;}
+body[data-theme="light"] :is(#confirmModalBackdrop,#copySeanceBackdrop,#exSheetOv){background:rgba(25,33,45,.32)!important;}
+body[data-theme="light"] :is(.forge-dialog-input,input[type="text"],input[type="number"],input[type="date"],input[type="email"],input[type="password"],select,textarea){border-color:var(--control-border);box-shadow:none;}
+body[data-theme="light"] :is(.timer-cfg-stepper input,.emom-col-val,.set-col-val){background:transparent;border:0;box-shadow:none;}
+body[data-theme="light"][data-glass="1"] :is(.timer-cfg-stepper input,.emom-col-val,.set-col-val){background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;}
+body[data-theme="light"] .toggle-slider{border-color:var(--control-border);}
+body[data-theme="light"] :is(.expill,.exo-chip,.theme-chip){min-height:44px;}
+body[data-theme="light"] :is(#fsExPickerClose,#exSheetClose,.records-overlay-back,.records-overlay-close){min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;}
+body[data-theme="light"] :is(.expill[aria-pressed="true"],.exbtn){background:var(--ember);}
+body[data-theme="light"] .exgrp:hover{border-color:var(--ember);background:var(--ember-dim);}
+body[data-theme="light"] :is(.exo-chip.on,.exgrp.on){background:var(--ember-dim);border-color:var(--ember);}
+body[data-theme="light"] :is(.drum-highlight,#drumPickerHighlight){background:rgba(184,60,18,.06);border:1px solid rgba(184,60,18,.25);box-shadow:none;}
+body[data-theme="light"][data-glass="1"] :is(.drum-highlight,#drumPickerHighlight){background:rgba(184,60,18,.06);border:1px solid rgba(184,60,18,.25);box-shadow:inset 0 1px 0 #fff;}
+body[data-theme="light"] .drum-highlight::before,body[data-theme="light"] .drum-highlight::after{content:none;}
+body[data-theme="light"] .drum-item.selected{color:var(--ember);}
+body[data-theme="light"][data-glass="1"] .drum-item.selected{color:var(--ember);text-shadow:none;}
+body[data-theme="light"] :is(.drum-col,.dp-col)::before{background:linear-gradient(#fff 0%,rgba(255,255,255,.16) 60%,transparent 100%);}
+body[data-theme="light"] :is(.drum-col,.dp-col)::after{background:linear-gradient(transparent 0%,rgba(255,255,255,.16) 40%,#fff 100%);}
+body[data-theme="light"][data-glass="1"] :is(.drum-col,.dp-col)::before{background:linear-gradient(#fff 0%,rgba(255,255,255,.16) 60%,transparent 100%);}
+body[data-theme="light"][data-glass="1"] :is(.drum-col,.dp-col)::after{background:linear-gradient(transparent 0%,rgba(255,255,255,.16) 40%,#fff 100%);}
+body[data-theme="light"] #startBtn,body[data-theme="light"][data-glass="1"] #startBtn{background:var(--ember)!important;border:1px solid var(--ember)!important;color:var(--on-ember)!important;box-shadow:0 5px 16px rgba(184,60,18,.18)!important;}
+body[data-theme="light"] #startBtn::after{content:none;}
+body[data-theme="light"] .glass-preview{background:linear-gradient(145deg,#fff,#e7edf4);border:1px solid #b8c3d1;box-shadow:0 3px 10px #19212d14,inset 0 1px 0 #fff;}
+body[data-theme="light"] .toggle input:focus-visible + .toggle-slider{outline:3px solid var(--ember);outline-offset:3px;}
+body[data-theme="light"] :is(.emom-overlay,.add-pr-overlay){background:var(--bg);padding-bottom:calc(24px + env(safe-area-inset-bottom));}
+body[data-theme="light"] #exSheet{max-height:calc(100dvh - 24px);overflow-y:auto;}
+@media (max-width:420px){
+  body[data-theme="light"] .forge-dialog-actions-tertiary{grid-template-columns:1fr;}
+  body[data-theme="light"] .forge-dialog-actions-tertiary .btn:last-child{grid-column:1;}
+}
+@media (prefers-reduced-motion:reduce){
+  body[data-theme="light"] :is(.view,.tabbtn,.timer-tab,.forge-dialog-sheet){animation:none!important;transition:none!important;}
+}
+
 </style>
 </head>
 <body>
@@ -2819,7 +2924,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
 </svg>
 
 <div class="topbar">
-  <div class="brand"><div class="mark"></div><h1>Forge</h1></div>
+  <div class="brand"><div class="mark"></div><h1>CaliMova</h1></div>
 </div>
 <div class="hazard"></div>
 
@@ -3004,7 +3109,6 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
         <button class="btn ghost" id="addExToSessionBtn" style="flex:1;">+ Exercice</button>
         <button class="btn ghost" id="addEmomToSessionBtn" style="flex:1;border-color:var(--ember);color:var(--ember);">+ EMOM</button>
       </div>
-      <button class="btn ghost block" id="addProgToSessionBtn" style="border-color:var(--rest);color:var(--rest);margin-bottom:14px;">📈 Depuis un programme</button>
       <button class="btn primary block" id="finishSessionBtn">Enregistrer</button>
     </div>
   </section>
@@ -3239,6 +3343,35 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
     </div>
 
     <div class="settings-section">
+      <div class="settings-section-title">Données</div>
+      <div class="settings-card">
+        <div class="settings-row" id="exportDataBtn" style="cursor:pointer;">
+          <div class="settings-row-left">
+            <div class="settings-row-label">Exporter les données</div>
+            <div class="settings-row-sub">Télécharger un backup JSON</div>
+          </div>
+          <div style="color:var(--ash);font-size:18px;">›</div>
+        </div>
+        <div class="settings-row" id="importDataBtn" style="cursor:pointer;border-top:1px solid var(--border);">
+          <div class="settings-row-left">
+            <div class="settings-row-label">📥 Importer les données</div>
+            <div class="settings-row-sub">Restaurer un backup JSON</div>
+          </div>
+          <div style="color:var(--ash);font-size:18px;">›</div>
+        </div>
+        <input type="file" id="importDataFile" accept=".json,application/json" style="display:none;">
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Calcul &amp; langue</div>
+      <div class="settings-card">
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Unité de poids</div><div class="settings-row-sub">Les calculs utilisent cette unité (conversion kg/lb)</div></div><div class="profilebar" style="width:110px;"><button class="profilebtn" id="globalWeightUnitBtn" type="button">kg <span class="chev">▾</span></button><div class="profiledropdown" id="globalWeightUnitDropdown" style="display:none;"><div class="item" data-unit="kg">kg</div><div class="item" data-unit="lb">lb</div></div></div></div>
+        <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Langue</div><div class="settings-row-sub">Interface de CaliMova</div></div><div class="profilebar" style="width:130px;"><button class="profilebtn" id="globalLanguageBtn" type="button">Français <span class="chev">▾</span></button><div class="profiledropdown" id="globalLanguageDropdown" style="display:none;"><div class="item" data-lang="fr">Français</div><div class="item" data-lang="en">English</div></div></div></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-section-title">Navigation</div>
       <div class="settings-card">
         <div class="settings-row">
@@ -3267,28 +3400,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
       </div>
     </div>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Données</div>
-      <div class="settings-card">
-        <div class="settings-row" id="exportDataBtn" style="cursor:pointer;">
-          <div class="settings-row-left">
-            <div class="settings-row-label">Exporter les données</div>
-            <div class="settings-row-sub">Télécharger un backup JSON</div>
-          </div>
-          <div style="color:var(--ash);font-size:18px;">›</div>
-        </div>
-        <div class="settings-row" id="importDataBtn" style="cursor:pointer;border-top:1px solid var(--border);">
-          <div class="settings-row-left">
-            <div class="settings-row-label">📥 Importer les données</div>
-            <div class="settings-row-sub">Restaurer un backup JSON</div>
-          </div>
-          <div style="color:var(--ash);font-size:18px;">›</div>
-        </div>
-        <input type="file" id="importDataFile" accept=".json,application/json" style="display:none;">
-      </div>
-    </div>
-
-    <div class="settings-version">FORGE · v110.6 · sélecteur d'exercices : groupe › mouvement › variante</div>
+    <p style="text-align:center"><a href="https://forge-e1f5b.web.app/privacy.html" target="_blank" rel="noopener">Confidentialité, stockage et suppression</a> · <a href="https://forge-e1f5b.web.app/terms.html" target="_blank" rel="noopener">Conditions</a></p><p style="text-align:center"><a href="https://forge-e1f5b.web.app/legal.html" target="_blank" rel="noopener">Mentions légales et signalements</a></p><div class="settings-version">CaliMova · v110.10.19 · sélecteur d'exercices : groupe › mouvement › variante</div>
   </section>
 
   <!-- PROGRESSION VIEW (5e onglet) -->
@@ -3419,7 +3531,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
         <button class="drum-val-btn" id="programWeeksBtn" style="font-size:26px;" data-weeksv="5">5</button>
       </div>
     </div>
-    <div style="font-size:12px;color:var(--ash);line-height:1.5;margin-top:6px;">Pour chaque exercice, définis le max de départ et l’augmentation par semaine. Forge calcule la charge de référence de chaque semaine, puis les séries prévues à chaque séance.</div>
+    <div style="font-size:12px;color:var(--ash);line-height:1.5;margin-top:6px;">Pour chaque exercice, définis le max de départ et l’augmentation par semaine. CaliMova calcule la charge de référence de chaque semaine, puis les séries prévues à chaque séance.</div>
   </div>
   <div style="margin-bottom:10px;">
     <label style="display:block;font-size:12px;color:var(--ash);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Progressions par exercice</label>
@@ -3444,7 +3556,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
 
 <div class="emom-overlay" id="programScheduleOverlay">
   <h3>Ajouter à une séance Tracker</h3>
-  <div style="font-size:13px;color:var(--ash);margin-bottom:12px;">Choisis parmi tes séances Tracker déjà créées. Forge ajoutera la progression dedans, sans créer de séance. Tu peux laisser des passages non planifiés.</div>
+  <div style="font-size:13px;color:var(--ash);margin-bottom:12px;">Choisis parmi tes séances Tracker déjà créées. CaliMova ajoutera la progression dedans, sans créer de séance. Tu peux laisser des passages non planifiés.</div>
   <div id="programScheduleDays"></div>
   <div style="display:flex;gap:10px;margin-top:14px;">
     <button class="btn ghost" id="programScheduleCancelBtn" style="flex:1;">Annuler</button>
@@ -3561,7 +3673,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
         <input type="range" id="iconRandomIntervalSlider" min="0" max="6" step="1" value="5" style="width:100%;accent-color:var(--ember);">
       </div>
     </div>
-    <div style="font-size:12px;color:var(--ash);line-height:1.5;margin:-8px 0 18px;">La nouvelle icône du téléphone s’applique quand tu quittes Forge, sans interrompre ta séance.</div>
+    <div style="font-size:12px;color:var(--ash);line-height:1.5;margin:-8px 0 18px;">La nouvelle icône du téléphone s’applique quand tu quittes CaliMova, sans interrompre ta séance.</div>
 
     <label style="display:block;font-size:11px;color:var(--ash);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Figure</label>
     <div id="iconFigureGrid" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px;"></div>
@@ -3618,7 +3730,7 @@ body:not([data-theme="light"])[data-glass="1"] .glass-preview{
 
 <div id="exitToast" style="position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(16px);background:rgba(20,21,19,0.94);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-family:'Oswald',sans-serif;letter-spacing:0.04em;text-transform:uppercase;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,0.35);">Appuie encore pour quitter</div>
 
-<div id="tabEditHint" style="position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(16px);background:var(--ember);color:#1a0d05;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:700;font-family:'Oswald',sans-serif;letter-spacing:0.05em;text-transform:uppercase;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 8px 26px rgba(255,107,53,0.45);">☝️ Glisse un onglet pour le déplacer</div>
+<div id="tabEditHint" style="position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(16px);background:var(--ember);color:var(--on-ember);padding:10px 22px;border-radius:100px;font-size:13px;font-weight:700;font-family:'Oswald',sans-serif;letter-spacing:0.05em;text-transform:uppercase;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 8px 26px rgba(255,107,53,0.45);">☝️ Glisse un onglet pour le déplacer</div>
 
 <div class="tabbar">
   <button class="tabbtn active" data-view="timer">
@@ -3774,6 +3886,9 @@ function applyTheme(mode){
   } else {
     document.body.removeAttribute('data-theme');
   }
+  document.querySelectorAll('.drum-scroll').forEach(refreshDrumStyles);
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if(themeMeta) themeMeta.content = isLight ? '#f4f5f7' : '#111211';
   // Mettre à jour les chips
   document.querySelectorAll('.theme-chip').forEach(c=>{
     c.classList.toggle('active', c.dataset.themeVal === mode);
@@ -3874,7 +3989,7 @@ function scheduleCloudSync(){
       }catch(e){
         _cloudSyncPending = true;
         setCloudSyncStatus('Hors ligne — nouvelle tentative à la prochaine modification');
-        console.error('[FORGE] Synchronisation cloud échouée :', e);
+        console.error('[CaliMova] Synchronisation cloud échouée :', e);
       }
     });
   }, 650);
@@ -3889,7 +4004,8 @@ function sSet(key, val){
 // L'écran Timer est le premier écran rendu dans le HTML et le bouton Timer
 // est actif au chargement. Garder l'état JS aligné évite une navigation
 // parasite quand l'ordre sauvegardé est appliqué au démarrage.
-let VIEW_ORDER = ['timer','tracker','stats','progression','social'];
+// Ordre par défaut pour les utilisateurs qui n'ont jamais personnalisé les onglets.
+let VIEW_ORDER = ['tracker','stats','progression','timer','social'];
 let currentViewIdx = 0;
 const _deferTabRenders = []; // v109.83 : rendus lourds des onglets, différés après le glissement
 
@@ -3904,6 +4020,9 @@ function goToView(idx, animate=true){
   // glissement, ils bloquaient la première frame et ça granulait.
   const effective = animate && dist <= 1;
   currentViewIdx = idx;
+  // Conserver l'onglet courant pour que l'actualisation ne renvoie pas
+  // systématiquement au Tracker.
+  try{ localStorage.setItem('forge-current-view', VIEW_ORDER[idx]); }catch(e){}
   const track = document.getElementById('viewsTrack');
   if(!effective) track.style.transition='none';
   track.style.transform = `translateX(${-idx*100}%)`;
@@ -3991,7 +4110,10 @@ const _startupTabOrder = (()=>{
       && saved.every(key=>VIEW_ORDER.includes(key)) ? saved : VIEW_ORDER.slice();
   }catch(e){return VIEW_ORDER.slice();}
 })();
-_applyTabOrder(_startupTabOrder,_startupTabOrder[0],true);
+let _startupView = null;
+try{ _startupView = localStorage.getItem('forge-current-view'); }catch(e){}
+const _startupKey = _startupView && _startupTabOrder.includes(_startupView) ? _startupView : _startupTabOrder[0];
+_applyTabOrder(_startupTabOrder,_startupKey,true);
 
 /* ── Onglet Timer : 3 choix (Réglages > Navigation) —
    « Activer » : visible ici (et rallumé globalement) ;
@@ -4001,7 +4123,16 @@ _applyTabOrder(_startupTabOrder,_startupTabOrder[0],true);
    Un appareil qui n'a jamais touché au réglage global ne le
    réécrit jamais dans le cloud (drapeau forge-timer-global-user). ── */
 function _timerChoice(){
-  try{ const v=JSON.parse(localStorage.getItem('forge-timer-choice')); return v==='off-here'||v==='off-all' ? v : 'on'; }catch(e){ return 'on'; }
+  try{
+    const v=JSON.parse(localStorage.getItem('forge-timer-choice'));
+    if(v==='off-here'||v==='off-all'||v==='on') return v;
+    // Un appareil qui n'a jamais choisi localement reflète l'état cloud :
+    // « Partout » si le Timer est désactivé globalement, sinon l'état
+    // intermédiaire « Ici seulement ». Sans préférence cloud, Activer reste
+    // le choix par défaut des nouveaux utilisateurs.
+    if(localStorage.getItem('forge-timer-global')!==null) return _timerGlobalEnabled() ? 'off-here' : 'off-all';
+    return 'on';
+  }catch(e){ return 'on'; }
 }
 function _timerGlobalEnabled(){
   try{ return JSON.parse(localStorage.getItem('forge-timer-global'))!==false; }catch(e){ return true; }
@@ -4048,7 +4179,7 @@ function _applyTimerTabVisibility(deferRender){
   if(vEl) vEl.style.display = visible ? '' : 'none';
   let order=null;
   if(visible){
-    const full=['timer','tracker','stats','progression','social'].slice();
+    const full=['tracker','stats','progression','timer','social'].slice();
     const migrate=k=>k==='settings'?'social':k;
     try{
       const savedRaw=JSON.parse(localStorage.getItem('forge-tab-order')||'null');
@@ -4615,7 +4746,7 @@ async function ensureNotifChannel(){
   try{
     // Canal dédié, importance basse : la notif s'affiche et se met à jour
     // sans re-sonner/re-vibrer à chaque rafraîchissement du temps restant.
-    await LN.createChannel({ id: FORGE_NOTIF_CHANNEL, name: 'Timer Forge', importance: 2, visibility: 1 });
+    await LN.createChannel({ id: FORGE_NOTIF_CHANNEL, name: 'Timer CaliMova', importance: 2, visibility: 1 });
     _notifChannelReady = true;
   }catch(e){}
 }
@@ -4660,7 +4791,7 @@ document.getElementById('notifToggle').addEventListener('change', async function
       tog.checked = false;
       notifEnabled = false;
       sSet('forge-notif-timer', false);
-      alert("Autorisation refusée. Active les notifications pour Forge dans les réglages Android (Applications → Forge → Notifications) pour utiliser cette fonction.");
+      alert("Autorisation refusée. Active les notifications pour CaliMova dans les réglages Android (Applications → CaliMova → Notifications) pour utiliser cette fonction.");
       updateNotifSubLabel();
       return;
     }
@@ -4722,7 +4853,7 @@ function startChronoNotification(title, endMillis, countDown, subtitle, paused){
    sur pause et pour la relancer à la reprise, avec exactement les mêmes
    infos (mode + round). */
 function _currentTimerNotifInfo(){
-  let remainF = 0, title = 'Forge', subtitle = '';
+  let remainF = 0, title = 'CaliMova', subtitle = '';
   if(timerMode === 'minuteur'){
     remainF = Math.max(0, timer.duration - timer._pausedElapsed);
     title = 'Minuteur';
@@ -5044,7 +5175,8 @@ function refreshDrumStyles(el){
   el.querySelectorAll('.drum-item[data-val]').forEach(d=>{
     const idx = +d.dataset.val;
     const dist = Math.abs(idx - centerFloat);
-    const opacity = Math.max(0.06, 1 - dist * 0.40);
+    const light = document.body.dataset.theme === 'light';
+    const opacity = Math.max(light ? 0.22 : 0.06, 1 - dist * (light ? 0.30 : 0.40));
     const scaleY = Math.max(0.75, 1 - dist * 0.08);
     d.classList.toggle('selected', Math.round(centerFloat) === idx);
     d.style.opacity = opacity;
@@ -5261,7 +5393,7 @@ function _timerRaf(){
       _lastTickSec = elapsedInt;
       if(leftInt <= 3 && leftInt > 0){ buzzLastSeconds(leftInt); }
       if(notifEnabled && !chronoSupported() && (leftInt % 15 === 0 || leftInt <= 5)){
-        showTimerNotification('FORGE ⏱ Minuteur', 'Temps restant : ' + fmt(leftInt));
+        showTimerNotification('CaliMova ⏱ Minuteur', 'Temps restant : ' + fmt(leftInt));
       }
     }
     if(leftF <= 0){ finishTimer(); return; }
@@ -5298,10 +5430,10 @@ function _timerRaf(){
           // Changement de round : (re)lance le chronomètre natif pour ce round entier,
           // Android le fait défiler tout seul jusqu'à la fin sans qu'on rappelle rien.
           if(!startChronoNotification('EMOM', Date.now() + leftF * 1000, true, 'Round ' + curRoundForNotif + '/' + totalRounds)){
-            showTimerNotification('FORGE ⚡ EMOM — Round ' + curRoundForNotif + '/' + totalRounds, fmt(leftInt) + ' restant dans ce round');
+            showTimerNotification('CaliMova ⚡ EMOM — Round ' + curRoundForNotif + '/' + totalRounds, fmt(leftInt) + ' restant dans ce round');
           }
         } else if(!chronoSupported() && (leftInt % 15 === 0 || leftInt <= 5)){
-          showTimerNotification('FORGE ⚡ EMOM — Round ' + curRoundForNotif + '/' + totalRounds, fmt(leftInt) + ' restant dans ce round');
+          showTimerNotification('CaliMova ⚡ EMOM — Round ' + curRoundForNotif + '/' + totalRounds, fmt(leftInt) + ' restant dans ce round');
         }
       }
     }
@@ -5362,10 +5494,10 @@ function _timerRaf(){
           // Changement de phase : le chronomètre natif prend le relais pour toute
           // la durée de cette phase, sans qu'on ait besoin de rappeler quoi que ce soit.
           if(!startChronoNotification(phaseLbl, Date.now() + leftF * 1000, true, roundSubtitle)){
-            showTimerNotification('FORGE — ' + phaseLbl, fmt(leftInt) + ' — ' + roundSubtitle);
+            showTimerNotification('CaliMova — ' + phaseLbl, fmt(leftInt) + ' — ' + roundSubtitle);
           }
         } else if(!chronoSupported() && (leftInt % 10 === 0 || leftInt <= 3)){
-          showTimerNotification('FORGE — ' + phaseLbl, fmt(leftInt) + ' — ' + roundSubtitle);
+          showTimerNotification('CaliMova — ' + phaseLbl, fmt(leftInt) + ' — ' + roundSubtitle);
         }
       }
     }
@@ -5393,7 +5525,7 @@ function finishTimer(){
   releaseWakeLock();
   if(notifEnabled){
     stopChronoNotification();
-    showTimerNotification('FORGE ✅ Terminé', 'La séance de timer est terminée.');
+    showTimerNotification('CaliMova ✅ Terminé', 'La séance de timer est terminée.');
     closeTimerNotification(8000);
   }
   if(timerMode==='minuteur'){
@@ -5422,7 +5554,7 @@ document.getElementById('pauseBtn').onclick=()=>{
         const info = _currentTimerNotifInfo();
         startChronoNotification(info.title, Date.now() + info.remainF * 1000, true, info.subtitle, true);
       } else {
-        showTimerNotification('FORGE ⏸ En pause', document.getElementById('bigTime').textContent + ' restant');
+        showTimerNotification('CaliMova ⏸ En pause', document.getElementById('bigTime').textContent + ' restant');
       }
     }
     return;
@@ -5470,11 +5602,11 @@ document.getElementById('startBtn').onclick=()=>{
   if(notifEnabled && timerMode!=='stopwatch' && timerMode!=='emom'){
     if(timerMode==='minuteur'){
       if(!startChronoNotification('Minuteur', Date.now() + timer.duration * 1000, true)){
-        showTimerNotification('FORGE ⏱ Minuteur', 'Temps restant : ' + fmt(timer.duration));
+        showTimerNotification('CaliMova ⏱ Minuteur', 'Temps restant : ' + fmt(timer.duration));
       }
     } else if(timerMode==='interval'){
       if(!startChronoNotification('Travail 💪', Date.now() + getV('intWorkVal') * 1000, true, 'Round 1/' + getV('intRoundsVal'))){
-        showTimerNotification('FORGE — Travail 💪', fmt(getV('intWorkVal')) + ' — Round 1/' + getV('intRoundsVal'));
+        showTimerNotification('CaliMova — Travail 💪', fmt(getV('intWorkVal')) + ' — Round 1/' + getV('intRoundsVal'));
       }
     }
   }
@@ -5488,7 +5620,7 @@ document.getElementById('startBtn').onclick=()=>{
       if(notifEnabled){
         const roundSubtitle = 'Round 1/' + getV('emomRoundsVal');
         if(!startChronoNotification('EMOM', Date.now() + getV('emomRoundVal') * 1000, true, roundSubtitle)){
-          showTimerNotification('FORGE ⚡ EMOM — ' + roundSubtitle, fmt(getV('emomRoundVal')) + ' restant dans ce round');
+          showTimerNotification('CaliMova ⚡ EMOM — ' + roundSubtitle, fmt(getV('emomRoundVal')) + ' restant dans ce round');
         }
       }
       // Lancer le RAF APRÈS le countdown — _startTs = maintenant
@@ -5554,7 +5686,7 @@ function swRafLoop(ts){
     const secs = Math.floor(swElapsed/1000);
     if(secs !== _swLastNotifSec && secs % 30 === 0){
       _swLastNotifSec = secs;
-      showTimerNotification('FORGE ⏱ Chrono', swFmt(swElapsed).mss + ' écoulées');
+      showTimerNotification('CaliMova ⏱ Chrono', swFmt(swElapsed).mss + ' écoulées');
     }
   }
   swRafId = requestAnimationFrame(swRafLoop);
@@ -5565,7 +5697,7 @@ function swStart(){
   swRunning=true; swLastTs=null;
   swRafId=requestAnimationFrame(swRafLoop);
   swUpdateHint();
-  if(notifEnabled){ _swLastNotifSec=-1; showTimerNotification('FORGE ⏱ Chrono', swFmt(swElapsed).mss + ' écoulées'); }
+  if(notifEnabled){ _swLastNotifSec=-1; showTimerNotification('CaliMova ⏱ Chrono', swFmt(swElapsed).mss + ' écoulées'); }
   beep(880,120,0.22,'sine'); vib(70);
 }
 
@@ -5574,7 +5706,7 @@ function swPause(){
   if(swRafId){ cancelAnimationFrame(swRafId); swRafId=null; }
   swUpdateHint();
   releaseWakeLock();
-  if(notifEnabled) showTimerNotification('FORGE ⏸ Chrono en pause', swFmt(swElapsed).mss);
+  if(notifEnabled) showTimerNotification('CaliMova ⏸ Chrono en pause', swFmt(swElapsed).mss);
 }
 
 function swReset(){
@@ -5654,6 +5786,14 @@ if(timerHistory.length > 0){
 (async ()=>{
   // Attend les données avant de rendre l'onglet initial déjà choisi.
   await _forgeDataReadyPromise;
+  try{
+    const raw=localStorage.getItem('forge-current-seance');
+    if(raw){
+      const ref=JSON.parse(raw), week=activeProfile()?.week?.[ref?.day];
+      if(ref && typeof ref.day==='string' && Number.isInteger(ref.idx) && Array.isArray(week) && week[ref.idx]) currentSeanceRef={day:ref.day,idx:ref.idx};
+      else localStorage.removeItem('forge-current-seance');
+    }
+  }catch(e){}
   goToView(currentViewIdx,false);
 })();
 
@@ -5797,7 +5937,7 @@ function openDrumPicker(config, onConfirm){
       scroll.querySelectorAll('.dp-item').forEach(d=>{
         const vi = +d.dataset.vi;
         const dist = Math.abs(vi - centerFloat);
-        d.style.opacity = Math.max(0.08, 1 - dist*0.42);
+        d.style.opacity = Math.max(isLight ? 0.22 : 0.08, 1 - dist*(isLight ? 0.30 : 0.42));
         d.style.transform = `scaleY(${Math.max(0.76, 1 - dist*0.08)})`;
       });
     }
@@ -5841,7 +5981,7 @@ function openDrumPicker(config, onConfirm){
           const vi = +d.dataset.vi;
           const centerFloat = col.scrollEl.scrollTop / DP_ITEM_H;
           const dist = Math.abs(vi - centerFloat);
-          d.style.opacity = Math.max(0.08, 1 - dist*0.42);
+          d.style.opacity = Math.max(isLight ? 0.22 : 0.08, 1 - dist*(isLight ? 0.30 : 0.42));
           d.style.transform = `scaleY(${Math.max(0.76, 1 - dist*0.08)})`;
         });
       });
@@ -6541,7 +6681,7 @@ function renderDayChips(){
     d.setDate(monday.getDate() + i);
     const dd = d.getDate();
     const isToday = d.toDateString() === todayStr;
-    const isSelected = k===currentDay; return `<div class="day ${isSelected?'today':''}" data-day="${k}" data-istoday="${isToday}"><div class="dn">${DAY_SHORT[k]}</div><div class="dd num" style="${isToday && isSelected ? 'color:#1a0d05;font-weight:700;' : isToday ? 'color:var(--ember);' : ''}">${dd}</div></div>`;
+    const isSelected = k===currentDay; return `<div class="day ${isSelected?'today':''}" data-day="${k}" data-istoday="${isToday}"><div class="dn">${DAY_SHORT[k]}</div><div class="dd num" style="${isToday && isSelected ? 'color:var(--on-ember);font-weight:700;' : isToday ? 'color:var(--ember);' : ''}">${dd}</div></div>`;
   }).join('');
 
   // Recréer la pill cachée — _snapPill la positionnera correctement
@@ -6561,7 +6701,7 @@ function renderDayChips(){
         const isToday = d.dataset.istoday === 'true';
         d.classList.toggle('today', isSelected);
         const ddEl = d.querySelector('.dd');
-        if(ddEl) ddEl.style.color = isToday && isSelected ? '#1a0d05' : isToday ? 'var(--ember)' : '';
+        if(ddEl) ddEl.style.color = isToday && isSelected ? 'var(--on-ember)' : isToday ? 'var(--ember)' : '';
         if(ddEl) ddEl.style.fontWeight = isToday && isSelected ? '700' : '';
       });
       _animPill(from, currentDay);
@@ -6834,6 +6974,7 @@ function _flipOpenSeance(sourceEl, day, idx){
 
 function _closeSeanceView(){
   currentSeanceRef = null;
+  try{ localStorage.removeItem('forge-current-seance'); }catch(e){}
   document.getElementById('trackerSession').style.display='none';
   document.getElementById('trackerHome').style.display='block';
   renderSeanceList();
@@ -6843,7 +6984,7 @@ function _flipCloseSeance(afterFn){
   _navClose(afterFn);
 }
 
-function openSeance(day, idx){ currentSeanceRef = {day, idx}; const seance = currentSeanceObj(); currentSeanceSnapshot = JSON.stringify(seance); document.getElementById('sessionTitle').textContent = seance.name; document.getElementById('trackerHome').style.display='none'; document.getElementById('trackerSession').style.display='block'; const planned=_programRefs(seance).length>0; const weekLabel=(seance.programWeeks||[]).map(w=>{const prog=programs.find(p=>p.id===w.programId),ex=prog?.exercises.find(item=>item.exerciseName===w.exerciseName),d=ex&&computeExerciseWeek(_normalizeProgramExercise(ex),w.week),set=d?.seances[w.sessionIndex];return `Sem. ${w.week} · ${w.exerciseName}${set?` ${set.sets}×${set.reps} @${_progFmtKg(Math.round(set.weight*2)/2)} kg`:''}`;}).join(' | '); document.getElementById('programRunHint').textContent=planned?`${weekLabel}. La séance est validée par défaut : marque seulement l’exercice raté « À refaire » sur sa carte.`:''; document.getElementById('programRunHint').style.display=planned?'block':'none'; document.getElementById('finishSessionBtn').style.display='block'; document.getElementById('finishSessionBtn').textContent=planned?'Terminer la séance':'Enregistrer'; renderSeanceDetail(); }
+function openSeance(day, idx){ currentSeanceRef = {day, idx}; try{ localStorage.setItem('forge-current-seance', JSON.stringify(currentSeanceRef)); }catch(e){} const seance = currentSeanceObj(); currentSeanceSnapshot = JSON.stringify(seance); document.getElementById('sessionTitle').textContent = seance.name; document.getElementById('trackerHome').style.display='none'; document.getElementById('trackerSession').style.display='block'; const planned=_programRefs(seance).length>0; const weekLabel=(seance.programWeeks||[]).map(w=>{const prog=programs.find(p=>p.id===w.programId),ex=prog?.exercises.find(item=>item.exerciseName===w.exerciseName),d=ex&&computeExerciseWeek(_normalizeProgramExercise(ex),w.week),set=d?.seances[w.sessionIndex];return `Sem. ${w.week} · ${w.exerciseName}${set?` ${set.sets}×${set.reps} @${_progFmtKg(Math.round(set.weight*2)/2)} kg`:''}`;}).join(' | '); document.getElementById('programRunHint').textContent=planned?`${weekLabel}. La séance est validée par défaut : marque seulement l’exercice raté « À refaire » sur sa carte.`:''; document.getElementById('programRunHint').style.display=planned?'block':'none'; document.getElementById('finishSessionBtn').style.display='block'; document.getElementById('finishSessionBtn').textContent=planned?'Terminer la séance':'Enregistrer'; renderSeanceDetail(); }
 document.getElementById('sessionBackBtn').onclick = ()=>{
   _flipCloseSeance(_closeSeanceView);
 };
@@ -7586,7 +7727,7 @@ function renderHistory(){
   const sessions=[...sessionMap.values()].sort((a,b)=>direction*(new Date(a.date)-new Date(b.date)));
   const periodLabel=({week:'7 derniers jours',month:'30 derniers jours',year:'12 derniers mois',all:'Toute la période'})[chartZoom]||'Toute la période';
   const filterBar=`<div style="display:flex;gap:8px;margin:0 0 9px;flex-wrap:wrap;"><div class="profilebar" id="historyDayBar" style="flex:1;min-width:0;margin:0;"><button type="button" class="profilebtn" id="historyDayBtn" aria-label="Filtrer par jour" style="padding:12px 14px;min-height:50px;font-size:15px;"><span id="historyDayLabel" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${historyDayFilter===''?'Tous les jours':weekdays[Number(historyDayFilter)]}</span><span class="chev" style="margin-left:8px;flex-shrink:0;">▾</span></button><div class="profiledropdown" id="historyDayDropdown" style="display:none;max-height:55vh;overflow-y:auto;"></div></div><div class="profilebar" id="historyRoutineBar" style="flex:1;min-width:0;margin:0;"><button type="button" class="profilebtn" id="historyRoutineBtn" aria-label="Filtrer par nom de séance" style="padding:12px 14px;min-height:50px;font-size:15px;"><span id="historyRoutineLabel" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${historyRoutineFilter||'Toutes les séances'}</span><span class="chev" style="margin-left:8px;flex-shrink:0;">▾</span></button><div class="profiledropdown" id="historyRoutineDropdown" style="display:none;max-height:55vh;overflow-y:auto;"></div></div></div>`;
-  const toolbar=`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;flex-wrap:wrap;"><span style="font:600 12px 'Oswald',sans-serif;color:var(--ash);text-transform:uppercase;letter-spacing:.05em;">${sessions.length} séance${sessions.length>1?'s':''} · ${periodLabel}</span><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;"><div style="display:flex;background:var(--surface2);border-radius:9px;padding:3px;"><button type="button" data-history-group="day" aria-pressed="${historyGroupMode==='day'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyGroupMode==='day'?'var(--ember)':'transparent'};color:${historyGroupMode==='day'?'#1b1009':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Par jour</button><button type="button" data-history-group="routine" aria-pressed="${historyGroupMode==='routine'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyGroupMode==='routine'?'var(--ember)':'transparent'};color:${historyGroupMode==='routine'?'#1b1009':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Par séance</button></div><div style="display:flex;background:var(--surface2);border-radius:9px;padding:3px;"><button type="button" data-history-view="sessions" aria-pressed="${historyViewMode==='sessions'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyViewMode==='sessions'?'var(--ember)':'transparent'};color:${historyViewMode==='sessions'?'#1b1009':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Exercices</button><button type="button" data-history-view="sets" aria-pressed="${historyViewMode==='sets'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyViewMode==='sets'?'var(--ember)':'transparent'};color:${historyViewMode==='sets'?'#1b1009':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Séries</button></div><div style="display:flex;background:var(--surface2);border-radius:9px;padding:3px;"><button type="button" data-history-order="newest" aria-pressed="${historySortOrder==='newest'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historySortOrder==='newest'?'var(--ember)':'transparent'};color:${historySortOrder==='newest'?'#1b1009':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Récent</button><button type="button" data-history-order="oldest" aria-pressed="${historySortOrder==='oldest'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historySortOrder==='oldest'?'var(--ember)':'transparent'};color:${historySortOrder==='oldest'?'#1b1009':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Ancien</button></div></div></div>`;
+  const toolbar=`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;flex-wrap:wrap;"><span style="font:600 12px 'Oswald',sans-serif;color:var(--ash);text-transform:uppercase;letter-spacing:.05em;">${sessions.length} séance${sessions.length>1?'s':''} · ${periodLabel}</span><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;"><div style="display:flex;background:var(--surface2);border-radius:9px;padding:3px;"><button type="button" data-history-group="day" aria-pressed="${historyGroupMode==='day'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyGroupMode==='day'?'var(--ember)':'transparent'};color:${historyGroupMode==='day'?'var(--on-ember)':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Par jour</button><button type="button" data-history-group="routine" aria-pressed="${historyGroupMode==='routine'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyGroupMode==='routine'?'var(--ember)':'transparent'};color:${historyGroupMode==='routine'?'var(--on-ember)':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Par séance</button></div><div style="display:flex;background:var(--surface2);border-radius:9px;padding:3px;"><button type="button" data-history-view="sessions" aria-pressed="${historyViewMode==='sessions'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyViewMode==='sessions'?'var(--ember)':'transparent'};color:${historyViewMode==='sessions'?'var(--on-ember)':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Exercices</button><button type="button" data-history-view="sets" aria-pressed="${historyViewMode==='sets'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historyViewMode==='sets'?'var(--ember)':'transparent'};color:${historyViewMode==='sets'?'var(--on-ember)':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Séries</button></div><div style="display:flex;background:var(--surface2);border-radius:9px;padding:3px;"><button type="button" data-history-order="newest" aria-pressed="${historySortOrder==='newest'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historySortOrder==='newest'?'var(--ember)':'transparent'};color:${historySortOrder==='newest'?'var(--on-ember)':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Récent</button><button type="button" data-history-order="oldest" aria-pressed="${historySortOrder==='oldest'}" style="border:0;border-radius:7px;padding:7px 9px;background:${historySortOrder==='oldest'?'var(--ember)':'transparent'};color:${historySortOrder==='oldest'?'var(--on-ember)':'var(--ash)'};font:600 11px 'Oswald',sans-serif;">Ancien</button></div></div></div>`;
   const bindFilters=()=>{
     const bindDropdown=(kind,options,selected,onChoose)=>{
       const btn=el.querySelector(`#history${kind}Btn`), panel=el.querySelector(`#history${kind}Dropdown`), bar=el.querySelector(`#history${kind}Bar`);
@@ -7684,6 +7825,7 @@ function renderInlineNewExForm(container, onCreated){
           <input type="checkbox" id="inlineFldSeconds" style="width:16px;height:16px;"> Sec
         </label>
       </div>
+      <p class="settings-row-sub">Si tu es connecté, le nom et les champs de cet exercice seront proposés à l’administrateur pour enrichir le catalogue. Tes séances et performances ne sont pas envoyées dans cette proposition.</p>
       <button class="btn primary block" id="inlineExSaveBtn" style="width:100%;min-height:40px;font-size:14px;font-weight:700;">✓ Ajouter à la liste</button>
     </div>`;
 
@@ -7728,6 +7870,7 @@ function renderInlineNewExForm(container, onCreated){
     if(fields.length===0) fields.push('reps');
 
     exercises.push({name, fields});
+    queueExerciseProposal(name, fields);
     sSet('forge-exercises', exercises);
     renderExSelects();
     onCreated(name);
@@ -7762,7 +7905,7 @@ function renderStatsProfileSelect(){
 function renderStatsDropdownContent(dd){
   const allSelected = statsProfileIds.size === 0;
   const visibleProfiles = getFilteredProfiles();
-  dd.innerHTML = visibleProfiles.map(p=>{ const checked = allSelected || statsProfileIds.has(p.id); return `<div class="item stats-prof-item" data-pid="${p.id}" style="display:flex;align-items:center;gap:12px;cursor:pointer;${checked?'color:var(--chalk);':'color:var(--ash);'}"><span style="width:20px;height:20px;border-radius:6px;border:1px solid ${checked?'var(--ember)':'var(--border)'};background:${checked?'var(--ember)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;transition:background .12s,border-color .12s;">${checked?'<span style="color:#1a0d05;font-weight:700;line-height:1;">✓</span>':''}</span><span style="flex:1;font-size:15px;">${p.name}</span></div>`; }).join('') + `<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px;"><div class="additem" id="statsSelectAllItem" style="cursor:pointer;">${allSelected ? '✕ Tout désélectionner' : '✓ Tout sélectionner'}</div></div>`;
+  dd.innerHTML = visibleProfiles.map(p=>{ const checked = allSelected || statsProfileIds.has(p.id); return `<div class="item stats-prof-item" data-pid="${p.id}" style="display:flex;align-items:center;gap:12px;cursor:pointer;${checked?'color:var(--chalk);':'color:var(--ash);'}"><span style="width:20px;height:20px;border-radius:6px;border:1px solid ${checked?'var(--ember)':'var(--border)'};background:${checked?'var(--ember)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;transition:background .12s,border-color .12s;">${checked?'<span style="color:var(--on-ember);font-weight:700;line-height:1;">✓</span>':''}</span><span style="flex:1;font-size:15px;">${p.name}</span></div>`; }).join('') + `<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px;"><div class="additem" id="statsSelectAllItem" style="cursor:pointer;">${allSelected ? '✕ Tout désélectionner' : '✓ Tout sélectionner'}</div></div>`;
   dd.querySelectorAll('.stats-prof-item').forEach(item=>{ item.onclick = (e)=>{ e.stopPropagation(); const pid = item.dataset.pid; if(statsProfileIds.size === 0){ statsProfileIds = new Set(visibleProfiles.map(p=>p.id).filter(id=>id!==pid)); } else if(statsProfileIds.has(pid)){ statsProfileIds.delete(pid); if(statsProfileIds.size === 0) statsProfileIds = new Set(); } else { statsProfileIds.add(pid); if(statsProfileIds.size === visibleProfiles.length) statsProfileIds = new Set(); } saveStatsProfileIds(); renderStatsProfileSelect(); renderStats(); }; });
   const allItem = dd.querySelector('#statsSelectAllItem');
   if(allItem) allItem.onclick = (e)=>{ e.stopPropagation(); statsProfileIds = allSelected ? new Set([visibleProfiles[0]?.id]) : new Set(); saveStatsProfileIds(); renderStatsProfileSelect(); renderStats(); };
@@ -8144,7 +8287,7 @@ function renderCurveChart(wrap, rows, metrics, exName, emomRows, zoomFilter, ani
   const selectedPointMarkup=activePoint&&chartPointWasTapped?`<line x1="${x(activePointIndex)}" y1="${top+4}" x2="${x(activePointIndex)}" y2="${y(activePoint.value)-8}" stroke="${meta.color}" stroke-width="1.5" stroke-dasharray="4 4" opacity=".7"/><rect x="${tooltipX}" y="${tooltipY}" width="${tooltipW}" height="28" rx="8" fill="var(--surface2)" stroke="${meta.color}" stroke-width="1.5"/><text x="${tooltipX+tooltipW/2}" y="${tooltipY+18}" fill="${meta.color}" text-anchor="middle" font-size="12" font-weight="700" font-family="'JetBrains Mono',monospace">${valueLabel}</text>`:'';
   const axisDates=points.length?`<text x="${left}" y="${height-7}" fill="var(--ash)" font-size="11" font-family="'JetBrains Mono',monospace">${dateLabel(points[0])}</text><text x="${width-right}" y="${height-7}" fill="var(--ash)" text-anchor="end" font-size="11" font-family="'JetBrains Mono',monospace">${dateLabel(points[points.length-1])}</text>`:'';
   const metricButtons=metricOptions.map(m=>{const mm=m==='emom'?{label:'EMOM'}:METRIC_META[m];return `<button type="button" data-chart-metric="${m}" aria-pressed="${selectedChartMetric===m}" style="border:1px solid ${selectedChartMetric===m?'var(--ember)':'var(--border)'};background:${selectedChartMetric===m?'var(--ember-dim)':'var(--surface2)'};color:${selectedChartMetric===m?'var(--ember)':'var(--ash)'};border-radius:999px;padding:8px 12px;font:600 12px 'Oswald',sans-serif;cursor:pointer;">${mm.label}</button>`;}).join('');
-  const periodButtons=periods.map(([id,label])=>`<button type="button" data-chart-period="${id}" aria-pressed="${chartZoom===id}" style="flex:1;border:0;border-radius:9px;padding:9px 4px;background:${chartZoom===id?'var(--ember)':'transparent'};color:${chartZoom===id?'#1b1009':'var(--ash)'};font:600 12px 'Oswald',sans-serif;cursor:pointer;">${label}</button>`).join('');
+  const periodButtons=periods.map(([id,label])=>`<button type="button" data-chart-period="${id}" aria-pressed="${chartZoom===id}" style="flex:1;border:0;border-radius:9px;padding:9px 4px;background:${chartZoom===id?'var(--ember)':'transparent'};color:${chartZoom===id?'var(--on-ember)':'var(--ash)'};font:600 12px 'Oswald',sans-serif;cursor:pointer;">${label}</button>`).join('');
   const empty=points.length===0;
   const chosen=points[activePointIndex];
   const chosenDate=chosen?new Date(chosen.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
@@ -9069,7 +9212,8 @@ document.getElementById('progressionEditBtn').onclick = ()=>{
 function closeProgInsertOverlay(){ document.getElementById('progInsertOverlay').classList.remove('open'); }
 document.getElementById('progInsertCancelBtn').onclick = ()=> _navClose(closeProgInsertOverlay);
 
-document.getElementById('addProgToSessionBtn').onclick = openProgressionInsertPicker;
+const _addProgToSessionBtn = document.getElementById('addProgToSessionBtn');
+if(_addProgToSessionBtn) _addProgToSessionBtn.onclick = openProgressionInsertPicker;
 
 function openProgressionInsertPicker(){
   const allExercises = [];
@@ -9216,7 +9360,7 @@ function purgeDemoData(){
     sSet('forge-demo-patch-v2', true);
     sSet('forge-demo-patch-v3', true);
     try{ sSet('forge-demo-visible', false); }catch(e){}
-  }catch(e){ console.warn('[FORGE] purge démo partielle', e); }
+  }catch(e){ console.warn('[CaliMova] purge démo partielle', e); }
 }
 function patchDemoV2(){ let profilesChanged=false; const vierge=profiles.find(p=>p.id==='demo-vierge'); if(vierge){ const mer=(vierge.week.mercredi||[]).find(s=>s.id==='demo-v-s2'); if(mer&&!mer.exercises.find(e=>e.name==='Squats')){ mer.exercises.push({name:'Squats',sets:[{reps:15,weight:0}]}); profilesChanged=true; } if(!(vierge.week.vendredi||[]).find(s=>s.id==='demo-v-s3')){ vierge.week.vendredi=(vierge.week.vendredi||[]).concat([{id:'demo-v-s3',name:'Full Body EMOM (exemple)',exercises:[{name:'Pistol squats',sets:[{reps:3,weight:0}]},{_emom:true,minutes:10,roundsDone:0,exos:[{name:'Pompes',reps:8,weight:0},{name:'Tractions (pull-ups)',reps:5,weight:0},{name:'Gainage (planche ventrale)',seconds:20,weight:0}]}]}]); profilesChanged=true; } } if(profilesChanged) persistProfiles(); const now=new Date(); function daysAgo(n){ const d=new Date(now); d.setDate(d.getDate()-n); return d.toISOString(); } const missingPRs=[{exercise:'Handstand push-ups',pts:[[1,850],[3,500],[5,250],[8,50]],unit:'reps'},{exercise:'Pistol squats',pts:[[1,900],[4,600],[8,300],[12,60]],unit:'reps'},{exercise:'Rowing australien',pts:[[10,700],[18,450],[26,200],[35,40]],unit:'reps'},{exercise:'Gainage (planche ventrale)',pts:[[20,650],[40,400],[65,180],[90,20]],unit:'s'}]; let prsChanged=false; missingPRs.forEach(group=>{ if(!prs.find(pr=>pr.exercise===group.exercise)){ group.pts.forEach(([value,ago],i)=>{ prs.push({id:'demoprv2-'+group.exercise.replace(/\W+/g,'')+i,exercise:group.exercise,value,unit:group.unit,date:daysAgo(ago)}); }); prsChanged=true; } }); if(prsChanged) savePRs(); }
 
@@ -9259,7 +9403,7 @@ function isNativePlatform(){
 }
 
 // Vérifie les mises à jour uniquement dans l'APK Capacitor Android.
-// Android garde l'installation sous le contrôle de l'utilisateur : Forge
+// Android garde l'installation sous le contrôle de l'utilisateur : CaliMova
 // ouvre la page APK du navigateur, puis Android affiche sa confirmation.
 let _forgeUpdateCheckRunning = false;
 let _forgeUpdatePromptedVersion = '';
@@ -9268,7 +9412,7 @@ const FORGE_UPDATE_SKIPPED_KEY = 'forge-update-skipped-version';
 // versionCode de sa base de construction, mais l'index avance à chaque
 // version : on matelasse la valeur locale avec la plus grande des deux,
 // sinon l'app redemanderait la même mise à jour en boucle.
-const FORGE_INDEX_VERSION = { code: 71, name: '110.6' };
+const FORGE_INDEX_VERSION = { code: 99, name: '110.10.19' };
 async function checkForgeAndroidUpdate(){
   /* Canal Play Store : les mises à jour passent par Play +, l'installation
      d'APK par l'app est interdite — on coupe la proposition d'update. */
@@ -9293,7 +9437,7 @@ async function checkForgeAndroidUpdate(){
     const latestCodeKey=String(latestCode);
     if(latestCode <= effectiveCode || _forgeUpdatePromptedVersion === latestCodeKey || String(await sGet(FORGE_UPDATE_SKIPPED_KEY,'')) === latestCodeKey) return;
     _forgeUpdatePromptedVersion = String(latestCode);
-    const action = await showForgeDialog({variant:'update',kicker:'Forge Android',title:'Mise à jour disponible',message:'La version ' + (latest.versionName || latestCode) + ' est prête.',detail:(latest.releaseNotes ? latest.releaseNotes + '\n\n' : '') + 'Le programme d’installation Android s’ouvrira après ton choix.',primaryLabel:'Télécharger',secondaryLabel:'Plus tard',tertiaryLabel:'Ignorer cette version'});
+    const action = await showForgeDialog({variant:'update',kicker:'CaliMova Android',title:'Mise à jour disponible',message:'La version ' + (latest.versionName || latestCode) + ' est prête.',detail:(latest.releaseNotes ? latest.releaseNotes + '\n\n' : '') + 'Le programme d’installation Android s’ouvrira après ton choix.',primaryLabel:'Télécharger',secondaryLabel:'Plus tard',tertiaryLabel:'Ignorer cette version'});
     if(action==='tertiary'){sSet(FORGE_UPDATE_SKIPPED_KEY,latestCodeKey);return;}
     const accepted = action === true;
     if(!accepted) return;
@@ -9302,11 +9446,11 @@ async function checkForgeAndroidUpdate(){
     const url = latest.apkUrl;
     if(updater && updater.openApk) await updater.openApk({ url });
     else window.open(url, '_system');
-  }catch(e){ console.warn('[FORGE] Vérification de mise à jour impossible :', e); }
+  }catch(e){ console.warn('[CaliMova] Vérification de mise à jour impossible :', e); }
   finally{ _forgeUpdateCheckRunning = false; }
 }
 
-function showForgeDialog({variant='',kicker='Forge',title='',message='',detail='',inputLabel='',inputValue='',placeholder='',primaryLabel='Continuer',secondaryLabel='Annuler',tertiaryLabel='',validate=null}){
+function showForgeDialog({variant='',kicker='CaliMova',title='',message='',detail='',inputLabel='',inputValue='',placeholder='',primaryLabel='Continuer',secondaryLabel='Annuler',tertiaryLabel='',validate=null}){
   return new Promise(resolve=>{
     const overlay=document.createElement('div');overlay.className='forge-dialog-overlay'+(variant==='update'?' forge-update-dialog':'');
     const sheet=document.createElement('section');sheet.className='forge-dialog-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');
@@ -9461,7 +9605,7 @@ async function fbDeleteDocumentAllowed(reference){
     return;
   }
   const ok=await ensureFirebaseWebSdk();if(!ok)return;
-  try{ await window.firebase.firestore().doc(reference).delete(); }catch(e){ console.warn('[FORGE] Suppression impossible', e); }
+  try{ await window.firebase.firestore().doc(reference).delete(); }catch(e){ console.warn('[CaliMova] Suppression impossible', e); }
 }
 /* Recherche de pseudos (suggestions @ en temps réel). La liste complète
    est lue (autorisée aux comptes connectés) puis filtrée côté client :
@@ -9560,8 +9704,8 @@ async function fbReserveUsername(username){
 }
 async function ensureForgeUsername(){
   if(!currentUser)return false;
-  try{const profile=await fbGetDocument('publicProfiles/'+currentUser.uid);if(profile&&profile.username){currentPublicProfile=profile;return true;}}catch(e){console.warn('[FORGE] Lecture du profil impossible',e);}
-  const choice=await showForgeDialog({kicker:'Profil Forge',title:'Choisis ton pseudo',message:'Ce nom apparaîtra sur ton profil et pourra servir dans les fonctions sociales à venir.',detail:'3 à 20 caractères. Lettres, chiffres, _ et -.',inputLabel:'Pseudo',placeholder:'ex. LuluForge',primaryLabel:'Vérifier et enregistrer',secondaryLabel:'Plus tard',validate:async value=>{
+  try{const profile=await fbGetDocument('publicProfiles/'+currentUser.uid);if(profile&&profile.username){currentPublicProfile=profile;return true;}}catch(e){console.warn('[CaliMova] Lecture du profil impossible',e);}
+  const choice=await showForgeDialog({kicker:'Profil CaliMova',title:'Choisis ton pseudo',message:'Ce nom apparaîtra sur ton profil et pourra servir dans les fonctions sociales à venir.',detail:'3 à 20 caractères. Lettres, chiffres, _ et -.',inputLabel:'Pseudo',placeholder:'ex. LuluForge',primaryLabel:'Vérifier et enregistrer',secondaryLabel:'Plus tard',validate:async value=>{
     const valid=validateForgeUsername(value);if(valid!==true)return valid;const key=normalizeForgeUsername(value);
     try{const taken=await fbGetDocument('usernames/'+key);if(taken&&taken.uid!==currentUser.uid)return 'Ce pseudo est déjà pris. Essaie-en un autre.';await fbReserveUsername(value);return true;}catch(e){return e.message||'Vérification impossible. Réessaie.';}
   }});
@@ -9778,7 +9922,7 @@ async function syncCloudOnStartup(){
   }catch(e){
     _cloudReady = false;
     setCloudSyncStatus('Cloud indisponible — données conservées sur cet appareil');
-    console.error('[FORGE] Récupération cloud échouée :', e);
+    console.error('[CaliMova] Récupération cloud échouée :', e);
   }
 }
 
@@ -9811,7 +9955,7 @@ function renderAccountUI(user){
           <div class="settings-row-label">Non connecté</div>
           <div class="settings-row-sub">Connecte-toi pour sauvegarder tes séances en ligne</div>
         </div>
-        <button class="btn primary block" id="googleSignInBtn">Se connecter avec Google</button>
+        <p class="settings-row-sub">Connexion facultative : Google transmet ton identifiant, ton e-mail, ton nom et ta photo disponible. Tes entraînements seront synchronisés avec Firebase. <a href="https://forge-e1f5b.web.app/privacy.html" target="_blank" rel="noopener">Confidentialité et droits</a> · <a href="https://forge-e1f5b.web.app/terms.html" target="_blank" rel="noopener">Conditions</a></p><button class="btn primary block" id="googleSignInBtn">Se connecter avec Google</button>
       </div>
     </div>`;
     document.getElementById('googleSignInBtn').onclick = doGoogleSignIn;
@@ -9821,7 +9965,7 @@ function renderAccountUI(user){
       <div class="settings-row">
         <div class="settings-row-left">
           <div class="settings-row-label">${pseudo ? '@'+pseudo : (user.displayName || user.email || 'Connecté')}</div>
-        <div class="settings-row-sub">${pseudo ? (user.displayName || user.email || '') : 'Pseudo Forge à choisir'}</div>
+        <div class="settings-row-sub">${pseudo ? (user.displayName || user.email || '') : 'Pseudo CaliMova à choisir'}</div>
         <div class="settings-row-sub" id="cloudSyncStatus">${_cloudSyncStatus || 'Connexion au cloud…'}</div>
         </div>
       </div>
@@ -9829,14 +9973,15 @@ function renderAccountUI(user){
       <div class="settings-row" id="cloudRestoreBtn" style="cursor:pointer;">
         <div class="settings-row-left"><div class="settings-row-label">⬇️ Restaurer depuis le cloud</div></div>
       </div>
-      ${isForgeAdminAccount(user) ? '<div class="settings-row" id="forgeAdminBtn" style="cursor:pointer;"><div class="settings-row-left"><div class="settings-row-label">🛡️ Administration Forge</div><div class="settings-row-sub">Gestion des profils et sauvegardes cloud</div></div><div style="color:var(--ember);font-size:18px;">›</div></div>' : ''}
+      ${isForgeAdminAccount(user) ? '<div class="settings-row" id="forgeAdminBtn" style="cursor:pointer;"><div class="settings-row-left"><div class="settings-row-label">🛡️ Administration CaliMova</div><div class="settings-row-sub">Gestion des profils et sauvegardes cloud</div></div><div style="color:var(--ember);font-size:18px;">›</div></div>' : ''}
+      <a class="settings-row" href="https://forge-e1f5b.web.app/data-rights.html" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"><div class="settings-row-left"><div class="settings-row-label">Supprimer mon compte / exercer mes droits</div><div class="settings-row-sub">Demander la suppression ou une copie des données cloud et des messages</div></div><span>›</span></a>
       <div class="settings-row" id="googleSignOutBtn" style="cursor:pointer;">
         <div class="settings-row-left"><div class="settings-row-label" style="color:var(--danger);">Se déconnecter</div></div>
       </div>
     </div>`;
     // attachement ligne par ligne : un souci sur une ligne n'empêche
     // plus les boutons suivants de fonctionner
-    const bindRow=(id,fn)=>{const el=document.getElementById(id);if(el){try{el.onclick=fn;}catch(e){console.warn('[FORGE] bind '+id,e);}}};
+    const bindRow=(id,fn)=>{const el=document.getElementById(id);if(el){try{el.onclick=fn;}catch(e){console.warn('[CaliMova] bind '+id,e);}}};
     bindRow('chooseForgeUsernameBtn',()=>ensureForgeUsername());
     bindRow('cloudRestoreBtn',()=>cloudRestore(true));
     bindRow('forgeAdminBtn',showForgeAdminPanel);
@@ -9872,7 +10017,7 @@ async function doGoogleSignOut(){
   try{ sessionStorage.removeItem('forge-cloud-restored-user'); }catch(e){}
   _mirrorRepairDone.clear();
   _ppCache={}; _ppCacheAt=0; _myThreads=[]; _homeLoadedAt=0;
-  try{ await resetLocalDataForFreshAccount(); }catch(e){ console.warn('[FORGE] purge après déconnexion impossible', e); }
+  try{ await resetLocalDataForFreshAccount(); }catch(e){ console.warn('[CaliMova] purge après déconnexion impossible', e); }
   try{ if(VIEW_ORDER[currentViewIdx]==='social') renderSocialHome(true); }catch(e){}
   renderAccountUI(null);
   forgeToast('Déconnecté — tes données restent dans ton compte cloud');
@@ -9916,7 +10061,7 @@ async function maybeOfferFreshStart(){
     const remote=await fbGetDocument(userDocRef());
     try{ localStorage.setItem(marker,'1'); }catch(e){}
     if(remote) return; // le compte a déjà des données : syncCloudOnStartup les restaurera
-    const choice=await showForgeDialog({kicker:'Compte Forge',title:'Nouveau compte détecté',message:'Ce compte ne contient rien dans le cloud. Veux-tu repartir de zéro sur ce téléphone ?',detail:'Les données actuellement affichées appartiennent à ton autre compte — elles seront toujours là quand tu te reconnecteras dessus.',primaryLabel:'Repartir de zéro',secondaryLabel:'Garder telles quelles'});
+    const choice=await showForgeDialog({kicker:'Compte CaliMova',title:'Nouveau compte détecté',message:'Ce compte ne contient rien dans le cloud. Veux-tu repartir de zéro sur ce téléphone ?',detail:'Les données actuellement affichées appartiennent à ton autre compte — elles seront toujours là quand tu te reconnecteras dessus.',primaryLabel:'Repartir de zéro',secondaryLabel:'Garder telles quelles'});
     if(choice==='Repartir de zéro'){
       await resetLocalDataForFreshAccount();
       forgeToast('Nouveau compte prêt, tout est à zéro');
@@ -9928,9 +10073,9 @@ async function maybeOfferFreshStart(){
     // peut PAS savoir si ce compte vient d'être utilisé ailleurs — on
     // propose quand même de repartir de zéro pour éviter de mélanger
     // les données de deux comptes
-    console.warn('[FORGE] lecture cloud du nouveau compte impossible', e);
+    console.warn('[CaliMova] lecture cloud du nouveau compte impossible', e);
     try{ localStorage.setItem(marker,'1'); }catch(e2){}
-    const choice=await showForgeDialog({kicker:'Compte Forge',title:'Nouveau compte détecté',message:'Impossible de lire les données de ce compte maintenant (réseau). Repartir de zéro pour ne pas mélanger avec l\'autre compte ?',detail:'Si tu gardes telles quelles, ce compte risque d\'afficher les séances de l\'autre compte.',primaryLabel:'Repartir de zéro',secondaryLabel:'Garder telles quelles'});
+    const choice=await showForgeDialog({kicker:'Compte CaliMova',title:'Nouveau compte détecté',message:'Impossible de lire les données de ce compte maintenant (réseau). Repartir de zéro pour ne pas mélanger avec l\'autre compte ?',detail:'Si tu gardes telles quelles, ce compte risque d\'afficher les séances de l\'autre compte.',primaryLabel:'Repartir de zéro',secondaryLabel:'Garder telles quelles'});
     if(choice==='Repartir de zéro'){
       await resetLocalDataForFreshAccount();
       forgeToast('Nouveau compte prêt, tout est à zéro');
@@ -9944,7 +10089,7 @@ async function maybeOfferGoogleConnect(){
   if(currentUser||_forgeGoogleOfferShownThisLaunch)return;
   if(await sGet(FORGE_GOOGLE_OFFER_DISMISSED_KEY,false))return;
   _forgeGoogleOfferShownThisLaunch=true;
-  const connect=await showForgeDialog({kicker:'Compte Forge',title:'Connecter Google ?',message:'Retrouve tes séances sur tes appareils et prépare ton profil Forge.',detail:'Tu peux refuser. Forge ne te le reproposera pas au démarrage; la connexion restera disponible dans Réglages.',primaryLabel:'Se connecter',secondaryLabel:'Pas maintenant'});
+  const connect=await showForgeDialog({kicker:'Compte CaliMova',title:'Connecter Google ?',message:'Retrouve tes séances sur tes appareils et prépare ton profil CaliMova.',detail:'Tu peux refuser. CaliMova ne te le reproposera pas au démarrage; la connexion restera disponible dans Réglages.',primaryLabel:'Se connecter',secondaryLabel:'Pas maintenant'});
   if(connect) await doGoogleSignIn();
   else sSet(FORGE_GOOGLE_OFFER_DISMISSED_KEY,true);
 }
@@ -9994,7 +10139,7 @@ async function initAccountSettings(){
     }
   }catch(e){
     redirectError = e;
-    console.error('[FORGE] Échec du retour Google :', e);
+    console.error('[CaliMova] Échec du retour Google :', e);
   }
   currentUser = _mapFbWebUser(window.firebase.auth().currentUser);
   currentPublicProfile = currentUser ? await fbGetDocument('publicProfiles/'+currentUser.uid).catch(()=>null) : null;
@@ -10009,14 +10154,54 @@ async function initAccountSettings(){
   }
 }
 
+// Suggestions : uniquement le nom et les champs, jamais les séries ou les performances.
+function queueExerciseProposal(name, fields){
+  if(!currentUser) return; // aucune proposition anonyme attribuée au prochain compte
+  const uid=currentUser.uid;
+  const clean=String(name).trim().slice(0,120);
+  const selected=[...new Set(fields)].filter(f=>['reps','weight','seconds'].includes(f));
+  const key=uid+'_'+Array.from(clean.toLowerCase()).map(c=>c.codePointAt(0).toString(16)).join('-');
+  fbSetDocument('exerciseProposals/'+key,{uid,name:clean,fields:selected,status:'pending',createdAt:new Date().toISOString()})
+    .catch(()=>forgeToast('Exercice créé localement. Proposition non envoyée : réessaie depuis la création quand tu es connecté.'));
+}
+async function showExerciseProposals(){
+  if(!isForgeAdminAccount())return;
+  const overlay=document.createElement('div');overlay.className='forge-dialog-overlay';
+  const sheet=document.createElement('section');sheet.className='forge-dialog-sheet';
+  const title=document.createElement('h2');title.textContent='Exercices proposés';
+  const note=document.createElement('p');note.textContent='Propositions des comptes connectés. Regroupe les doublons et prépare les exercices principaux, mouvements, variantes et prises. Cette revue ne modifie pas encore le catalogue public.';
+  const list=document.createElement('div');list.textContent='Chargement…';
+  const close=document.createElement('button');close.className='btn ghost block';close.textContent='Fermer';
+  const dismiss=()=>overlay.remove();close.onclick=()=>_navClose(dismiss);_navPush(dismiss);
+  sheet.append(title,note,list,close);overlay.append(sheet);document.body.append(overlay);
+  try{
+    const rows=await fbListInboxItems('exerciseProposals');list.replaceChildren();
+    const groups=new Map();rows.forEach(row=>{const key=normalizeSearch(row.data.name);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);});
+    for(const entries of groups.values()){
+      const row=entries[0],card=document.createElement('div');card.className='settings-card';card.style.padding='14px';
+      const label=document.createElement('h3');label.textContent=row.data.name+' · '+entries.length+' proposition(s)';
+      const state=document.createElement('p');state.textContent=entries.map(e=>e.data.status).join(', ');
+      const inputs={};for(const [key,labelText] of Object.entries({principal:'Exercice principal',movement:'Mouvements (séparés par ;)',variant:'Variantes (séparées par ;)',grip:'Prises (séparées par ;)'})){
+        const label=document.createElement('label');label.textContent=labelText;
+        const input=document.createElement('input');input.className='forge-dialog-input';input.maxLength=400;input.value=row.data[key]||'';label.append(input);inputs[key]=input;card.append(label);
+      }
+      const save=document.createElement('button');save.className='btn primary';save.textContent='Garder et classer';
+      const reject=document.createElement('button');reject.className='btn ghost';reject.textContent='Rejeter';
+      const update=async status=>{save.disabled=reject.disabled=true;try{const patch={status};for(const k of Object.keys(inputs))patch[k]=inputs[k].value.trim();for(const entry of entries)await fbMergeDocument('exerciseProposals/'+entry.id,patch);state.textContent=status==='accepted'?'Gardé et classé':'Rejeté';}catch(e){state.textContent='Échec : '+e.message;}finally{save.disabled=reject.disabled=false;}};
+      save.onclick=()=>update('accepted');reject.onclick=()=>update('rejected');card.prepend(label,state);card.append(save,reject);list.append(card);
+    }
+    if(!rows.length)list.textContent='Aucune proposition pour le moment.';
+  }catch(e){list.textContent='Lecture impossible : '+e.message;}
+}
+
 function showForgeAdminPanel(){
   if(!isForgeAdminAccount()){ forgeToast('Administration réservée au compte admin'); return; }
   if(!currentUser){ forgeToast('Connecte-toi d\'abord (⚙️ Réglages → Compte)'); return; }
   const overlay=document.createElement('div');overlay.className='forge-dialog-overlay';
   const sheet=document.createElement('section');sheet.className='forge-dialog-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');
-  const kicker=document.createElement('div');kicker.className='forge-dialog-kicker';kicker.textContent='FORGE · ADMIN';
+  const kicker=document.createElement('div');kicker.className='forge-dialog-kicker';kicker.textContent='CaliMova · ADMIN';
   const title=document.createElement('h2');title.className='forge-dialog-title';title.textContent='Gestion des comptes';
-  const intro=document.createElement('p');intro.className='forge-admin-note';intro.textContent='Profils Forge avec pseudo et leurs sauvegardes cloud. Tu peux consulter, exporter ou supprimer une sauvegarde, ou retirer un profil public.';
+  const intro=document.createElement('p');intro.className='forge-admin-note';intro.textContent='Profils CaliMova avec pseudo et leurs sauvegardes cloud. Tu peux consulter, exporter ou supprimer une sauvegarde, ou retirer un profil public.';
   const status=document.createElement('div');status.className='forge-admin-status';status.setAttribute('aria-live','polite');status.textContent='Chargement des profils…';
   const search=document.createElement('input');search.type='search';search.className='forge-dialog-input';search.placeholder='Rechercher un pseudo ou un UID';search.setAttribute('aria-label','Rechercher un profil');
   const list=document.createElement('div');list.className='forge-admin-list';
@@ -10027,20 +10212,21 @@ function showForgeAdminPanel(){
   // « appuie encore pour quitter ») au lieu de fermer le panneau lui-même.
   const closeNav=()=>overlay.remove();
   closeButton.onclick=()=>_navClose(closeNav);overlay.addEventListener('click',e=>{if(e.target===overlay)_navClose(closeNav);});
-  sheet.append(kicker,title,intro,search,status,list,detail,closeButton);overlay.append(sheet);document.body.append(overlay);
+  const proposalsButton=document.createElement('button');proposalsButton.className='btn primary block';proposalsButton.textContent='Exercices proposés';proposalsButton.onclick=showExerciseProposals;
+  sheet.append(kicker,title,intro,proposalsButton,search,status,list,detail,closeButton);overlay.append(sheet);document.body.append(overlay);
   _navPush(closeNav);
   let profiles=[];
   const setStatus=message=>{status.textContent=message;};
   const downloadBackup=(uid,data)=>{
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='forge-backup-'+uid+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    const a=document.createElement('a');a.href=url;a.download='calimova-backup-'+uid+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
   const inspectProfile=async row=>{
     if(!isForgeAdminAccount())return;
     detail.replaceChildren();setStatus('Lecture de la sauvegarde cloud…');
     try{
       const data=await fbGetDocument('users/'+row.id+'/appData/main');
-      const heading=document.createElement('h3');heading.className='forge-dialog-title';heading.style.fontSize='18px';heading.textContent=row.data.username?'@'+row.data.username:'Profil Forge';
+      const heading=document.createElement('h3');heading.className='forge-dialog-title';heading.style.fontSize='18px';heading.textContent=row.data.username?'@'+row.data.username:'Profil CaliMova';
       const uid=document.createElement('div');uid.className='forge-admin-item-sub';uid.textContent='UID : '+row.id;
       const summary=document.createElement('p');summary.className='forge-admin-note';
       summary.textContent=data
@@ -10078,13 +10264,13 @@ function showForgeAdminPanel(){
       const sub=document.createElement('span');sub.className='forge-admin-item-sub';sub.textContent=row.id;info.append(label,sub);
       const arrow=document.createElement('span');arrow.textContent='›';arrow.style.color='var(--ember)';arrow.style.fontSize='22px';button.append(info,arrow);button.onclick=()=>inspectProfile(row);list.append(button);
     });
-    setStatus(rows.length+' profil'+(rows.length>1?'s':'')+' Forge affiché'+(rows.length>1?'s':'')+'.');
+    setStatus(rows.length+' profil'+(rows.length>1?'s':'')+' CaliMova affiché'+(rows.length>1?'s':'')+'.');
   };
   search.addEventListener('input',renderDirectory);
   // rendu IMMÉDIAT avec le cache déjà chargé par le Social — pas d'attente
   profiles=Object.entries(_ppCache||{}).map(([uid,p])=>({id:uid, data:{username:(p&&p.username)||''}})).filter(r=>r.data.username);
   profiles.sort((a,b)=>String(a.data.username||'').localeCompare(String(b.data.username||''),'fr'));
-  if(profiles.length){ renderDirectory(); setStatus(profiles.length+' profil'+(profiles.length>1?'s':'')+' Forge affiché'+(profiles.length>1?'s':'')+'.'); }
+  if(profiles.length){ renderDirectory(); setStatus(profiles.length+' profil'+(profiles.length>1?'s':'')+' CaliMova affiché'+(profiles.length>1?'s':'')+'.'); }
   // puis rafraîchissement silencieux (cache 60 s, ré-écrit seulement si périmé)
   (async()=>{
     try{
@@ -10092,7 +10278,7 @@ function showForgeAdminPanel(){
       profiles=Object.entries(cache||{}).map(([uid,p])=>({id:uid, data:{username:(p&&p.username)||''}})).filter(r=>r.data.username);
       profiles.sort((a,b)=>String(a.data.username||'').localeCompare(String(b.data.username||''),'fr'));
       renderDirectory();
-      if(!profiles.length) setStatus('Aucun profil Forge enregistré pour l\'instant.');
+      if(!profiles.length) setStatus('Aucun profil CaliMova enregistré pour l\'instant.');
     }
     catch(e){ if(!profiles.length) setStatus('Chargement impossible : '+(e.message||e)); }
   })();
@@ -10105,7 +10291,7 @@ document.getElementById('exportDataBtn').onclick = ()=>{
   const data = { exercises, logs, profiles, prs, programs, timerHistory, exportedAt: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'forge-backup-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ // timer 200ms
+  const a = document.createElement('a'); a.href = url; a.download = 'calimova-backup-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ // timer 200ms
         longTimer = null; URL.revokeObjectURL(url); a.remove(); }, 1000);
 };
 
@@ -10140,7 +10326,7 @@ document.getElementById('importDataFile').addEventListener('change', (e)=>{
     try{ data=JSON.parse(reader.result); }
     catch(err){ forgeToast('Fichier illisible (JSON attendu)'); return; }
     const looksForge = data && (Array.isArray(data.exercises)||Array.isArray(data.logs)||Array.isArray(data.profiles)||Array.isArray(data.prs));
-    if(!looksForge){ forgeToast('Ce fichier n\'est pas un backup FORGE'); return; }
+    if(!looksForge){ forgeToast('Ce fichier n\'est pas un backup CaliMova'); return; }
     showConfirm('Remplacer toutes tes données actuelles par ce backup ?', ()=>{
       try{
         _importLocalBackup(data);
@@ -10493,7 +10679,7 @@ async function _shareSendToPseudo(bundle, rawPseudo, message){
   if(valid!==true) throw new Error(typeof valid==='string'?valid:'Pseudo invalide.');
   const key=normalizeForgeUsername(nameInput);
   const claimed=await fbGetDocument('usernames/'+key);
-  if(!claimed) throw new Error('Aucun compte Forge avec ce pseudo.');
+  if(!claimed) throw new Error('Aucun compte CaliMova avec ce pseudo.');
   if(claimed.uid===currentUser.uid) throw new Error('C\'est ton pseudo à toi 😄');
   const msg=String(message||'').trim();
   const pk=await ensureThread(claimed.uid, claimed.username||key);
@@ -10595,7 +10781,7 @@ function _shareRender(){
     let top='';
     if(!signed){
       top=`<div class="settings-card" style="margin-bottom:12px;">
-        <div class="settings-row-label" style="margin-bottom:4px;">Compte Forge</div>
+        <div class="settings-row-label" style="margin-bottom:4px;">Compte CaliMova</div>
         <div style="font-size:12px;color:var(--ash);margin-bottom:10px;">Pour envoyer à un ami (envoi direct dans son app) et recevoir ses partages, connecte-toi et choisis un pseudo.</div>
         <button class="btn primary block" data-shareact="signin">Se connecter avec Google</button>
       </div>`;
@@ -10898,7 +11084,7 @@ async function loadPublicProfiles(force){
     const map={};
     rows.forEach(r=>{ if(r&&r.data&&r.data.uid) map[r.data.uid]=r.data; });
     _ppCache=map; _ppCacheAt=Date.now();
-  }catch(e){ console.warn('[FORGE] Chargement des profils impossible', e); }
+  }catch(e){ console.warn('[CaliMova] Chargement des profils impossible', e); }
   return _ppCache;
 }
 function buildPrsSummary(){
@@ -10916,11 +11102,11 @@ function _profileDocForWrite(base){
     key:currentPublicProfile.key,
     photoURL:photo||'',
     photoIsCustom:!!(base&&base.photoIsCustom),
-    showPRs:!base || base.showPRs!==false,
+    showPRs:!!(base && base.showPRs===true),
     invisible:!!(base&&base.invisible),
     likes:(base&&base.likes)||0,
     likedBy:(base&&base.likedBy)||[],
-    prsSummary:(base && base.showPRs===false) ? [] : buildPrsSummary(),
+    prsSummary:(base && base.showPRs===true) ? buildPrsSummary() : [],
     updatedAt:new Date().toISOString()
   };
 }
@@ -11039,7 +11225,7 @@ async function migrateOldInbox(){
       await fbSetDocument('userThreads/'+currentUser.uid+'/threads/'+pk, mirror);
       await fbSetDocument('userThreads/'+d.fromUid+'/threads/'+pk, mirror);
       await fbDeleteDocumentAllowed('inbox/'+key+'/items/'+it.id);
-    }catch(e){ console.warn('[FORGE] migration ancien partage', e); }
+    }catch(e){ console.warn('[CaliMova] migration ancien partage', e); }
   }
   forgeToast('Tes anciens partages sont maintenant des discussions');
   return true;
@@ -11082,7 +11268,7 @@ function renderSocialMyCard(){
       <div id="socialMyAvatar" style="position:relative;flex-shrink:0;">${_avatarHtml(currentUser.uid,48,currentPublicProfile.username)}</div>
       <div class="settings-row-left" style="min-width:0;">
         <div class="settings-row-label">@${_progEsc(currentPublicProfile.username)} ❤️ ${likes}</div>
-        <div class="settings-row-sub">${me.showPRs!==false?'🏋️ Records visibles sur ton profil':'Records perso cachés'} · ${me.invisible?' invisible dans la recherche':'visible dans la recherche'}</div>
+        <div class="settings-row-sub">${me.showPRs===true?'🏋️ Records visibles sur ton profil':'Records perso cachés'} · ${me.invisible?' invisible dans la recherche':'visible dans la recherche'}</div>
       </div>
       <div style="color:var(--ash);font-size:18px;">›</div>
     </div>
@@ -11293,7 +11479,7 @@ async function renderThreadMessages(){
       content=`<div style="font-size:14px;word-wrap:break-word;">${_progEsc(String(d.text||''))}</div>`;
     }
     if(mine){
-      return `<div style="align-self:flex-end;max-width:82%;background:var(--ember);color:#1a0d05;border-radius:16px 4px 16px 16px;padding:10px 14px;" data-tmsg="${i}">${content}<div style="font-size:9px;opacity:.7;margin-top:4px;text-align:right;">${dateTxt}</div></div>`;
+      return `<div style="align-self:flex-end;max-width:82%;background:var(--ember);color:var(--on-ember);border-radius:16px 4px 16px 16px;padding:10px 14px;" data-tmsg="${i}">${content}<div style="font-size:9px;opacity:.7;margin-top:4px;text-align:right;">${dateTxt}</div></div>`;
     }
     return `<div style="align-self:flex-start;max-width:82%;display:flex;gap:8px;align-items:flex-end;" data-tmsg="${i}">
       <div class="msg-av" data-mav="${i}" style="flex-shrink:0;">${_avatarHtml(d.from,28,d.fromU)}</div>
@@ -11386,7 +11572,7 @@ async function openProfileView(uid){
   const panel=document.getElementById('socialProfileView');
   const wasOpen = panel.style.display==='block';
   panel.style.display='block';
-  const pShow=(p.showPRs!==false);
+  const pShow=(p.showPRs===true);
   const prsList=(pShow&&Array.isArray(p.prsSummary))?p.prsSummary:[];
   panel.innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin:4px 0 16px;">
@@ -11517,7 +11703,7 @@ function _threadNotifyNew(threads){
     try{
       LN.schedule({notifications:[{
         id: 440000 + (String(pk).split('').reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7) % 9999),
-        title:'FORGE 💬 @'+String(d.otherUsername||'?'),
+        title:'CaliMova 💬 @'+String(d.otherUsername||'?'),
         body:String(d.lastText||'Nouveau message'),
         channelId:FORGE_NOTIF_CHANNEL
       }]}).catch(()=>{});
@@ -11548,7 +11734,7 @@ async function initSocialSettingToggles(){
   const me=_ppCache[currentUser&&currentUser.uid]||{};
   const prsTog=document.getElementById('showPRsToggle');
   const invTog=document.getElementById('invisibleToggle');
-  if(prsTog){ prsTog.checked=me.showPRs!==false; prsTog.onchange=async()=>{
+  if(prsTog){ prsTog.checked=me.showPRs===true; prsTog.onchange=async()=>{
     if(!currentUser){ prsTog.checked=false; forgeToast('Connecte-toi d\'abord'); return; }
     try{ const doc=await syncMyPublicProfileWith({showPRs:prsTog.checked}); forgeToast(prsTog.checked?'Records visibles sur ton profil ✓':'Records cachés ✓'); }catch(e){ prsTog.checked=!prsTog.checked; forgeToast('Impossible : '+((e&&e.message)||'?')); }
   }; }
@@ -11576,19 +11762,36 @@ function openSettingsOverlay(){
   // On sort la vue du track (transformé) pour que position:fixed couvre bien l'écran
   if(el.parentElement!==document.body) document.body.appendChild(el);
   el.classList.add('overlay-open');
+  try{ localStorage.setItem('forge-current-overlay','settings'); }catch(e){}
   el.scrollTop=0;
   _navPush(closeSettingsOverlay);
   initSocialSettingToggles();
-  // pré-charge le cache des profils publics : Administration Forge
+  // pré-charge le cache des profils publics : Administration CaliMova
   // s'ouvrira instantanément (le cache via 60 s ne retélécharge plus)
   if(currentUser){ try{ loadPublicProfiles(false).catch(()=>{}); }catch(e){} }
 }
 function closeSettingsOverlay(){
   const el=document.getElementById('view-settings');
   if(el) el.classList.remove('overlay-open');
+  try{ localStorage.removeItem('forge-current-overlay'); }catch(e){}
 }
 document.getElementById('socialGearBtn').onclick=openSettingsOverlay;
 document.getElementById('settingsCloseBtn').onclick=()=>_navClose(closeSettingsOverlay);
+// Préférence d'unité globale. Les charges restent stockées en kg (unité
+// canonique) ; les nouveaux calculs peuvent convertir avec ces helpers.
+function forgeWeightUnit(){ return localStorage.getItem('forge-weight-unit') || 'kg'; }
+function forgeKgToDisplay(kg){ const n=Number(kg)||0; return forgeWeightUnit()==='lb' ? n*2.2046226218 : n; }
+function forgeDisplayToKg(value){ const n=Number(value)||0; return forgeWeightUnit()==='lb' ? n/2.2046226218 : n; }
+(()=>{
+  const b=document.getElementById('globalWeightUnitBtn'), d=document.getElementById('globalWeightUnitDropdown');
+  if(b&&d){ const bar=b.closest('.profilebar'); const paint=()=>{b.firstChild.textContent=forgeWeightUnit()+' ';}; paint(); b.onclick=()=>{const open=d.style.display==='none';d.style.display=open?'block':'none';bar?.classList.toggle('dropdown-open',open);}; d.querySelectorAll('[data-unit]').forEach(x=>x.onclick=()=>{localStorage.setItem('forge-weight-unit',x.dataset.unit);paint();d.style.display='none';bar?.classList.remove('dropdown-open');forgeToast('Unité définie sur '+x.dataset.unit);}); }
+  const lb=document.getElementById('globalLanguageBtn'), ld=document.getElementById('globalLanguageDropdown');
+  if(lb&&ld){ const bar=lb.closest('.profilebar'); const paint=()=>{lb.firstChild.textContent=(localStorage.getItem('forge-language')||'fr')==='en'?'English ':'Français ';}; paint(); lb.onclick=()=>{const open=ld.style.display==='none';ld.style.display=open?'block':'none';bar?.classList.toggle('dropdown-open',open);}; ld.querySelectorAll('[data-lang]').forEach(x=>x.onclick=()=>{localStorage.setItem('forge-language',x.dataset.lang);paint();ld.style.display='none';bar?.classList.remove('dropdown-open');forgeToast(x.dataset.lang==='en'?'English interface saved':'Langue française enregistrée');}); }
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#globalWeightUnitBtn,#globalWeightUnitDropdown')){ if(d) d.style.display='none'; b?.closest('.profilebar')?.classList.remove('dropdown-open'); }
+    if(!e.target.closest('#globalLanguageBtn,#globalLanguageDropdown')){ if(ld) ld.style.display='none'; lb?.closest('.profilebar')?.classList.remove('dropdown-open'); }
+  });
+})();
 document.getElementById('socialRefreshBtn').onclick=()=>renderSocialHome(true);
 let _searchTimer=null;
 document.getElementById('socialSearchInput').addEventListener('input',()=>{
@@ -11607,6 +11810,7 @@ _forgeDataReadyPromise.then(()=>{
   initSocialSettingToggles();
   renderSocialSearchResults();
   if(VIEW_ORDER[currentViewIdx]==='social') renderSocialHome();
+  try{ if(localStorage.getItem('forge-current-overlay')==='settings') openSettingsOverlay(); }catch(e){}
 });
 /* Alias : certains endroits plus anciens appellent renderSocialChat */
 const renderSocialChat = renderSocialHome;
@@ -11698,7 +11902,7 @@ const renderSocialChat = renderSocialHome;
   renderSeanceList();
   renderHistory();
   renderRecordsCard();
-})().catch(e=>console.error('[FORGE] Initialisation échouée :', e)).finally(()=>_resolveForgeAppReady());
+})().catch(e=>console.error('[CaliMova] Initialisation échouée :', e)).finally(()=>_resolveForgeAppReady());
 
 // Indépendant du reste de init() : même si une autre étape plante,
 // la section Compte doit toujours s'afficher (au moins le message

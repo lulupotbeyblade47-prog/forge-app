@@ -13,6 +13,9 @@ cp landing.html public/index.html
 cp index.html public/app.html
 cp app-version.json public/app-version.json
 [ -f privacy.html ] && cp privacy.html public/privacy.html
+cp terms.html public/terms.html
+cp legal.html public/legal.html
+cp data-rights.html public/data-rights.html
 
 echo "public/ prêt :"
 ls -la public

@@ -1,6 +1,6 @@
 {
-  "versionCode": 71,
-  "versionName": "110.6",
-  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v110.6/forge-android-v110.6.apk",
-  "releaseNotes": "Records : « Classique » est masqué dans les noms (Dips · Barres · Classique s'affiche « Dips · Barres », Pull-ups · Classique · Pronation → « Pull-ups · Pronation »)."
+  "versionCode": 99,
+  "versionName": "110.10.19",
+  "apkUrl": "https://github.com/lulupotbeyblade47-prog/forge-android-releases/releases/download/v110.10.19/calimova-android-v110.10.19.apk",
+  "releaseNotes": "Forge devient CaliMova : nouveau nom dans le Web et Android, comptes et données conservés."
 }
